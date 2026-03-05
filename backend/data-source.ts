@@ -4,6 +4,8 @@ import { Ticket } from "../src/entities/Ticket";
 import { Message } from "../src/entities/Message";
 import { User } from "../src/entities/User";
 import { Schedule } from "../src/entities/Schedule";
+import { InventoryItem } from "../src/entities/InventoryItem";
+import { Reservation } from "../src/entities/Reservation";
 import dotenv from "dotenv";
 
 // Cargar variables de entorno desde el archivo .env
@@ -26,7 +28,7 @@ export const AppDataSource = new DataSource({
     logging: false,
 
     // Entidades que forman parte del modelo de datos
-    entities: [Ticket, Message, User, Schedule],
+    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation],
     migrations: [],
     subscribers: [],
 });

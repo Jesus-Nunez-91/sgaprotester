@@ -9,6 +9,8 @@ import { Ticket } from '../src/entities/Ticket';
 import { Message } from '../src/entities/Message';
 import { User } from '../src/entities/User';
 import { Schedule } from '../src/entities/Schedule';
+import { InventoryItem } from '../src/entities/InventoryItem';
+import { Reservation } from '../src/entities/Reservation';
 import dotenv from "dotenv";
 import helmet from "helmet";
 import bcrypt from 'bcryptjs';
@@ -247,6 +249,103 @@ app.delete('/api/schedules/:id', authMiddleware, async (req: any, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar horario' });
+  }
+});
+
+// --- ENDPOINTS DE INVENTARIO ---
+
+app.get('/api/inventory', async (req, res) => {
+  const items = await AppDataSource.getRepository(InventoryItem).find();
+  res.json(items);
+});
+
+app.post('/api/inventory', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const itemRepo = AppDataSource.getRepository(InventoryItem);
+    const newItem = itemRepo.create(req.body);
+    await itemRepo.save(newItem);
+    res.status(201).json(newItem);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear item' });
+  }
+});
+
+app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const itemRepo = AppDataSource.getRepository(InventoryItem);
+    const items = req.body;
+    await itemRepo.save(items);
+    res.status(201).json({ message: 'Carga masiva exitosa' });
+  } catch (error) {
+    res.status(400).json({ message: 'Error en carga masiva' });
+  }
+});
+
+app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const itemRepo = AppDataSource.getRepository(InventoryItem);
+    const item = await itemRepo.findOneBy({ id: parseInt(req.params.id) });
+    if (!item) return res.status(404).json({ message: 'Item no encontrado' });
+    Object.assign(item, req.body);
+    await itemRepo.save(item);
+    res.json(item);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar item' });
+  }
+});
+
+app.delete('/api/inventory/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    await AppDataSource.getRepository(InventoryItem).delete(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar item' });
+  }
+});
+
+// --- ENDPOINTS DE RESERVAS ---
+
+app.get('/api/reservations', async (req, res) => {
+  const reservations = await AppDataSource.getRepository(Reservation).find();
+  res.json(reservations);
+});
+
+app.post('/api/reservations', authMiddleware, async (req: any, res) => {
+  try {
+    const resRepo = AppDataSource.getRepository(Reservation);
+    const newRes = resRepo.create(req.body);
+    await resRepo.save(newRes);
+    res.status(201).json(newRes);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear reserva' });
+  }
+});
+
+app.put('/api/reservations/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const resRepo = AppDataSource.getRepository(Reservation);
+    const reservation = await resRepo.findOneBy({ id: parseInt(req.params.id) });
+    if (!reservation) return res.status(404).json({ message: 'Reserva no encontrada' });
+    Object.assign(reservation, req.body);
+    await resRepo.save(reservation);
+    res.json(reservation);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar reserva' });
   }
 });
 

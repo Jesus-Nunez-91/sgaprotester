@@ -149,7 +149,9 @@ export class DataService {
     this.loadFromStorage();
     this.socket = io();
     this.setupSocket();
-    this.fetchSchedules(); // Cargar horarios desde la API
+    this.fetchSchedules();
+    this.fetchInventory();
+    this.fetchReservations();
     effect(() => document.documentElement.classList.toggle('dark', this.darkMode()));
   }
 
@@ -223,19 +225,74 @@ export class DataService {
   }
   toggleDarkMode() { this.darkMode.update(v => !v); }
 
-  addItem(item: any) { this.inventory.update(v => [...v, { ...item, id: Date.now() }]); this.save(); }
-  updateItem(id: number, item: any) { this.inventory.update(v => v.map(i => i.id === id ? { ...i, ...item } : i)); this.save(); }
-  deleteItem(id: number) { this.inventory.update(v => v.filter(i => i.id !== id)); this.save(); }
-
-  addBulkItems(items: any[]) {
-    this.inventory.update(v => [...v, ...items.map(i => ({ ...i, id: Date.now() + Math.random() }))]);
-    this.save();
+  async addItem(item: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(item)
+      });
+      if (res.ok) await this.fetchInventory();
+    } catch (e) {
+      console.error("Error al añadir item", e);
+    }
   }
 
-  createReservation(item: InventoryItem, fecha: string, bloque: string, cantidad: number) {
+  async updateItem(id: number, item: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(item)
+      });
+      if (res.ok) await this.fetchInventory();
+    } catch (e) {
+      console.error("Error al actualizar item", e);
+    }
+  }
+
+  async deleteItem(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchInventory();
+    } catch (e) {
+      console.error("Error al eliminar item", e);
+    }
+  }
+
+  async addBulkItems(items: any[]) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/inventory/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(items)
+      });
+      if (res.ok) await this.fetchInventory();
+    } catch (e) {
+      console.error("Error en carga masiva", e);
+    }
+  }
+
+  async createReservation(item: InventoryItem, fecha: string, bloque: string, cantidad: number) {
+    if (!this.token()) return;
     const user = this.currentUser();
-    const res: Reservation = {
-      id: Date.now(),
+    const resPayload: any = {
       equipoId: item.id,
       fecha, bloque, cantidad,
       nombreSolicitante: user?.nombreCompleto || '',
@@ -245,8 +302,19 @@ export class DataService {
       aprobada: false,
       rechazada: false
     };
-    this.reservations.update(v => [...v, res]);
-    this.save();
+    try {
+      const res = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(resPayload)
+      });
+      if (res.ok) await this.fetchReservations();
+    } catch (e) {
+      console.error("Error al crear reserva", e);
+    }
   }
 
   updateReservationStatus(id: number, status: string, payload?: any) {
@@ -527,5 +595,29 @@ export class DataService {
     const wb = (window as any).XLSX.utils.book_new();
     (window as any).XLSX.utils.book_append_sheet(wb, ws, "Datos");
     (window as any).XLSX.writeFile(wb, `${fileName}.xlsx`);
+  }
+
+  async fetchInventory() {
+    try {
+      const res = await fetch('/api/inventory');
+      if (res.ok) {
+        const data = await res.json();
+        this.inventory.set(data);
+      }
+    } catch (e) {
+      console.error("Error al cargar inventario", e);
+    }
+  }
+
+  async fetchReservations() {
+    try {
+      const res = await fetch('/api/reservations');
+      if (res.ok) {
+        const data = await res.json();
+        this.reservations.set(data);
+      }
+    } catch (e) {
+      console.error("Error al cargar reservas", e);
+    }
   }
 }
