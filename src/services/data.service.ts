@@ -602,7 +602,10 @@ export class DataService {
       const res = await fetch('/api/inventory');
       if (res.ok) {
         const data = await res.json();
+        console.log("Inventario cargado desde API:", data.length, "items");
         this.inventory.set(data);
+      } else {
+        console.error("Fallo al obtener inventario de la API", res.status);
       }
     } catch (e) {
       console.error("Error al cargar inventario", e);

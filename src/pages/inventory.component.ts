@@ -557,11 +557,14 @@ export class InventoryComponent {
 
   /** Items filtrados por área, laboratorio, modo, estado y término de búsqueda */
   filteredItems = computed(() => {
-    const contextItems = this.data.inventory().filter(i =>
+    const all = this.data.inventory();
+    console.log(`Filtrando para ${this.areaName} / ${this.labName} (${this.inventoryMode()}). Total items en DB: ${all.length}`);
+    const contextItems = all.filter(i =>
       i.categoria === this.areaName &&
       i.subCategoria === this.labName &&
       i.tipoInventario === this.inventoryMode()
     );
+    console.log(`Items encontrados para este contexto: ${contextItems.length}`);
     const filtered = this.statusFilter() === 'Todos' ? contextItems : contextItems.filter(i => i.status === this.statusFilter());
     return this.data.fuzzySearch(filtered, this.searchTerm(), ['marca', 'modelo', 'sn', 'status', 'so', 'ram', 'rom']);
   });

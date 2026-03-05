@@ -285,8 +285,11 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
       return res.status(400).json({ message: 'Datos deben ser un array' });
     }
 
+    console.log(`Intentando carga masiva de ${itemsData.length} items para ${itemsData[0]?.categoria} - ${itemsData[0]?.subCategoria}`);
+
     // Guardar todos los items. save() de TypeORM maneja arrays y genera IDs si faltan.
     const savedItems = await itemRepo.save(itemsData);
+    console.log(`Carga masiva finalizada exitosamente. ${savedItems.length} items persistidos.`);
 
     res.status(201).json({
       message: 'Carga masiva exitosa',
