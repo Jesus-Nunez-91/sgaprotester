@@ -279,11 +279,22 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
   }
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
-    const items = req.body;
-    await itemRepo.save(items);
-    res.status(201).json({ message: 'Carga masiva exitosa' });
+    const itemsData = req.body;
+
+    if (!Array.isArray(itemsData)) {
+      return res.status(400).json({ message: 'Datos deben ser un array' });
+    }
+
+    // Guardar todos los items. save() de TypeORM maneja arrays y genera IDs si faltan.
+    const savedItems = await itemRepo.save(itemsData);
+
+    res.status(201).json({
+      message: 'Carga masiva exitosa',
+      count: savedItems.length
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Error en carga masiva' });
+    console.error("Error en carga masiva de inventario:", error);
+    res.status(500).json({ message: 'Error interno en carga masiva' });
   }
 });
 
