@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Estilos globales del cuerpo de la aplicación.
+   * Se define un fondo con degradado y una imagen de la universidad con efecto fijo.
+   */
+  body {
+    background-image: linear-gradient(rgba(244, 247, 246, 0.85), rgba(244, 247, 246, 0.85)), url('https://i.postimg.cc/5N8WFvbw/images.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    margin: 0;
+  }
+}
+
+@layer components {
+  /**
+   * Barra lateral con efecto de cristal (Glassmorphism).
+   * Utiliza backdrop-filter para desenfocar el fondo.
+   */
+  .glass-sidebar {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 5px 0 25px rgba(0,0,0,0.05);
+  }
+  
+  /* Ajuste de la barra lateral para el modo oscuro */
+  html.dark .glass-sidebar {
+    background: rgba(15, 23, 42, 0.6);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /**
+   * Paneles genéricos con efecto de cristal.
+   */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  }
+  
+  /* Ajuste de paneles para el modo oscuro */
+  html.dark .glass-panel {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+  
+  /**
+   * Transparencia y desenfoque para elementos de formulario.
+   */
+  input, select, textarea {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(5px);
+  }
+  html.dark input, html.dark select, html.dark textarea {
+    background: rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+@layer utilities {
+  /**
+   * Animación de balanceo para el icono de notificaciones.
+   */
+  @keyframes swing {
+    20% { transform: rotate(15deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+  }
+  .animate-swing {
+    animation: swing 1s ease-in-out infinite;
+    transform-origin: top center;
+  }
+
+  /**
+   * Personalización de las barras de desplazamiento (Scrollbars).
+   */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0, 51, 102, 0.2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0, 51, 102, 0.4); }
+  
+  html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+  html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+  
+  /**
+   * Sombra suave para mejorar la legibilidad del texto sobre fondos complejos.
+   */
+  .text-shadow {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+}

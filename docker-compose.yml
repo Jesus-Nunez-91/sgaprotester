@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sgapro_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_pass}
+      POSTGRES_DB: ${DB_NAME:-sga_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sgapro_app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      # Sobrescribimos el host para que apunte al contenedor de la base de datos
+      - DB_HOST=db
+      - DB_PORT=5432
+      - NODE_ENV=production
+      # Reutilizamos las otras variables de .env si están disponibles
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres_pass}
+      - DB_NAME=${DB_NAME:-sga_db}
+
+volumes:
+  pgdata:
