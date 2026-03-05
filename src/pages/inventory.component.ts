@@ -869,31 +869,43 @@ export class InventoryComponent {
       const worksheet = workbook.Sheets[firstSheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      const itemsToUpload = jsonData.map((row: any) => ({
-        marca: row['Marca'] || '',
-        modelo: row['Modelo'] || '',
-        ram: row['RAM'] || '',
-        rom: row['ROM'] || '',
-        so: row['SO'] || '',
-        sn: row['SN'] || '',
-        stockActual: Number(row['StockActual']) || 0,
-        stockMinimo: Number(row['StockMinimo']) || 5,
-        status: row['Status'] || 'Disponible',
-        esFungible: row['EsFungible'] === true || row['EsFungible'] === 'true' || row['EsFungible'] === 'Sí' || row['EsFungible'] === 'VERDADERO',
-        numeroFactura: row['Factura'] || '',
-        fechaLlegada: row['FechaLlegada'] || '',
-        cantidadLlegada: Number(row['CantLlegada']) || 0,
-        categoria: this.areaName,
-        subCategoria: this.labName,
-        tipoInventario: this.inventoryMode()
-      }));
+      const itemsToUpload = jsonData
+        .filter((row: any) => row['Marca'] || row['Modelo'])
+        .map((row: any) => {
+          const parseNum = (val: any, def: number) => {
+            if (val === undefined || val === null || val === '') return def;
+            const n = parseInt(val, 10);
+            return isNaN(n) ? def : n;
+          };
+
+          return {
+            marca: String(row['Marca'] || ''),
+            modelo: String(row['Modelo'] || ''),
+            ram: String(row['RAM'] || ''),
+            rom: String(row['ROM'] || ''),
+            so: String(row['SO'] || ''),
+            sn: String(row['SN'] || ''),
+            stockActual: parseNum(row['StockActual'], 0),
+            stockMinimo: parseNum(row['StockMinimo'], 5),
+            status: String(row['Status'] || 'Disponible'),
+            esFungible: row['EsFungible'] === true || row['EsFungible'] === 'true' || row['EsFungible'] === 'Sí' || row['EsFungible'] === 'VERDADERO',
+            numeroFactura: String(row['Factura'] || ''),
+            fechaLlegada: String(row['FechaLlegada'] || ''),
+            cantidadLlegada: parseNum(row['CantLlegada'], 0),
+            categoria: this.areaName,
+            subCategoria: this.labName,
+            tipoInventario: this.inventoryMode()
+          };
+        });
+
+      console.log("Datos sanitizados para enviar:", itemsToUpload);
 
       if (itemsToUpload.length > 0) {
         this.data.addBulkItems(itemsToUpload);
         Swal.fire({
           icon: 'success',
           title: 'Carga Completada',
-          text: `Se han cargado ${itemsToUpload.length} items al inventario.`,
+          text: `Se han procesado ${itemsToUpload.length} items.`,
           timer: 2000,
           showConfirmButton: false
         });

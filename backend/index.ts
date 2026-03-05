@@ -295,9 +295,11 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
       message: 'Carga masiva exitosa',
       count: savedItems.length
     });
-  } catch (error) {
-    console.error("Error en carga masiva de inventario:", error);
-    res.status(500).json({ message: 'Error interno en carga masiva' });
+  } catch (error: any) {
+    console.error("ERROR CRÍTICO EN CARGA MASIVA:", error.message);
+    if (error.detail) console.error("DETALLE DB:", error.detail);
+    if (error.parameters) console.log("PARAMETROS QUE FALLARON (truncado):", error.parameters.slice(0, 50));
+    res.status(500).json({ message: 'Error interno en carga masiva', error: error.message });
   }
 });
 
