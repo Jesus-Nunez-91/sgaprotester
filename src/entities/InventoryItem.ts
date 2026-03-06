@@ -20,7 +20,7 @@ export class InventoryItem {
     @Column()
     modelo: string;
 
-    @Column()
+    @Column({ nullable: true })
     sn: string;
 
     @Column()

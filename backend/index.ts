@@ -268,8 +268,10 @@ app.post('/api/inventory', authMiddleware, async (req: any, res) => {
     const newItem = itemRepo.create(req.body);
     await itemRepo.save(newItem);
     res.status(201).json(newItem);
-  } catch (error) {
-    res.status(400).json({ message: 'Error al crear item' });
+  } catch (error: any) {
+    console.error("ERROR AL CREAR ITEM INDIVIDUAL:", error.message);
+    if (error.detail) console.error("DETALLE DB:", error.detail);
+    res.status(400).json({ message: 'Error al crear item', error: error.message });
   }
 });
 

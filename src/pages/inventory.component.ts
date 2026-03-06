@@ -103,6 +103,10 @@ declare const XLSX: any;
                 <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Modelo / Detalle</label>
                 <input [(ngModel)]="editItem.modelo" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: Latitude 5420">
               </div>
+              <div>
+                <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">S/N (Serial Number)</label>
+                <input [(ngModel)]="editItem.sn" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: ABC123XYZ">
+              </div>
               
               <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
                 <h6 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Administración de Ingreso</h6>
@@ -560,8 +564,8 @@ export class InventoryComponent {
     const all = this.data.inventory();
     console.log(`Filtrando para ${this.areaName} / ${this.labName} (${this.inventoryMode()}). Total items en DB: ${all.length}`);
     const contextItems = all.filter(i =>
-      i.categoria === this.areaName &&
-      i.subCategoria === this.labName &&
+      i.categoria?.toUpperCase() === this.areaName?.toUpperCase() &&
+      i.subCategoria?.toUpperCase() === this.labName?.toUpperCase() &&
       i.tipoInventario === this.inventoryMode()
     );
     console.log(`Items encontrados para este contexto: ${contextItems.length}`);
@@ -759,7 +763,7 @@ export class InventoryComponent {
 
   /** Reinicia el formulario de edición. */
   resetForm() {
-    this.editItem = { status: 'Disponible', esFungible: false, stockActual: 1, stockMinimo: 1, numeroFactura: '', fechaLlegada: '', cantidadLlegada: 0 };
+    this.editItem = { status: 'Disponible', esFungible: false, stockActual: 1, stockMinimo: 1, numeroFactura: '', fechaLlegada: '', cantidadLlegada: 0, sn: '' };
   }
 
   /** Carga un item en el formulario para su edición. */
