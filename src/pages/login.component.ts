@@ -50,7 +50,9 @@ declare var Swal: any;
               INGRESAR AL SISTEMA
               <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
             </button>
+
           </form>
+          <p class="text-gray-500 text-sm mb-8">Gestión de Laboratorios & Activos</p>
 
           <!-- Sección de ayuda removida por seguridad -->
         </div>
