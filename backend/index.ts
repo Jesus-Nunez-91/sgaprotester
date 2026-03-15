@@ -11,6 +11,9 @@ import { User } from '../src/entities/User';
 import { Schedule } from '../src/entities/Schedule';
 import { InventoryItem } from '../src/entities/InventoryItem';
 import { Reservation } from '../src/entities/Reservation';
+import { AdminTask } from '../src/entities/AdminTask';
+import { MaintenanceTask } from '../src/entities/MaintenanceTask';
+import { PurchaseOrder } from '../src/entities/PurchaseOrder';
 import dotenv from "dotenv";
 import helmet from "helmet";
 import bcrypt from 'bcryptjs';
@@ -367,13 +370,156 @@ app.put('/api/reservations/:id', authMiddleware, async (req: any, res) => {
   }
 });
 
-// Servir archivos estáticos de Angular
-const publicPath = path.join(process.cwd(), 'dist/sga-pro/browser');
-app.use(express.static(publicPath));
+// --- ENDPOINTS DE COMPRAS (PURCHASE ORDERS) ---
 
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+app.get('/api/procurement', authMiddleware, async (req: any, res) => {
+  const orders = await AppDataSource.getRepository(PurchaseOrder).find();
+  res.json(orders);
 });
+
+app.post('/api/procurement', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const orderRepo = AppDataSource.getRepository(PurchaseOrder);
+    const newOrder = orderRepo.create(req.body);
+    await orderRepo.save(newOrder);
+    res.status(201).json(newOrder);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear orden de compra' });
+  }
+});
+
+app.put('/api/procurement/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const orderRepo = AppDataSource.getRepository(PurchaseOrder);
+    const order = await orderRepo.findOneBy({ id: parseInt(req.params.id) });
+    if (!order) return res.status(404).json({ message: 'Orden no encontrada' });
+    Object.assign(order, req.body);
+    await orderRepo.save(order);
+    res.json(order);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar orden' });
+  }
+});
+
+app.delete('/api/procurement/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    await AppDataSource.getRepository(PurchaseOrder).delete(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar orden' });
+  }
+});
+
+// --- ENDPOINTS DE TAREAS ADMIN (TO-DO) ---
+
+app.get('/api/admin-tasks', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  const tasks = await AppDataSource.getRepository(AdminTask).find({ order: { createdAt: 'DESC' } });
+  res.json(tasks);
+});
+
+app.post('/api/admin-tasks', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const taskRepo = AppDataSource.getRepository(AdminTask);
+    const newTask = taskRepo.create(req.body);
+    await taskRepo.save(newTask);
+    res.status(201).json(newTask);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear tarea' });
+  }
+});
+
+app.put('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const taskRepo = AppDataSource.getRepository(AdminTask);
+    const task = await taskRepo.findOneBy({ id: parseInt(req.params.id) });
+    if (!task) return res.status(404).json({ message: 'Tarea no encontrada' });
+    Object.assign(task, req.body);
+    await taskRepo.save(task);
+    res.json(task);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar tarea' });
+  }
+});
+
+app.delete('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    await AppDataSource.getRepository(AdminTask).delete(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar tarea' });
+  }
+});
+
+// --- ENDPOINTS DE MANTENCIÓN ---
+
+app.get('/api/maintenance', authMiddleware, async (req: any, res) => {
+  const tasks = await AppDataSource.getRepository(MaintenanceTask).find({ order: { dateScheduled: 'DESC' } });
+  res.json(tasks);
+});
+
+app.post('/api/maintenance', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const maintRepo = AppDataSource.getRepository(MaintenanceTask);
+    const newTask = maintRepo.create(req.body);
+    await maintRepo.save(newTask);
+    res.status(201).json(newTask);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear tarea de mantención' });
+  }
+});
+
+app.put('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const maintRepo = AppDataSource.getRepository(MaintenanceTask);
+    const task = await maintRepo.findOneBy({ id: parseInt(req.params.id) });
+    if (!task) return res.status(404).json({ message: 'Tarea no encontrada' });
+    Object.assign(task, req.body);
+    await maintRepo.save(task);
+    res.json(task);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar tarea de mantención' });
+  }
+});
+
+app.delete('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    await AppDataSource.getRepository(MaintenanceTask).delete(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar tarea de mantención' });
+  }
+});
+
 
 // --- LÓGICA DE SOCKETS (SOPORTE) ---
 io.on('connection', async (socket) => {
@@ -536,6 +682,15 @@ io.on('connection', async (socket) => {
   socket.on('disconnect', () => {
     console.log('Cliente desconectado');
   });
+});
+
+// --- SERVIR FRONTEND ---
+const publicPath = path.join(process.cwd(), 'dist/sga-pro/browser');
+app.use(express.static(publicPath));
+
+// Fallback para SPA (Cualquier ruta no manejada por API va al index.html)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 httpServer.listen(PORT, () => {

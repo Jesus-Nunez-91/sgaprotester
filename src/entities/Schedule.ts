@@ -19,4 +19,7 @@ export class Schedule {
 
     @Column()
     subject: string; // Nombre de la asignatura o curso
+
+    @Column({ nullable: true })
+    color: string; // Color hexadecimal o clase CSS para el frontend
 }

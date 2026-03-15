@@ -139,9 +139,13 @@ declare const XLSX: any;
                     <input type="number" [(ngModel)]="editItem.stockActual" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
                  </div>
                  <div>
-                    <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Stock Mínimo</label>
-                    <input type="number" [(ngModel)]="editItem.stockMinimo" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
+                    <label class="text-xs font-bold text-red-600 dark:text-red-400 mb-1 block ml-1">S. Defectuoso</label>
+                    <input type="number" [(ngModel)]="editItem.stockDefectuoso" class="w-full text-sm border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-900/10 dark:text-white rounded-xl focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all">
                  </div>
+              </div>
+              <div>
+                 <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Stock Mínimo (Alerta)</label>
+                 <input type="number" [(ngModel)]="editItem.stockMinimo" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
               </div>
               <div>
                  <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Estado Operativo</label>
@@ -261,16 +265,25 @@ declare const XLSX: any;
                              }
                           </td>
                           <td class="p-4">
-                              @if (item.status !== 'Disponible') {
-                                 <span class="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-xs uppercase shadow-sm">{{ item.status }}</span>
-                              } @else if (stock <= 0) {
-                                 <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 font-bold text-xs shadow-sm">AGOTADO</span>
-                              } @else {
-                                 <span class="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 font-bold text-xs shadow-sm flex w-fit items-center gap-1">
-                                    <i class="bi bi-check-circle-fill text-[10px]"></i> {{ stock }} Disp.
-                                 </span>
-                              }
-                          </td>
+                              <div class="flex flex-col gap-2">
+                                 @let available = stock;
+                                 @let loaned = getLoanedCount(item);
+                                 @let defective = item.stockDefectuoso || 0;
+
+                                 <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ available }} Disponibles</span>
+                                 </div>
+                                 <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ loaned }} en Préstamo</span>
+                                 </div>
+                                 <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ defective }} Defectuosos</span>
+                                 </div>
+                              </div>
+                           </td>
                           <td class="p-4 text-center">
                              <div class="flex items-center justify-center gap-2">
                                 <button (click)="openDetails(item)" class="text-gray-400 hover:text-uah-blue dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-700 w-8 h-8 rounded-full transition-colors flex items-center justify-center">
@@ -626,7 +639,19 @@ export class InventoryComponent {
       (item.esFungible ? !r.aprobada : (r.fecha === this.resDate() && r.bloque === this.resBlock()))
     ).reduce((sum, r) => sum + r.cantidad, 0);
 
-    return item.stockActual - reserved;
+    return item.stockActual - reserved - (item.stockDefectuoso || 0);
+  }
+
+  /**
+   * Obtiene la cantidad de unidades actualmente en préstamo (aprobadas y no devueltas aún).
+   */
+  getLoanedCount(item: InventoryItem): number {
+    return this.data.reservations().filter(r =>
+      r.equipoId === item.id &&
+      r.aprobada &&
+      !r.rechazada &&
+      r.devuelto < r.cantidad
+    ).reduce((sum, r) => sum + (r.cantidad - (r.devuelto || 0)), 0);
   }
 
   /**

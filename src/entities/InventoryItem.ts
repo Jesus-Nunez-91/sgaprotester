@@ -41,6 +41,9 @@ export class InventoryItem {
     @Column({ default: 0 })
     stockMinimo: number;
 
+    @Column({ default: 0 })
+    stockDefectuoso: number;
+
     @Column({ default: false })
     esFungible: boolean;
 

@@ -2,14 +2,14 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService, ClassSchedule } from '../services/data.service';
-import { RouterLink } from '@angular/router';
+
 
 declare const Swal: any;
 
 @Component({
     selector: 'app-schedule',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule],
     template: `
     <div class="max-w-7xl mx-auto py-8 animate-fadeIn pb-20">
       
@@ -91,17 +91,19 @@ declare const Swal: any;
                               @for (day of days; track day) {
                                   @let cellClass = getClass(day, block);
                                   
-                                  <div (click)="editCell(day, block, cellClass)"
-                                       class="relative min-h-[100px] rounded-xl border transition-all duration-300 flex flex-col justify-center items-center p-3 text-center"
-                                       [class]="cellClass ? 
-                                          'bg-indigo-100/50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700 shadow-sm hover:shadow-md hover:-translate-y-1' : 
-                                          'bg-white/40 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700 opacity-60 hover:opacity-100'"
-                                       [class.cursor-pointer]="isEditMode()"
-                                       [class.ring-2]="isEditMode()"
-                                       [class.ring-amber-400]="isEditMode()">
-                                      
-                                      @if (cellClass) {
-                                          <span class="text-[10px] font-bold text-indigo-500 dark:text-indigo-300 uppercase tracking-wide mb-1">Ocupado</span>
+                                   <div (click)="editCell(day, block, cellClass)"
+                                        class="relative min-h-[100px] rounded-xl border transition-all duration-300 flex flex-col justify-center items-center p-3 text-center"
+                                        [class]="cellClass ? 
+                                           'shadow-sm hover:shadow-md hover:-translate-y-1' : 
+                                           'bg-white/40 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700 opacity-60 hover:opacity-100'"
+                                        [style.backgroundColor]="cellClass?.color ? cellClass.color + '20' : (cellClass ? '#4f46e520' : '')"
+                                        [style.borderColor]="cellClass?.color ? cellClass.color : (cellClass ? '#4f46e5' : '')"
+                                        [class.cursor-pointer]="isEditMode()"
+                                        [class.ring-2]="isEditMode()"
+                                        [class.ring-amber-400]="isEditMode()">
+                                       
+                                       @if (cellClass) {
+                                           <span class="text-[10px] font-bold uppercase tracking-wide mb-1" [style.color]="cellClass.color || '#4f46e5'">Ocupado</span>
                                           <div class="font-bold text-gray-800 dark:text-white text-xs leading-tight line-clamp-3">
                                               {{ cellClass.subject }}
                                           </div>
@@ -181,20 +183,39 @@ export class ScheduleComponent {
 
         Swal.fire({
             title: `Editar Horario`,
-            text: `${day} - ${block}`,
-            input: 'text',
-            inputValue: currentSubject,
+            html: `
+                <div class="text-left space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nombre del Ramo / Docente</label>
+                        <input id="swal-subject" class="swal2-input w-full m-0" placeholder="Ej: Programación Avanzada - Dr. Soto" value="${currentSubject}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Etiqueta de Color</label>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                             ${['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'].map(c => `
+                                <button type="button" onclick="document.getElementById('swal-color').value='${c}'; this.parentNode.querySelectorAll('button').forEach(b=>b.style.border='none'); this.style.border='3px solid #000';" 
+                                        style="background-color: ${c}; width: 32px; height: 32px; border-radius: 8px; ${current?.color === c ? 'border: 3px solid #000;' : ''}"></button>
+                             `).join('')}
+                        </div>
+                        <input type="hidden" id="swal-color" value="${current?.color || '#3b82f6'}">
+                    </div>
+                </div>
+            `,
             showCancelButton: true,
             confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
-            inputPlaceholder: 'Nombre de la asignatura o bloque...',
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#aaa',
+            preConfirm: () => {
+                return {
+                    subject: (document.getElementById('swal-subject') as HTMLInputElement).value,
+                    color: (document.getElementById('swal-color') as HTMLInputElement).value
+                }
+            },
+            confirmButtonColor: '#4f46e5',
         }).then(async (result: any) => {
             if (result.isConfirmed) {
-                const newSubject = result.value;
+                const { subject, color } = result.value;
 
-                if (newSubject.trim() === '') {
+                if (subject.trim() === '') {
                     if (current?.id) {
                         Swal.fire({
                             title: '¿Eliminar bloque?',
@@ -216,7 +237,8 @@ export class ScheduleComponent {
                         lab: this.selectedLab(),
                         day,
                         block,
-                        subject: newSubject.trim()
+                        subject: subject.trim(),
+                        color
                     });
 
                     Swal.fire({

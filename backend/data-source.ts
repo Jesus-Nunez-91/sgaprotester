@@ -6,6 +6,9 @@ import { User } from "../src/entities/User";
 import { Schedule } from "../src/entities/Schedule";
 import { InventoryItem } from "../src/entities/InventoryItem";
 import { Reservation } from "../src/entities/Reservation";
+import { AdminTask } from "../src/entities/AdminTask";
+import { MaintenanceTask } from "../src/entities/MaintenanceTask";
+import { PurchaseOrder } from "../src/entities/PurchaseOrder";
 import dotenv from "dotenv";
 
 // Cargar variables de entorno desde el archivo .env
@@ -28,7 +31,7 @@ export const AppDataSource = new DataSource({
     logging: false,
 
     // Entidades que forman parte del modelo de datos
-    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation],
+    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder],
     migrations: [],
     subscribers: [],
 });

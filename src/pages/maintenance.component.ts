@@ -2,7 +2,7 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService, MaintenanceTask } from '../services/data.service';
-import { RouterLink } from '@angular/router';
+
 
 declare var Chart: any;
 declare var Swal: any;
@@ -15,7 +15,7 @@ declare var Swal: any;
 @Component({
   selector: 'app-maintenance',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="animate-fadeIn pb-12">
       <!-- Encabezado -->

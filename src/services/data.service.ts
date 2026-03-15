@@ -20,18 +20,19 @@ export interface InventoryItem {
   subCategoria: string;
   marca: string;
   modelo: string;
-  sn: string;
+  sn?: string;
   status: string;
-  so: string;
-  ram: string;
-  rom: string;
+  so?: string;
+  ram?: string;
+  rom?: string;
   stockActual: number;
   stockMinimo: number;
+  stockDefectuoso: number;
   esFungible: boolean;
-  imagenUrl: string;
+  imagenUrl?: string;
   numeroFactura?: string;
   fechaLlegada?: string;
-  cantidadLlegada?: number;
+  cantidadLlegada: number;
 }
 
 export interface Reservation {
@@ -138,6 +139,7 @@ export class DataService {
   classSchedules = signal<ClassSchedule[]>([]);
   labBudgets = signal<Record<string, number>>({ 'FABLAB': 15000000, 'QUIMICA': 8000000, 'FISICA': 8000000, 'INFORMATICA': 12000000 });
   darkMode = signal<boolean>(false);
+  adminTasks = signal<any[]>([]);
 
   hierarchy: Record<string, string[]> = {
     'FABLAB': ['TEXTIL', 'FABRICACION DIGITAL', 'BIOMATERIALES', 'NOTEBOOK'],
@@ -152,6 +154,9 @@ export class DataService {
     this.fetchSchedules();
     this.fetchInventory();
     this.fetchReservations();
+    this.fetchMaintenanceTasks();
+    this.fetchPurchaseOrders();
+    this.fetchAdminTasks();
     effect(() => document.documentElement.classList.toggle('dark', this.darkMode()));
   }
 
@@ -317,47 +322,192 @@ export class DataService {
     }
   }
 
-  updateReservationStatus(id: number, status: string, payload?: any) {
-    this.reservations.update(v => v.map(r => r.id === id ? { ...r, aprobada: status === 'approve', rechazada: status === 'reject', motivoRechazo: payload?.motivo } : r));
+  async updateReservationStatus(id: number, status: string, payload?: any) {
+    const isApprove = status === 'approve';
+    const isReject = status === 'reject';
+    
+    // Optimistic UI update
+    this.reservations.update(v => v.map(r => r.id === id ? { ...r, aprobada: isApprove, rechazada: isReject, motivoRechazo: payload?.motivo } : r));
     this.save();
-  }
-
-  // --- GESTIÓN DE MANTENCIÓN ---
-  addMaintenanceTask(task: any) {
-    this.maintenanceTasks.update(v => [...v, { ...task, id: Date.now() }]);
-    this.save();
-  }
-  updateMaintenanceTask(id: number, task: any) {
-    this.maintenanceTasks.update(v => v.map(t => t.id === id ? { ...t, ...task } : t));
-    this.save();
-  }
-  deleteMaintenanceTask(id: number) {
-    this.maintenanceTasks.update(v => v.filter(t => t.id !== id));
-    this.save();
-  }
-
-  // --- GESTIÓN DE COMPRAS (PROCUREMENT) ---
-  updateBudgets(budgets: Record<LabType, number>) {
-    this.labBudgets.set({ ...budgets });
-    this.save();
-  }
-  addPurchaseOrder(order: any) {
-    const newOrder = { ...order, internalId: Date.now(), stage: 'Solicitud' };
-    this.purchaseOrders.update(v => [...v, newOrder]);
-    this.save();
-  }
-  updatePurchaseOrder(id: number, data: any, stage?: PurchaseStage) {
-    this.purchaseOrders.update(v => v.map(o => {
-      if (o.internalId === id) {
-        return { ...o, ...data, stage: stage || o.stage };
+    
+    // Backend persistance
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/reservations/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify({ 
+           aprobada: isApprove, 
+           rechazada: isReject, 
+           motivoRechazo: payload?.motivo,
+           devuelto: payload?.devuelto
+        })
+      });
+      if (res.ok) {
+        await this.fetchReservations();
       }
-      return o;
-    }));
-    this.save();
+    } catch (e) {
+      console.error("Error al actualizar reserva en API", e);
+    }
   }
-  deletePurchaseOrder(id: number) {
-    this.purchaseOrders.update(v => v.filter(o => o.internalId !== id));
-    this.save();
+
+  // --- GESTIÓN DE MANTENCIÓN API ---
+  async fetchMaintenanceTasks() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/maintenance', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) this.maintenanceTasks.set(await res.json());
+    } catch (e) { console.error("Error al cargar mantenciones", e); }
+  }
+
+  async addMaintenanceTask(task: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(task)
+      });
+      if (res.ok) await this.fetchMaintenanceTasks();
+    } catch (e) { console.error("Error al crear mantención", e); }
+  }
+
+  async updateMaintenanceTask(id: number, task: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/maintenance/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(task)
+      });
+      if (res.ok) await this.fetchMaintenanceTasks();
+    } catch (e) { console.error("Error al actualizar mantención", e); }
+  }
+
+  async deleteMaintenanceTask(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/maintenance/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchMaintenanceTasks();
+    } catch (e) { console.error("Error al eliminar mantención", e); }
+  }
+
+  // --- GESTIÓN DE COMPRAS API (PROCUREMENT) ---
+  async fetchPurchaseOrders() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/procurement', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) this.purchaseOrders.set(await res.json());
+    } catch (e) { console.error("Error al cargar órdenes de compra", e); }
+  }
+
+  async addPurchaseOrder(order: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/procurement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(order)
+      });
+      if (res.ok) await this.fetchPurchaseOrders();
+    } catch (e) { console.error("Error al crear OC", e); }
+  }
+
+  async updatePurchaseOrder(id: number, data: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/procurement/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) await this.fetchPurchaseOrders();
+    } catch (e) { console.error("Error al actualizar OC", e); }
+  }
+
+  async deletePurchaseOrder(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/procurement/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchPurchaseOrders();
+    } catch (e) { console.error("Error al eliminar OC", e); }
+  }
+
+  // --- GESTIÓN DE TAREAS ADMIN API ---
+  async fetchAdminTasks() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/admin-tasks', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) this.adminTasks.set(await res.json());
+    } catch (e) { console.error("Error al cargar tareas admin", e); }
+  }
+
+  async addAdminTask(task: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/admin-tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(task)
+      });
+      if (res.ok) await this.fetchAdminTasks();
+    } catch (e) { console.error("Error al crear tarea admin", e); }
+  }
+
+  async updateAdminTask(id: number, data: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/admin-tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) await this.fetchAdminTasks();
+    } catch (e) { console.error("Error al actualizar tarea admin", e); }
+  }
+
+  async deleteAdminTask(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/admin-tasks/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchAdminTasks();
+    } catch (e) { console.error("Error al eliminar tarea admin", e); }
   }
 
   // --- TICKETS DE SOPORTE ---
@@ -522,19 +672,11 @@ export class DataService {
   }
 
   private save() {
-    localStorage.setItem('sga_inventory', JSON.stringify(this.inventory()));
-    localStorage.setItem('sga_reservations', JSON.stringify(this.reservations()));
-    localStorage.setItem('sga_purchase', JSON.stringify(this.purchaseOrders()));
-    localStorage.setItem('sga_maintenance', JSON.stringify(this.maintenanceTasks()));
     localStorage.setItem('sga_notifications', JSON.stringify(this.notifications()));
     localStorage.setItem('sga_token', this.token() || '');
   }
 
   private loadFromStorage() {
-    const i = localStorage.getItem('sga_inventory'); if (i) this.inventory.set(JSON.parse(i));
-    const r = localStorage.getItem('sga_reservations'); if (r) this.reservations.set(JSON.parse(r));
-    const p = localStorage.getItem('sga_purchase'); if (p) this.purchaseOrders.set(JSON.parse(p));
-    const m = localStorage.getItem('sga_maintenance'); if (m) this.maintenanceTasks.set(JSON.parse(m));
     const n = localStorage.getItem('sga_notifications'); if (n) this.notifications.set(JSON.parse(n));
 
     const token = localStorage.getItem('sga_token');
