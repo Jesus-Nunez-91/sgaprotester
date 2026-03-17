@@ -361,7 +361,7 @@ export class DataService {
   }
 
   async addBulkItems(items: any[]) {
-    if (!this.token()) return;
+    if (!this.token()) return false;
     try {
       const res = await fetch('/api/inventory/bulk', {
         method: 'POST',
@@ -371,9 +371,22 @@ export class DataService {
         },
         body: JSON.stringify(items)
       });
-      if (res.ok) await this.fetchInventory();
-    } catch (e) {
+      if (res.ok) {
+        await this.fetchInventory();
+        return true;
+      } else {
+        const errorData = await res.json();
+        console.error("Error en respuesta bulk:", errorData);
+        throw new Error(errorData.message || "Error desconocido en el servidor");
+      }
+    } catch (e: any) {
       console.error("Error en carga masiva", e);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de Carga',
+        text: e.message || 'No se pudo completar la carga masiva.'
+      });
+      return false;
     }
   }
 

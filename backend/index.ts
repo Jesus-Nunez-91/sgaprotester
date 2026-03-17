@@ -369,7 +369,7 @@ app.post('/api/inventory', authMiddleware, async (req: any, res) => {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     const newItem = itemRepo.create(req.body);
     const savedItem = await itemRepo.save(newItem) as any;
-    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_CREATE', `Item creado: ${savedItem.nombre} (${savedItem.rotulo || 'Sin rotulo'})`);
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_CREATE', `Item creado: ${savedItem.marca} ${savedItem.modelo} (${savedItem.rotulo_ID || 'Sin rotulo'})`);
     res.status(201).json(savedItem);
   } catch (error: any) {
     console.error("ERROR AL CREAR ITEM INDIVIDUAL:", error.message);
@@ -403,8 +403,12 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
   } catch (error: any) {
     console.error("ERROR CRÍTICO EN CARGA MASIVA:", error.message);
     if (error.detail) console.error("DETALLE DB:", error.detail);
-    if (error.parameters) console.log("PARAMETROS QUE FALLARON (truncado):", error.parameters.slice(0, 50));
-    res.status(500).json({ message: 'Error interno en carga masiva', error: error.message });
+    if (error.parameters) console.log("PARAMETROS QUE FALLARON (truncado):", error.parameters);
+    res.status(500).json({ 
+      message: 'Error interno en carga masiva', 
+      error: error.message,
+      detail: error.detail 
+    });
   }
 });
 

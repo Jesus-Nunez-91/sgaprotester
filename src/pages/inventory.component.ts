@@ -1183,14 +1183,17 @@ export class InventoryComponent {
       console.log("Datos sanitizados para enviar:", itemsToUpload);
 
       if (itemsToUpload.length > 0) {
-        this.data.addBulkItems(itemsToUpload);
-        Swal.fire({
-          icon: 'success',
-          title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Carga Completada</h3>',
-          text: `Se han procesado ${itemsToUpload.length} recursos exitosamente.`,
-          timer: 2500,
-          showConfirmButton: false,
-          confirmButtonColor: '#003366'
+        this.data.addBulkItems(itemsToUpload).then(success => {
+          if (success) {
+            Swal.fire({
+              icon: 'success',
+              title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Carga Completada</h3>',
+              text: `Se han procesado ${itemsToUpload.length} recursos exitosamente.`,
+              timer: 2500,
+              showConfirmButton: false,
+              confirmButtonColor: '#003366'
+            });
+          }
         });
       }
       event.target.value = '';
