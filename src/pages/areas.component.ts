@@ -15,8 +15,8 @@ import { Router, ActivatedRoute } from '@angular/router';
     <div class="max-w-6xl mx-auto py-8 animate-fadeIn">
       <!-- Encabezado de la página -->
       <div class="text-center mb-12">
-        <h1 class="text-3xl md:text-4xl font-black text-uah-blue mb-2 tracking-tighter">SISTEMA DE GESTIÓN INTEGRAL</h1>
-        <p class="text-gray-500 font-medium">Seleccione el área de laboratorios para operar</p>
+        <h1 class="text-3xl md:text-4xl font-black text-uah-blue dark:text-white mb-2 tracking-tighter">SISTEMA DE GESTIÓN INTEGRAL</h1>
+        <p class="text-gray-500 dark:text-slate-400 font-medium">Seleccione el área de laboratorios para operar</p>
       </div>
 
       <!-- Cuadrícula de Áreas Principales (Visible si no hay área seleccionada) -->
@@ -26,8 +26,8 @@ import { Router, ActivatedRoute } from '@angular/router';
            <div class="h-20 w-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-uah-blue group-hover:bg-orange-50 group-hover:text-uah-orange transition-colors">
             <i class="bi bi-printer-fill text-4xl"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-800 mb-2">FABLAB</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Textil, Impresión 3D, Biomateriales y Computación móvil.</p>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">FABLAB</h3>
+          <p class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed">Textil, Impresión 3D, Biomateriales y Computación móvil.</p>
         </div>
 
         <!-- LAB CIENCIAS BASICAS -->
@@ -35,8 +35,8 @@ import { Router, ActivatedRoute } from '@angular/router';
            <div class="h-20 w-20 bg-green-50 rounded-2xl flex items-center justify-center mb-6 text-green-600 group-hover:bg-orange-50 group-hover:text-uah-orange transition-colors">
             <i class="bi bi-people-fill text-4xl"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-800 mb-2">CIENCIAS BÁSICAS</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Laboratorios de Física y Química experimental.</p>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">CIENCIAS BÁSICAS</h3>
+          <p class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed">Laboratorios de Física y Química experimental.</p>
         </div>
 
         <!-- LAB INFORMATICA -->
@@ -44,28 +44,29 @@ import { Router, ActivatedRoute } from '@angular/router';
            <div class="h-20 w-20 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:bg-orange-100 group-hover:text-uah-orange transition-colors">
             <i class="bi bi-cpu-fill text-4xl"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-800 mb-2">INFORMÁTICA</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Hackerlab, Desarrollo Tecnológico y Hardware.</p>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">INFORMÁTICA</h3>
+          <p class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed">Hackerlab, Desarrollo Tecnológico y Hardware.</p>
         </div>
       </div>
 
       <!-- Cuadrícula de Sub-Laboratorios (Visible cuando se selecciona un área) -->
       <div *ngIf="selectedArea()" class="animate-fadeIn">
-        <div class="flex items-center justify-between mb-8 bg-white/80 p-4 rounded-2xl shadow-sm backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-8 bg-white/80 dark:bg-slate-800/80 p-4 rounded-2xl shadow-sm backdrop-blur-sm">
            <div>
-              <h2 class="text-2xl font-black text-uah-blue tracking-tighter uppercase">{{ selectedArea() }}</h2>
-              <p class="text-[10px] text-gray-400 uppercase tracking-widest font-black">Seleccione Laboratorio Específico</p>
+              <h2 class="text-2xl font-black text-uah-blue dark:text-white tracking-tighter uppercase">{{ selectedArea() }}</h2>
+              <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-widest font-black">Seleccione Laboratorio Específico</p>
            </div>
            <button (click)="selectedArea.set('')" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
              <i class="bi bi-arrow-left"></i> VOLVER
            </button>
         </div>
 
-        <div class="flex flex-wrap justify-center gap-6">
-          <div *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="w-full sm:w-64 bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all text-center border border-gray-100 group">
-             <i class="bi bi-folder2-open text-5xl text-blue-100 group-hover:text-uah-orange transition-colors mb-4 block"></i>
-             <h4 class="font-black text-slate-700 group-hover:text-uah-blue uppercase text-sm tracking-tight">{{ lab }}</h4>
-             <span class="inline-block mt-3 px-3 py-1 bg-gray-100 text-[10px] font-black uppercase text-gray-500 rounded-full group-hover:bg-uah-blue group-hover:text-white transition-colors">Acceder</span>
+        <div class="flex flex-wrap justify-center gap-8">
+          <div *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="w-full sm:w-72 bg-white dark:bg-gray-900 p-10 rounded-[2rem] shadow-xl cursor-pointer hover:shadow-2xl hover:scale-[1.03] transition-all text-center border border-gray-100 dark:border-white/10 group relative overflow-hidden">
+             <div class="absolute inset-0 bg-uah-orange opacity-0 group-hover:opacity-[0.03] transition-opacity"></div>
+             <i class="bi bi-folder2-open text-6xl text-uah-blue/10 dark:text-white/20 group-hover:text-uah-orange transition-all duration-500 mb-6 block transform group-hover:scale-110"></i>
+             <h4 class="font-black text-slate-800 dark:text-gray-100 group-hover:text-uah-orange transition-colors uppercase text-lg tracking-tighter mb-6">{{ lab }}</h4>
+             <span class="inline-block px-8 py-3 bg-uah-blue dark:bg-[#f06427] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl group-hover:bg-uah-orange dark:group-hover:bg-orange-500 transition-all shadow-lg group-hover:shadow-orange-500/20">Acceder al Panel</span>
           </div>
         </div>
       </div>

@@ -1,6 +1,9 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { io, Socket } from 'socket.io-client';
+import { validateInstitucionalEmail } from '../utils/auth-validation';
+
+declare var Swal: any;
 
 // --- INTERFACES COMPLETAS ---
 
@@ -11,6 +14,8 @@ export interface User {
   correo: string;
   password?: string;
   rol: 'Alumno' | 'Docente' | 'Admin' | 'SuperUser';
+  carrera?: string;
+  anioIngreso?: number;
 }
 
 export interface InventoryItem {
@@ -750,6 +755,25 @@ export class DataService {
     }
   }
 
+  async addBulkSchedules(schedules: any[]) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/schedules/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(schedules)
+      });
+      if (res.ok) await this.fetchSchedules();
+      return res.ok;
+    } catch (e) {
+      console.error("Error en carga masiva de horarios", e);
+      return false;
+    }
+  }
+
   async deleteSchedule(id: number) {
     if (!this.token()) return;
     try {
@@ -826,6 +850,45 @@ export class DataService {
       console.error("Error en login API", error);
     }
     return false;
+  }
+
+  /**
+   * Envía una solicitud de acceso (registro o restablecimiento) que se convierte en un ticket.
+   */
+  async submitAccessRequest(data: any): Promise<boolean> {
+    if (!validateInstitucionalEmail(data.email)) {
+      Swal.fire({ icon: 'error', title: 'Dominio Inválido', text: 'Solo se permiten correos @uah.cl, @uahurtado.cl o @alumnos.uahurtado.cl' });
+      return false;
+    }
+
+    try {
+      const ticketId = Date.now();
+      // Emitir evento para crear ticket de soporte especial
+      this.socket.emit('ticket:create', {
+        id: ticketId,
+        subject: `[SOLICITUD] ${data.type === 'register' ? 'REGISTRO' : 'ACCESO'}: ${data.nombreCompleto}`,
+        userId: 0, // 0 indica que es un invitado/no registrado
+        userName: data.nombreCompleto,
+        messages: [{
+          text: `DATOS DE LA SOLICITUD
+          -------------------
+          Nombre: ${data.nombreCompleto}
+          RUT: ${data.rut}
+          Carrera: ${data.carrera}
+          Año: ${data.anio}
+          Rol: ${data.rol}
+          Email: ${data.email}
+          Tipo: ${data.type === 'register' ? 'Nuevo Registro' : 'Restablecimiento de Contraseña'}`,
+          sender: data.nombreCompleto,
+          role: 'Alumno'
+        }]
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error al enviar solicitud", error);
+      return false;
+    }
   }
 
   logout() {

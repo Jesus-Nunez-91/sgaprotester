@@ -28,6 +28,12 @@ export class User {
     })
     rol: 'Alumno' | 'Docente' | 'Admin' | 'SuperUser';
 
+    @Column({ nullable: true })
+    carrera: string;
+
+    @Column({ nullable: true })
+    anioIngreso: number;
+
     @CreateDateColumn()
     createdAt: Date;
 

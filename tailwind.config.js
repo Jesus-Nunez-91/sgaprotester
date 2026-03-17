@@ -7,8 +7,16 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                'uah-blue': '#003366',
-                'uah-orange': '#F37021',
+                'uah-blue': {
+                    DEFAULT: '#003366',
+                    light: '#004c99',
+                    dark: '#001a33',
+                },
+                'uah-orange': {
+                    DEFAULT: '#F37021',
+                    light: '#f58d4d',
+                    dark: '#c25a1a',
+                },
                 'uah-gold': '#ffc107',
                 'uah-dark': '#0f172a'
             },

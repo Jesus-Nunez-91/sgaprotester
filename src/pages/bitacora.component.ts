@@ -90,12 +90,14 @@ export class BitacoraComponent {
 
   deleteEntry(id: number) {
     Swal.fire({
-      title: '¿Eliminar registro?',
-      text: "Esta acción no se puede deshacer",
+      title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar registro?</h3>',
+      text: "Esta acción removerá permanentemente la anotación de la bitácora institucional.",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#e11d48',
-      confirmButtonText: 'Sí, eliminar'
+      cancelButtonColor: '#003366',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -115,7 +117,7 @@ export class BitacoraComponent {
 
   async openAddModal() {
     const { value: formValues } = await Swal.fire({
-      title: 'Anotación en Bitácora',
+      title: '<h3 class="text-uah-blue font-black uppercase">Nueva Anotación</h3>',
       html: `
         <div class="text-left space-y-4 pt-4">
           <div>

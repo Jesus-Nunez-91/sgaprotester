@@ -78,21 +78,36 @@ declare const XLSX: any;
                         </div>
                      </div>
 
-                     <div class="group">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Contraseña (Opcional)</label>
-                        <div class="relative">
-                            <i class="bi bi-key absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
-                            <input [(ngModel)]="editUser.password" type="password" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="•••••••">
+                      <div class="grid grid-cols-2 gap-4">
+                        <div class="group">
+                           <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Carrera</label>
+                           <div class="relative">
+                               <input [(ngModel)]="editUser.carrera" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="Ej: Informática">
+                           </div>
                         </div>
-                     </div>
+                        <div class="group">
+                           <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Año</label>
+                           <div class="relative">
+                               <input [(ngModel)]="editUser.anioIngreso" type="number" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="2024">
+                           </div>
+                        </div>
+                      </div>
+
+                      <div class="group">
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Contraseña (Opcional)</label>
+                         <div class="relative">
+                             <i class="bi bi-key absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
+                             <input [(ngModel)]="editUser.password" type="password" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="•••••••">
+                         </div>
+                      </div>
                      
                      <div class="pt-4 flex flex-col gap-3">
-                         <button (click)="save()" class="w-full bg-uah-blue hover:bg-blue-800 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-blue-500/20 transition-all flex justify-center items-center gap-2 active:scale-95 uppercase text-xs tracking-widest">
-                            <i class="bi bi-check-circle-fill"></i> {{ editUser.id ? 'ACTUALIZAR USUARIO' : 'REGISTRAR USUARIO' }}
-                         </button>
-                         <button (click)="reset()" class="w-full bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 font-bold py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all text-xs flex items-center justify-center gap-2">
-                            <i class="bi bi-x-lg"></i> CANCELAR
-                         </button>
+                          <button (click)="save()" class="w-full bg-uah-blue hover:bg-blue-800 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-blue-500/20 transition-all flex justify-center items-center gap-2 active:scale-95 uppercase text-xs tracking-widest">
+                             <i class="bi bi-check-circle-fill"></i> {{ editUser.id ? 'ACTUALIZAR USUARIO' : 'REGISTRAR USUARIO' }}
+                          </button>
+                          <button (click)="reset()" class="w-full bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 font-bold py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all text-xs flex items-center justify-center gap-2">
+                             <i class="bi bi-x-lg"></i> CANCELAR
+                          </button>
                      </div>
                   </div>
                </div>
@@ -133,6 +148,7 @@ declare const XLSX: any;
                             <tr>
                                <th class="p-5 pl-6">Usuario</th>
                                <th class="p-5">RUT</th>
+                               <th class="p-5">Carrera / Año</th>
                                <th class="p-5">Rol & Permisos</th>
                                <th class="p-5 text-center">Acciones</th>
                             </tr>
@@ -155,6 +171,12 @@ declare const XLSX: any;
                                       <div class="flex items-center gap-2">
                                           <i class="bi bi-person-vcard text-gray-300 dark:text-gray-600"></i>
                                           <span class="font-mono text-xs text-gray-600 dark:text-gray-400">{{ u.rut }}</span>
+                                      </div>
+                                  </td>
+                                  <td class="p-5">
+                                      <div class="flex flex-col">
+                                          <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ u.carrera || 'N/A' }}</span>
+                                          <span class="text-[10px] text-gray-400">{{ u.anioIngreso || '-' }}</span>
                                       </div>
                                   </td>
                                   <td class="p-5">
@@ -189,7 +211,7 @@ declare const XLSX: any;
                             }
                             @if (filteredUsers().length === 0) {
                                 <tr>
-                                    <td colspan="4" class="p-8 text-center text-gray-400">
+                                    <td colspan="5" class="p-8 text-center text-gray-400">
                                         No se encontraron usuarios que coincidan con "{{ searchTerm() }}".
                                     </td>
                                 </tr>
@@ -226,7 +248,7 @@ export class UsersComponent {
 
    async save() {
       if (!this.editUser.correo || !this.editUser.nombreCompleto) {
-         Swal.fire('Error', 'Complete los campos obligatorios', 'error');
+         Swal.fire({ icon: 'error', title: 'Faltan Datos', text: 'Complete los campos obligatorios para continuar.', confirmButtonColor: '#003366' });
          return;
       }
 
@@ -238,27 +260,29 @@ export class UsersComponent {
       this.reset();
       Swal.fire({
          icon: 'success',
-         title: 'Usuario Guardado',
+         title: '<h3 class="text-uah-blue font-black uppercase">Usuario Guardado</h3>',
+         text: 'El registro se ha actualizado correctamente.',
          toast: true,
          position: 'top-end',
          showConfirmButton: false,
-         timer: 1500
+         timer: 2000
       });
    }
 
    async del(u: User) {
       Swal.fire({
-         title: '¿Eliminar Usuario?',
-         text: `Se revocará el acceso a ${u.nombreCompleto}.`,
+         title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Usuario?</h3>',
+         text: `Se revocará permanentemente el acceso a ${u.nombreCompleto}.`,
          icon: 'warning',
          showCancelButton: true,
          confirmButtonColor: '#d33',
-         cancelButtonColor: '#3085d6',
-         confirmButtonText: 'Sí, eliminar'
+         cancelButtonColor: '#003366',
+         confirmButtonText: 'Sí, eliminar',
+         cancelButtonText: 'Cancelar'
       }).then(async (result: any) => {
          if (result.isConfirmed) {
             await this.data.deleteUser(u.id);
-            Swal.fire('Eliminado', 'El usuario ha sido eliminado.', 'success');
+            Swal.fire({ icon: 'success', title: 'Eliminado', text: 'El usuario ha sido removido del sistema.', timer: 1500, showConfirmButton: false });
          }
       });
    }
@@ -270,12 +294,16 @@ export class UsersComponent {
             'Nombre Completo': 'Juan Pérez',
             'RUT': '12.345.678-9',
             'Correo': 'juan.perez@uahurtado.cl',
+            'Carrera': 'Ingeniería',
+            'Año': 2024,
             'Rol': 'Alumno'
          },
          {
             'Nombre Completo': 'Maria Garcia',
             'RUT': '9.876.543-2',
             'Correo': 'mgarcia@uahurtado.cl',
+            'Carrera': 'Derecho',
+            'Año': 2023,
             'Rol': 'Admin'
          }
       ];
@@ -300,6 +328,8 @@ export class UsersComponent {
                nombreCompleto: row['Nombre Completo'] || row['Nombre'] || '',
                rut: String(row['RUT'] || ''),
                correo: row['Correo'] || row['Email'] || '',
+               carrera: row['Carrera'] || '',
+               anioIngreso: Number(row['Año'] || row['Anio'] || 0),
                rol: row['Rol'] || 'Alumno'
             })).filter(u => u.correo && u.nombreCompleto);
 
@@ -307,13 +337,13 @@ export class UsersComponent {
                await this.data.addBulkUsers(usersToUpload);
                Swal.fire({
                   icon: 'success',
-                  title: 'Carga Completada',
-                  text: `Se han procesado ${usersToUpload.length} usuarios. Los registros existentes por RUT o Correo se omitieron para evitar duplicados.`,
+                  title: '<h3 class="text-uah-blue font-black uppercase">Carga Masiva Exitosa</h3>',
+                  text: `Se han procesado ${usersToUpload.length} usuarios nuevos.`,
                   timer: 3000,
                   showConfirmButton: false
                });
             } else {
-               Swal.fire('Atención', 'No se encontraron registros válidos en el archivo.', 'warning');
+               Swal.fire({ icon: 'warning', title: 'Sin Registros', text: 'No se encontraron datos válidos en el archivo.', confirmButtonColor: '#003366' });
             }
          } catch (err) {
             Swal.fire('Error', 'No se pudo procesar el archivo Excel.', 'error');

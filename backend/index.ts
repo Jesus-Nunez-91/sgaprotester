@@ -108,6 +108,38 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { nombreCompleto, email, rut, carrera, anio, rol, pass } = req.body;
+    const userRepo = AppDataSource.getRepository(User);
+    
+    // Verificar si ya existe
+    const existing = await userRepo.findOneBy({ correo: email });
+    if (existing) {
+      return res.status(400).json({ message: 'El usuario ya existe' });
+    }
+
+    const hashedPassword = await bcrypt.hash(pass, 10);
+    const user = userRepo.create({
+      nombreCompleto,
+      correo: email,
+      rut,
+      carrera,
+      anioIngreso: Number(anio),
+      rol: rol || 'Alumno',
+      password: hashedPassword
+    });
+
+    await userRepo.save(user);
+    await logAudit(nombreCompleto, email, rol, 'REGISTER', 'Usuario registrado exitosamente');
+    
+    res.status(201).json({ message: 'Usuario creado con éxito' });
+  } catch (error) {
+    console.error("Error en registro:", error);
+    res.status(500).json({ message: 'Error al registrar usuario' });
+  }
+});
+
 // Middleware para proteger rutas
 const authMiddleware = (req: any, res: any, next: any) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -254,7 +286,7 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
     return res.status(403).json({ message: 'Acceso denegado' });
   }
   try {
-    const { lab, day, block, subject } = req.body;
+    const { lab, day, block, subject, color } = req.body;
     const scheduleRepo = AppDataSource.getRepository(Schedule);
 
     // Buscar si ya existe un bloque para ese lab, día y bloque
@@ -262,14 +294,51 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
 
     if (schedule) {
       schedule.subject = subject;
+      schedule.color = color;
     } else {
-      schedule = scheduleRepo.create({ lab, day, block, subject });
+      schedule = scheduleRepo.create({ lab, day, block, subject, color });
     }
 
     await scheduleRepo.save(schedule);
     res.json(schedule);
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar horario' });
+  }
+});
+
+app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const schedulesData = req.body;
+    if (!Array.isArray(schedulesData)) {
+      return res.status(400).json({ message: 'Datos deben ser un array' });
+    }
+
+    const scheduleRepo = AppDataSource.getRepository(Schedule);
+    
+    // Para simplificar la lógica de "upsert" por (lab, day, block), lo haremos secuencial o usaremos save([])
+    // save() con entidades que tienen Primary Column se actualizan, pero aquí la llave natural es (lab, day, block)
+    // Para no complicar con llaves compuestas en TypeORM ahora, buscaremos y actualizaremos.
+    
+    const results = [];
+    for (const s of schedulesData) {
+      const { lab, day, block, subject, color } = s;
+      let schedule = await scheduleRepo.findOneBy({ lab, day, block });
+      if (schedule) {
+        schedule.subject = subject;
+        schedule.color = color;
+      } else {
+        schedule = scheduleRepo.create({ lab, day, block, subject, color });
+      }
+      results.push(await scheduleRepo.save(schedule));
+    }
+
+    res.status(201).json({ message: `${results.length} bloques procesados`, count: results.length });
+  } catch (error) {
+    console.error("Error en carga masiva de horarios:", error);
+    res.status(500).json({ message: 'Error interno en carga masiva' });
   }
 });
 
@@ -720,15 +789,25 @@ io.on('connection', async (socket) => {
       const { id, subject, userId, userName, messages } = data;
       const firstMsg = messages[0];
 
-      // Buscar email del usuario (opcional, si el frontend no lo envía)
-      const user = await AppDataSource.getRepository(User).findOneBy({ id: userId });
+      // Buscar email del usuario (opcional)
+      let user = null;
+      if (userId && userId !== 0) {
+        user = await AppDataSource.getRepository(User).findOneBy({ id: userId });
+      }
+
+      // Extraer email del texto si es un ticket de invitado (formato: "Email: ...")
+      let userEmail = user?.correo || 'N/A';
+      if (userEmail === 'N/A' && firstMsg.text.includes('Email:')) {
+        const emailMatch = firstMsg.text.match(/Email:\s*([^\s\n\r]+)/);
+        if (emailMatch) userEmail = emailMatch[1];
+      }
 
       const newTicket = ticketRepo.create({
         id: String(id),
         subject,
-        userId,
+        userId: userId || 0,
         userName,
-        userEmail: user?.correo || 'N/A',
+        userEmail: userEmail,
         status: 'Open',
         lastMessage: firstMsg.text,
         lastUpdate: new Date().toISOString()
@@ -740,21 +819,23 @@ io.on('connection', async (socket) => {
         ticketId: String(id),
         text: firstMsg.text,
         sender: firstMsg.sender,
-        senderRole: firstMsg.role,
+        senderRole: firstMsg.role || 'user',
         timestamp: new Date().toISOString(),
         ticket: newTicket
       });
 
       await msgRepo.save(newMessage);
 
-      await logAudit(userName, user?.correo || 'N/A', user?.rol || 'Alumno', 'CREATE_TICKET', `Ticket creado: ${subject}`);
+      await logAudit(userName, userEmail, user?.rol || 'Visitante', 'CREATE_TICKET', `Ticket creado: ${subject}`);
 
       // Añadir el mensaje al objeto ticket para la emisión
       newTicket.messages = [newMessage];
 
       // Notificar a administradores y al propio usuario
-      console.log(`Emitiendo ticket:created a 'admins' y 'user_${userId}'`);
-      io.to('admins').to(`user_${userId}`).emit('ticket:created', newTicket);
+      console.log(`Emitiendo ticket:created a 'admins' ${userId ? `y 'user_${userId}'` : ''}`);
+      const emitter = io.to('admins');
+      if (userId && userId !== 0) emitter.to(`user_${userId}`);
+      emitter.emit('ticket:created', newTicket);
     } catch (error) {
       console.error("Error creating ticket:", error);
     }

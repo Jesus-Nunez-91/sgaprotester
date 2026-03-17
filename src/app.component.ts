@@ -14,228 +14,276 @@ import { FormsModule } from '@angular/forms';
     imports: [RouterOutlet, RouterLink, CommonModule, FormsModule],
     template: `
 @if (authService.currentUser()) {
-  <div class="flex h-screen w-full overflow-hidden bg-transparent transition-colors duration-500 relative">
+  <div class="flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950 transition-colors duration-500 relative">
       
-      <!-- BARRA LATERAL IZQUIERDA (Glassmorphism) -->
-      <aside class="w-20 lg:w-64 glass-sidebar flex flex-col justify-between z-50 transition-all duration-300 shadow-2xl relative">
-          <!-- Área del Logo -->
-          <div class="h-24 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/10 dark:border-white/5 bg-black/10">
+      <!-- BARRA LATERAL IZQUIERDA (Institucional Black) -->
+      <aside class="w-20 lg:w-72 bg-black flex flex-col justify-between z-50 transition-all duration-300 shadow-2xl relative border-r border-[#f06427]/30">
+          <!-- Área del Logo / Banner Pequeño -->
+          <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
               <a routerLink="/areas" class="flex items-center gap-3 group cursor-pointer">
                   <div class="relative">
-                      <div class="absolute inset-0 bg-uah-orange rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity"></div>
                       <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="h-12 w-12 rounded-full shadow-2xl relative z-10 object-contain bg-white p-1" alt="Logo UAH">
                   </div>
                   <div class="hidden lg:flex flex-col">
-                      <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-uah-orange">PRO</span></span>
-                      <span class="text-[9px] text-blue-200 font-black tracking-widest uppercase mt-1">Facultad de Ingeniería</span>
+                      <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">PRO</span></span>
+                      <span class="text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
                   </div>
               </a>
           </div>
 
           <!-- Enlaces de Navegación -->
-          <nav class="flex-1 overflow-y-auto py-6 flex flex-col gap-2 px-3">
-              
-              <!-- Dashboard (Solo para Administradores) -->
+          <nav class="flex-1 overflow-y-auto py-8 flex flex-col gap-1.5 px-4 scrollbar-hide">
               @if (isAdmin()) {
-                  <a routerLink="/dashboard" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
-                     class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
-                      <i class="bi bi-speedometer2 text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Dashboard General</span>
+                  <a routerLink="/dashboard" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-grid-1x2-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Dashboard</span>
                   </a>
               }
 
-               <!-- Áreas e Inventario -->
-               <a routerLink="/areas" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
-                  class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
-                   <i class="bi bi-grid-fill text-xl group-hover:scale-110 transition-transform"></i>
-                   <span class="hidden lg:inline text-sm">Laboratorios & Inventario</span>
-               </a>
+              <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                  <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
+                  <span class="hidden lg:inline text-sm">Laboratorios</span>
+              </a>
 
-              <!-- Horarios -->
-              <a routerLink="/schedule" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                 class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                  <i class="bi bi-calendar-week-fill text-xl group-hover:scale-110 transition-transform"></i>
+              <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                  <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Horarios</span>
               </a>
 
-
-              <!-- Mis Solicitudes -->
-              <a routerLink="/requests" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                 class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                  <i class="bi bi-clipboard2-check-fill text-xl group-hover:scale-110 transition-transform"></i>
+              <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                  <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Mis Solicitudes</span>
               </a>
 
-               <!-- Soporte -->
-               <a routerLink="/support" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
-                  class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
-                   <i class="bi bi-chat-heart-fill text-xl group-hover:scale-110 transition-transform"></i>
-                   <span class="hidden lg:inline text-sm">Centro de Ayuda</span>
-               </a>
+              <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                  <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
+                  <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
+              </a>
 
               @if (isAdmin()) {
-                   <div class="my-4 border-t border-white/10"></div>
-                   <span class="hidden lg:block px-4 text-[10px] font-black text-blue-300 uppercase tracking-widest mb-3">Gestión Universitaria</span>
+                  <div class="my-6 border-t border-white/5"></div>
+                  <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
                   
-                  <!-- Gestión de Compras -->
-                  <a routerLink="/procurement" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                      <i class="bi bi-currency-dollar text-xl group-hover:scale-110 transition-transform text-emerald-600 dark:text-emerald-400"></i>
-                      <span class="hidden lg:inline text-sm">Gestión de Compras</span>
+                  <a routerLink="/procurement" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-cart-check-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Compras</span>
                   </a>
 
-                  <!-- Mantención -->
-                  <a routerLink="/maintenance" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
+                  <a routerLink="/maintenance" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-tools text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Mantención</span>
                   </a>
 
-                  <!-- Usuarios (Solo SuperUser) -->
-                  <a routerLink="/users" *ngIf="isSuperUser()" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
+                  <a routerLink="/users" *ngIf="isSuperUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Usuarios</span>
                   </a>
 
-                  <!-- Proyectos -->
-                  <a routerLink="/projects" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                      <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform text-blue-500"></i>
+                  <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-kanban text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Proyectos</span>
                   </a>
 
-                   <!-- Wiki & Protocolos -->
-                   <a routerLink="/wiki" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
-                      class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
-                       <i class="bi bi-book-half text-xl group-hover:scale-110 transition-transform text-uah-orange"></i>
-                       <span class="hidden lg:inline text-sm">Wiki & Protocolos</span>
-                   </a>
+                  <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Wiki</span>
+                  </a>
 
-                  <!-- Bitácora -->
-                  <a routerLink="/bitacora" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                      <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform text-emerald-500"></i>
+                  <a routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Bitácora</span>
                   </a>
 
-                  <!-- Auditoría -->
-                  <a routerLink="/audit" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                      <i class="bi bi-incognito text-xl group-hover:scale-110 transition-transform"></i>
+                  <a routerLink="/audit" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-shield-lock-fill text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Auditoría</span>
                   </a>
               }
           </nav>
 
-           <!-- Perfil de Usuario Mini -->
-           <div class="p-4 border-t border-white/10 bg-black/20">
-               <div class="flex items-center gap-3">
-                   <div class="w-10 h-10 rounded-full bg-uah-orange flex items-center justify-center text-white font-black shadow-lg ring-2 ring-white/20">
-                       {{ authService.currentUser()?.nombreCompleto?.charAt(0) }}
-                   </div>
-                   <div class="hidden lg:block overflow-hidden">
-                       <h4 class="text-sm font-black text-white truncate uppercase tracking-tighter">{{ authService.currentUser()?.nombreCompleto }}</h4>
-                       <p class="text-[10px] text-blue-200 truncate font-bold uppercase">{{ authService.currentUser()?.rol }}</p>
-                   </div>
-                   <button (click)="authService.logout()" class="ml-auto text-blue-200 hover:text-uah-orange transition-colors lg:hidden" title="Logout">
-                       <i class="bi bi-box-arrow-right"></i>
-                   </button>
-               </div>
-               <button (click)="authService.logout()" class="hidden lg:flex w-full mt-4 items-center justify-center gap-2 text-[10px] font-black text-white hover:bg-uah-orange py-2.5 rounded-xl transition-all border border-white/10">
-                   <i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN
-               </button>
+           <!-- Perfil Mini -->
+           <div class="p-6 border-t border-white/5 bg-white/5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-[#f06427] flex items-center justify-center text-white font-black shadow-lg">
+                        {{ authService.currentUser()?.nombreCompleto?.charAt(0) }}
+                    </div>
+                    <div class="hidden lg:block overflow-hidden">
+                        <h4 class="text-xs font-bold text-white truncate uppercase tracking-tight">{{ authService.currentUser()?.nombreCompleto }}</h4>
+                        <p class="text-[9px] text-[#f06427] font-black uppercase tracking-widest">{{ authService.currentUser()?.rol }}</p>
+                    </div>
+                </div>
+                <button (click)="authService.logout()" class="w-full flex items-center justify-center gap-2 text-[10px] font-black text-white bg-white/10 hover:bg-[#f06427] py-3 rounded-xl transition-all border border-white/5 uppercase tracking-widest">
+                    <i class="bi bi-power"></i> <span class="hidden lg:inline">Cerrar Sesión</span>
+                </button>
            </div>
       </aside>
 
       <!-- ÁREA DE CONTENIDO PRINCIPAL -->
       <main class="flex-1 flex flex-col relative z-0 overflow-hidden">
           
-          <!-- Encabezado Superior -->
-          <header class="h-20 shrink-0 flex items-center justify-between px-6 lg:px-10 z-40">
-              <!-- Bienvenida -->
-              <div class="flex flex-col">
-                  <h1 class="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white tracking-tight text-shadow">
-                      Hola, <span class="text-uah-blue dark:text-blue-300">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span> 👋
-                  </h1>
-                  <p class="text-xs text-gray-600 dark:text-gray-300 font-medium opacity-90">
-                      {{ today | date:'fullDate' }}
-                  </p>
+          <!-- BANDA SUPERIOR INSTITUCIONAL (HEADER) -->
+          <header class="bg-black border-b-4 border-[#f06427] z-40">
+              <!-- Sub-banda Social/Links -->
+              <div class="flex justify-between items-center px-6 lg:px-10 py-1.5 bg-[#111] border-b border-white/5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <div class="flex items-center gap-6">
+                      <a href="https://www.uahurtado.cl" target="_blank" class="hover:text-[#f06427] transition-colors">La Universidad</a>
+                      <a href="https://admision.uahurtado.cl" target="_blank" class="hover:text-[#f06427] transition-colors">Admisión</a>
+                  </div>
+                  <div class="flex items-center gap-4">
+                      <a href="mailto:finuah@uahurtado.cl" class="hover:text-[#f06427] transition-colors">finuah@uahurtado.cl</a>
+                      <div class="flex gap-2 ml-4">
+                          <a href="https://www.linkedin.com/company/facultad-de-ingenieria-civil-uah" target="_blank" class="hover:text-white"><i class="bi bi-linkedin"></i></a>
+                          <a href="https://www.instagram.com/ingenieriasuah/" target="_blank" class="hover:text-white"><i class="bi bi-instagram"></i></a>
+                      </div>
+                  </div>
               </div>
 
-              <!-- Utilidades (Modo Oscuro, Notificaciones) -->
-              <div class="flex items-center gap-4">
-                   <!-- Ayuda Rápida -->
-                   @if (!isAdmin()) {
-                       <a routerLink="/support" class="hidden md:flex items-center gap-2 px-4 py-2 bg-uah-gold/10 hover:bg-uah-gold/20 text-uah-blue dark:text-uah-gold rounded-xl border border-uah-gold/30 transition-all font-bold text-xs mr-2">
-                           <i class="bi bi-question-circle-fill"></i>
-                           <span>¿Necesitas Ayuda?</span>
-                       </a>
-                   }
-                   
-                   <!-- Modo Oscuro -->
-                   <button (click)="toggleDark()" class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-600 dark:text-yellow-400 hover:scale-110 transition-transform shadow-sm border border-white/40">
-                       <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
-                   </button>
+              <!-- Banda Principal con Banner -->
+              <div class="flex items-center justify-between px-6 lg:px-10 h-20">
+                  <div class="flex items-center gap-8">
+                      <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
+                           class="h-10 lg:h-12 w-auto object-contain" alt="UAH Ingeniería">
+                  </div>
 
-                    <!-- Notificaciones -->
-                    <div class="relative group/notif">
-                       <button (click)="toggleNotif()" class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-uah-blue dark:hover:text-blue-400 hover:scale-110 transition-all shadow-sm relative border border-white/40">
-                           <i class="bi bi-bell-fill" [class.animate-swing]="unreadCount() > 0"></i>
-                           @if (unreadCount() > 0) {
-                               <span class="absolute -top-1 -right-1 w-5 h-5 bg-uah-orange border-2 border-white dark:border-gray-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                                   {{ unreadCount() > 9 ? '+9' : unreadCount() }}
-                               </span>
-                           }
-                       </button>
-                      
-                      @if (showNotif()) {
-                          <div class="absolute right-0 top-12 w-80 glass-panel bg-white/95 dark:bg-[#0f0f16]/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden animate-fadeIn z-50 origin-top-right ring-1 ring-black/5">
-                             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                  <h5 class="text-xs font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Notificaciones</h5>
+                  <div class="flex items-center gap-6">
+                       <!-- Bienvenida -->
+                      <div class="hidden md:flex flex-col text-right">
+                          <h1 class="text-sm font-black text-white tracking-tight uppercase">
+                              Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span>
+                          </h1>
+                          <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                              {{ today | date:'fullDate' }}
+                          </p>
+                      </div>
+
+                      <!-- Acciones Rápidas -->
+                      <div class="flex items-center gap-3">
+                          <button (click)="toggleDark()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all">
+                              <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+                          </button>
+
+                          <div class="relative">
+                              <button (click)="toggleNotif()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all relative">
+                                  <i class="bi bi-bell-fill" [class.animate-swing]="unreadCount() > 0"></i>
                                   @if (unreadCount() > 0) {
-                                      <button (click)="markAllRead()" class="text-[10px] text-uah-blue hover:underline">Marcar leídas</button>
+                                      <span class="absolute -top-1 -right-1 w-5 h-5 bg-[#f06427] border-2 border-black rounded-full flex items-center justify-center text-[9px] font-black text-white">
+                                          {{ unreadCount() }}
+                                      </span>
                                   }
-                              </div>
-                              <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                                  @for (n of myNotifications(); track n.id) {
-                                      <div class="p-3 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex gap-3 relative" [class.bg-blue-50_30]="!n.read">
-                                          <div class="mt-1">
-                                              @if(n.type === 'success') { <i class="bi bi-check-circle-fill text-green-500"></i> }
-                                              @if(n.type === 'error') { <i class="bi bi-x-circle-fill text-red-500"></i> }
-                                              @if(n.type === 'warning') { <i class="bi bi-exclamation-triangle-fill text-amber-500"></i> }
-                                              @if(n.type === 'info') { <i class="bi bi-info-circle-fill text-blue-500"></i> }
-                                          </div>
-                                          <div class="flex-1">
-                                              <h6 class="text-xs font-bold text-gray-800 dark:text-gray-200">{{ n.title }}</h6>
-                                              <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">{{ n.message }}</p>
-                                          </div>
+                              </button>
+                              
+                              @if (showNotif()) {
+                                  <div class="absolute right-0 top-12 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fadeIn origin-top-right">
+                                     <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                          <h5 class="text-[10px] font-black text-white uppercase tracking-widest">Notificaciones</h5>
+                                          @if (unreadCount() > 0) {
+                                              <button (click)="markAllRead()" class="text-[9px] text-[#f06427] hover:underline uppercase font-bold">Marcar todo</button>
+                                          }
                                       </div>
-                                  }
-                                  @if (myNotifications().length === 0) {
-                                      <div class="p-6 text-center text-gray-400 text-xs">Sin notificaciones</div>
-                                  }
-                              </div>
+                                      <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                          @for (n of myNotifications(); track n.id) {
+                                              <div class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4" [class.bg-white/[0.02]]="!n.read">
+                                                  <div class="mt-1">
+                                                      <i class="bi bi-info-circle-fill text-[#f06427]"></i>
+                                                  </div>
+                                                  <div class="flex-1">
+                                                      <h6 class="text-xs font-bold text-white">{{ n.title }}</h6>
+                                                      <p class="text-[10px] text-gray-500 leading-tight mt-1">{{ n.message }}</p>
+                                                  </div>
+                                              </div>
+                                          }
+                                          @if (myNotifications().length === 0) {
+                                              <div class="p-8 text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">Sin notificaciones</div>
+                                          }
+                                      </div>
+                                  </div>
+                              }
                           </div>
-                      }
-                   </div>
+                      </div>
+                  </div>
               </div>
           </header>
 
-          <!-- Contenedor de Rutas (Scrollable) -->
-          <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 scroll-smooth custom-scrollbar">
-              <router-outlet></router-outlet>
+          <!-- Contenedor de Contenido y Footer (Scrollable) -->
+          <div class="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar bg-gray-50 dark:bg-[#050505]">
+              <div class="p-6 lg:p-10 min-h-[calc(100vh-18rem)]">
+                <router-outlet></router-outlet>
+              </div>
+
+              <!-- FOOTER INSTITUCIONAL -->
+              <footer class="mt-20 border-t border-gray-200 dark:border-white/5 bg-white dark:bg-black p-10 lg:p-20 relative overflow-hidden">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20">
+                      <!-- Col 1: Logo & Info -->
+                      <div class="space-y-8">
+                          <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
+                               class="h-10 w-auto brightness-0 dark:brightness-100" alt="UAH Footer">
+                          <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 space-y-2 leading-relaxed uppercase tracking-tighter">
+                              <p>Universidad Alberto Hurtado</p>
+                              <p>Alameda 1825, Santiago de Chile</p>
+                              <p>Teléfono +56 2 2692 0200</p>
+                          </div>
+                      </div>
+
+                      <!-- Col 2: Enlaces Rápidos -->
+                      <div class="space-y-6">
+                          <h6 class="text-[11px] font-black text-black dark:text-white uppercase tracking-[0.2em] border-l-2 border-[#f06427] pl-3">Categorías</h6>
+                          <div class="flex flex-col gap-3 text-xs font-bold text-gray-400">
+                             <a href="https://admision.uahurtado.cl/" target="_blank" class="hover:text-[#f06427] transition-all flex items-center gap-2">Admisión <i class="bi bi-box-arrow-up-right text-[10px]"></i></a>
+                             <a href="https://www.uahurtado.cl/" target="_blank" class="hover:text-[#f06427] transition-all flex items-center gap-2">La Universidad <i class="bi bi-box-arrow-up-right text-[10px]"></i></a>
+                          </div>
+                      </div>
+
+                      <!-- Col 3: Facultad -->
+                      <div class="space-y-6">
+                        <h6 class="text-[11px] font-black text-black dark:text-white uppercase tracking-[0.2em] border-l-2 border-[#f06427] pl-3">Facultad de Ingeniería</h6>
+                        <div class="flex flex-col gap-3 text-xs font-bold text-gray-400">
+                           <a href="https://ingenieria.uahurtado.cl" target="_blank" class="hover:text-[#f06427] transition-all">Inicio</a>
+                           <a href="#" class="hover:text-[#f06427] transition-all">Plataforma SGA PRO</a>
+                           <a href="mailto:finuah@uahurtado.cl" class="hover:text-[#f06427] transition-all">Contacto</a>
+                        </div>
+                      </div>
+
+                      <!-- Col 4: Newsletter/Social -->
+                      <div class="space-y-6 text-right">
+                          <h6 class="text-[11px] font-black text-black dark:text-white uppercase tracking-[0.2em] border-[#f06427] pr-3 text-right">CONECTA CON NOSOTROS</h6>
+                          <div class="flex justify-end gap-3">
+                              <a href="https://www.linkedin.com/company/facultad-de-ingenieria-civil-uah" target="_blank" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 hover:bg-[#f06427] hover:text-white transition-all shadow-sm">
+                                  <i class="bi bi-linkedin"></i>
+                              </a>
+                               <a href="https://www.instagram.com/ingenieriasuah/" target="_blank" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 hover:bg-[#f06427] hover:text-white transition-all shadow-sm">
+                                  <i class="bi bi-instagram"></i>
+                              </a>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Acreditación Banner -->
+                  <div class="mt-20 pt-10 border-t border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-10">
+                      <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/logo_acredicacion_v2_2025_2030.png" class="h-16 w-auto grayscale dark:grayscale-0 opacity-50 hover:opacity-100 transition-opacity" alt="Acreditación CNA">
+                      <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center md:text-right">
+                          © 2026 Facultad de Ingeniería - Universidad Alberto Hurtado. <br>
+                          Desarrollado para la excelencia académica e investigación.
+                      </div>
+                  </div>
+              </footer>
           </div>
 
       </main>
 
   </div>
-
-   <!-- IA REMOVIDA -->
-
-
 } @else {
-  <!-- El layout de Login es manejado por el router-outlet sin el wrapper de la sidebar -->
   <router-outlet></router-outlet>
 }
 `,

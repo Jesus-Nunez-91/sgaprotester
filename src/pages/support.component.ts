@@ -196,7 +196,7 @@ declare const Swal: any;
                                      class="p-3 shadow-sm text-sm relative group transition-all hover:shadow-md">
                                      <p>{{ msg.text }}</p>
                                      <span class="text-[9px] opacity-60 mt-1 block text-right">
-                                         {{ msg.timestamp | date:'HH:mm' }} Ã¢â‚¬Â¢ <span class="uppercase font-bold">{{ msg.senderRole }}</span>
+                                         {{ msg.timestamp | date:'HH:mm' }} • <span class="uppercase font-bold">{{ msg.senderRole }}</span>
                                      </span>
                                 </div>
                                 @if (!isMe(msg.sender)) {
@@ -359,14 +359,14 @@ export class SupportComponent {
         const t = this.selectedTicket();
         if (t) {
             Swal.fire({
-                title: 'Ã‚Â¿Cerrar Consulta?',
-                text: 'Esta acciÃƒÂ³n marcarÃƒÂ¡ el ticket como finalizado.',
+                title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Cerrar Consulta?</h3>',
+                text: 'Esta acción marcará el ticket como finalizado y pasará al historial.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#aaa',
-                confirmButtonText: 'SÃƒÂ­, cerrar',
-                cancelButtonText: 'Cancelar'
+                confirmButtonText: 'Sí, cerrar',
+                cancelButtonText: 'Mantener Abierta'
             }).then((result: any) => {
                 if (result.isConfirmed) {
                     this.data.closeTicket(t.id);
@@ -379,13 +379,13 @@ export class SupportComponent {
         const t = this.selectedTicket();
         if (t) {
             Swal.fire({
-                title: 'Ã‚Â¿ELIMINAR TICKET?',
-                text: 'Se borrarÃƒÂ¡ definitivamente este ticket y todos sus mensajes. Ã‚Â¡ESTA ACCIÃƒâ€œN NO SE PUEDE DESHACER!',
+                title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Ticket?</h3>',
+                text: 'Se borrará definitivamente este ticket y todos sus mensajes. Esta acción no se puede deshacer.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'SÃƒÂ, ELIMINAR',
+                cancelButtonColor: '#003366',
+                confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar'
             }).then((result: any) => {
                 if (result.isConfirmed) {

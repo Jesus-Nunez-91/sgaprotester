@@ -505,7 +505,15 @@ export class ProcurementComponent {
   saveBudgets() {
       this.data.updateBudgets(this.editingBudgets as Record<LabType, number>);
       this.showBudgetModal.set(false);
-      Swal.fire({ icon: 'success', title: 'Presupuestos Actualizados', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        title: '<h3 class="text-uah-blue font-black uppercase">Presupuestos Actualizados</h3>', 
+        text: 'Los fondos han sido reasignados correctamente.',
+        timer: 2000, 
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      });
   }
 
   // --- Order Actions ---
@@ -543,7 +551,7 @@ export class ProcurementComponent {
 
   saveOrder() {
       if (!this.currentOrder.item || !this.currentOrder.cantidad || !this.currentOrder.lab) {
-          Swal.fire('Error', 'Complete los campos obligatorios (Ítem, Cantidad, Laboratorio)', 'error');
+          Swal.fire({ icon: 'error', title: 'Faltan Datos', text: 'Complete los campos obligatorios (Ítem, Cantidad, Laboratorio)', confirmButtonColor: '#003366' });
           return;
       }
       
@@ -560,7 +568,16 @@ export class ProcurementComponent {
   }
 
   deleteOrder(order: PurchaseOrder) {
-      Swal.fire({ title: '¿Eliminar Solicitud?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' }).then((r: any) => {
+      Swal.fire({ 
+        title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Solicitud?</h3>', 
+        text: 'Esta operación no se puede deshacer.',
+        icon: 'warning', 
+        showCancelButton: true, 
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#003366',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((r: any) => {
           if (r.isConfirmed) this.data.deletePurchaseOrder(order.internalId);
       });
   }
@@ -579,7 +596,13 @@ export class ProcurementComponent {
       this.isEditing = true;
       this.currentStage.set('Adjudicacion'); 
       this.data.updatePurchaseOrder(order.internalId, {}, 'Adjudicacion');
-      Swal.fire({ icon: 'success', title: 'Movido a Adjudicación', text: 'Ahora ingrese los datos del proveedor.', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        title: '<h3 class="text-emerald-600 font-black uppercase">Aprobación Técnica</h3>', 
+        text: 'La solicitud ha sido movida a fase de Adjudicación.', 
+        timer: 2000, 
+        showConfirmButton: false 
+      });
   }
 
   promoteToTracking(order: PurchaseOrder) {
@@ -589,7 +612,13 @@ export class ProcurementComponent {
       }
       this.data.updatePurchaseOrder(order.internalId, {}, 'Seguimiento');
       this.currentStage.set('Seguimiento');
-      Swal.fire({ icon: 'success', title: 'Movido a Seguimiento', text: 'Ingrese el N° de OC.', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        title: '<h3 class="text-indigo-600 font-black uppercase">Orden Generada</h3>', 
+        text: 'El proceso continúa en fase de seguimiento.', 
+        timer: 2000, 
+        showConfirmButton: false 
+      });
   }
 
   promoteToClosing(order: PurchaseOrder) {

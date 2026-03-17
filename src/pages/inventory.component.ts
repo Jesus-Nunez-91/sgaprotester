@@ -19,18 +19,19 @@ declare const XLSX: any;
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="glass-panel min-h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-fadeIn relative">
+    <div class="glass-panel min-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-fadeIn relative border border-white/5">
       <!-- Encabezado -->
       <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-20 transition-colors">
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-2">
           <div class="flex items-center gap-3">
-             <h2 class="text-2xl font-black text-uah-blue dark:text-blue-400 flex items-center gap-3 tracking-tighter uppercase">
+             <h2 class="text-3xl font-black text-uah-blue dark:text-white flex items-center gap-3 tracking-tighter uppercase">
                 {{ labName }}
              </h2>
           </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium flex items-center gap-2">
+          <p class="text-[10px] text-gray-400 dark:text-gray-400 font-black uppercase tracking-[0.2em] flex items-center gap-2">
               {{ areaName }} 
-              <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 dark:text-gray-300">{{ inventoryMode() }}</span>
+              <span class="w-1 h-1 bg-[#f06427] rounded-full"></span>
+              <span class="text-[#f06427]">{{ inventoryMode() }}</span>
           </p>
         </div>
         
@@ -259,15 +260,15 @@ declare const XLSX: any;
            <!-- La Grilla -->
            <div class="flex-1 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm custom-scrollbar">
               <table class="w-full text-left text-sm">
-                 <thead class="bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm text-gray-600 dark:text-gray-300 font-bold uppercase text-xs sticky top-0 z-10 shadow-sm">
+                  <thead class="bg-black text-white font-black uppercase text-[10px] tracking-[0.1em] sticky top-0 z-10 shadow-xl border-b border-white/10">
                     <tr>
-                       <th class="p-4 text-[10px] font-black uppercase text-gray-400">Rótulo / ID</th>
-                        <th class="p-4">Recurso</th>
-                       <th class="p-4">Especificaciones</th>
-                       <th class="p-4">Disponibilidad Real</th>
-                       <th class="p-4 text-center">Acción</th>
+                       <th class="p-6 pl-10">Rótulo / ID</th>
+                        <th class="p-6">Recurso</th>
+                       <th class="p-6">Especificaciones</th>
+                       <th class="p-6">Estado Real</th>
+                       <th class="p-6 text-center pr-10">Acción</th>
                     </tr>
-                 </thead>
+                  </thead>
                  <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @for (item of filteredItems(); track item.id) {
                        @let stock = getAvailableStock(item);
@@ -326,16 +327,16 @@ declare const XLSX: any;
                                  @let defective = item.stockDefectuoso || 0;
 
                                  <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ available }} Disponibles</span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"></span>
+                                    <span class="text-xs font-black text-black dark:text-gray-100 uppercase tracking-tight">{{ available }} Disponibles</span>
                                  </div>
                                  <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ loaned }} en Préstamo</span>
+                                    <span class="w-2 h-2 rounded-full bg-uah-blue"></span>
+                                    <span class="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-wider">{{ loaned }} en Préstamo</span>
                                  </div>
                                  <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ defective }} Defectuosos</span>
+                                    <span class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-wider">{{ defective }} Defectuosos</span>
                                  </div>
                               </div>
                            </td>
@@ -354,10 +355,10 @@ declare const XLSX: any;
                                     <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm ml-2 h-8">
                                        <input type="number" min="1" [max]="stock" #qtyInput [value]="1" class="w-12 text-center text-xs border-0 py-1 focus:ring-0 font-bold text-gray-700 dark:text-gray-200">
                                        <button (click)="toggleSelection(item, +qtyInput.value)" 
-                                          [class]="isSelected(item.id) ? 'bg-uah-blue text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-uah-orange hover:text-white border-uah-orange'"
-                                          class="border-l border-gray-300 dark:border-gray-500 px-3 h-full font-bold text-[10px] transition-colors">
-                                          {{ isSelected(item.id) ? 'QUITAR' : 'PEDIR' }}
-                                       </button>
+                                           [class]="isSelected(item.id) ? 'bg-uah-blue dark:bg-blue-600 text-white shadow-inner' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-uah-orange hover:text-white'"
+                                           class="border-l border-gray-300 dark:border-gray-500 px-3 h-full font-black text-[10px] transition-all uppercase tracking-widest">
+                                           {{ isSelected(item.id) ? 'QUITAR' : 'PEDIR' }}
+                                        </button>
                                     </div>
                                 }
                              </div>
@@ -828,12 +829,13 @@ export class InventoryComponent {
     if (leadTimeError) {
       Swal.fire({
         icon: 'error',
-        title: 'Restricción de Tiempo',
+        title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Restricción de Tiempo</h3>',
         text: leadTimeError,
         showCancelButton: true,
         confirmButtonText: 'Entendido',
         cancelButtonText: 'Contactar Soporte',
-        cancelButtonColor: '#003366',
+        confirmButtonColor: '#003366',
+        cancelButtonColor: '#f06427',
         reverseButtons: true
       }).then((result: any) => {
         if (result.dismiss === Swal.DismissReason.cancel) {
@@ -847,9 +849,10 @@ export class InventoryComponent {
     if (conflictSubject) {
       Swal.fire({
         icon: 'warning',
-        title: 'Bloque Reservado por Docencia',
-        html: `No es posible reservar en este horario.<br>El laboratorio está ocupado por la clase:<br><b>${conflictSubject}</b>`,
-        confirmButtonColor: '#3085d6'
+        title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Bloque de Docencia</h3>',
+        html: `<div class="text-sm text-gray-500">Este horario ya está reservado para:<br><b class="text-black text-lg block mt-2 uppercase">${conflictSubject}</b></div>`,
+        confirmButtonColor: '#003366',
+        confirmButtonText: 'Entendido'
       });
       return;
     }
@@ -863,11 +866,11 @@ export class InventoryComponent {
       const diffHrs = diffMs / (1000 * 60 * 60);
 
       if (diffMs < 0) {
-        Swal.fire('Error', 'No puedes reservar en tiempo pasado.', 'error');
+        Swal.fire({ icon: 'error', title: 'Fecha no válida', text: 'No puedes reservar en tiempo pasado.', confirmButtonColor: '#003366' });
         return;
       }
       if (diffHrs < 12) {
-        Swal.fire('Restricción', 'Las reservas deben realizarse con al menos 12 horas de antelación.', 'warning');
+        Swal.fire({ icon: 'warning', title: 'Aviso de Antelación', text: 'Las reservas deben realizarse con al menos 12 horas de antelación.', confirmButtonColor: '#003366' });
         return;
       }
     }
@@ -878,9 +881,13 @@ export class InventoryComponent {
     });
 
     Swal.fire({
-      icon: 'success', title: 'Solicitud Enviada',
-      text: 'El encargado revisará tu solicitud.',
-      timer: 2000, showConfirmButton: false
+      icon: 'success', 
+      title: '<h3 class="text-emerald-600 font-black uppercase">Solicitud Enviada</h3>',
+      text: 'El encargado revisará tu solicitud a la brevedad.',
+      timer: 2000, 
+      showConfirmButton: false,
+      toast: true,
+      position: 'top-end'
     });
     this.selection.set([]);
   }
@@ -1169,10 +1176,11 @@ export class InventoryComponent {
         this.data.addBulkItems(itemsToUpload);
         Swal.fire({
           icon: 'success',
-          title: 'Carga Completada',
-          text: `Se han procesado ${itemsToUpload.length} items ruteados correctamente.`,
-          timer: 2000,
-          showConfirmButton: false
+          title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Carga Completada</h3>',
+          text: `Se han procesado ${itemsToUpload.length} recursos exitosamente.`,
+          timer: 2500,
+          showConfirmButton: false,
+          confirmButtonColor: '#003366'
         });
       }
       event.target.value = '';

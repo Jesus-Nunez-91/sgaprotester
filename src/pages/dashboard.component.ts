@@ -14,184 +14,156 @@ declare var Swal: any;
  */
 @Component({
    selector: 'app-dashboard',
-   standalone: true,
    imports: [CommonModule],
    template: `
-    <div class="animate-fadeIn pb-16 space-y-8">
+    <div class="animate-fadeIn pb-20 space-y-12">
       
-      <!-- Welcome Section -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-2xl shadow-blue-900/5">
-        <div>
-          <h1 class="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
-            Hola, <span class="text-uah-orange uppercase">{{ data.currentUser()?.nombreCompleto?.split(' ')[0] }}</span> 👋
-          </h1>
-          <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Aquí tienes un resumen de lo que está pasando hoy.</p>
-        </div>
-        <div class="flex gap-3">
-           <div class="bg-white/80 dark:bg-slate-700/80 px-4 py-2 rounded-2xl shadow-sm border border-white/50 flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
-                 <i class="bi bi-calendar-check text-xl"></i>
+      <!-- WELCOME HERO: Institutional Branding -->
+      <div class="relative overflow-hidden bg-black p-12 rounded-[2.5rem] shadow-2xl border-b-8 border-[#f06427] group">
+        <div class="absolute -right-32 -top-32 w-[600px] h-[600px] bg-[#f06427] rounded-full blur-[180px] opacity-10 group-hover:opacity-20 transition-all duration-1000"></div>
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+          <div class="space-y-4">
+             <div class="flex items-center gap-3 mb-2">
+                <span class="px-4 py-1.5 bg-[#f06427]/10 text-[#f06427] text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-[#f06427]/30">Portal Administrativo</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Sistema Operativo</span>
+             </div>
+            <h1 class="text-4xl lg:text-6xl font-black text-white tracking-tighter leading-none" style="font-family: 'Playfair Display', serif;">
+              Hola, <span class="text-[#f06427]">{{ data.currentUser()?.nombreCompleto?.split(' ')[0] }}</span> 
+            </h1>
+            <p class="text-gray-400 font-medium text-lg max-w-2xl leading-relaxed">Gestión Integral de Laboratorios, Infraestructura e Inventario. <span class="text-white">Panel de Control General</span>.</p>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-6">
+              <div class="bg-white/5 backdrop-blur-md px-10 py-6 rounded-3xl border border-white/10 flex items-center gap-6 group/item hover:bg-white/10 transition-all">
+                 <div class="w-14 h-14 rounded-2xl bg-[#f06427] flex items-center justify-center text-white shadow-xl shadow-[#f06427]/20 group-hover/item:scale-110 transition-transform">
+                    <i class="bi bi-cpu-fill text-3xl"></i>
+                 </div>
+                 <div class="text-left">
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 opacity-70">En Laboratorio</div>
+                    <div class="text-3xl font-black text-white tracking-tight">{{ activeInLab().length }} <span class="text-sm font-bold opacity-30 uppercase">Usuarios</span></div>
+                 </div>
               </div>
-              <div class="text-left">
-                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Fecha de hoy</div>
-                 <div class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ today | date:'dd MMM, yyyy' }}</div>
-              </div>
-           </div>
+          </div>
         </div>
       </div>
 
-      <!-- Main Action Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- Inventory Card -->
-          <div class="group relative overflow-hidden bg-uah-blue p-8 rounded-[2.5rem] text-white shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 hover:-translate-y-2 border border-white/10">
-            <div class="absolute -right-8 -top-8 w-40 h-40 bg-uah-orange rounded-full blur-[80px] opacity-20 group-hover:scale-110 transition-transform"></div>
-            <div class="relative z-10">
-              <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6 backdrop-blur-md">
-                <i class="bi bi-box-seam text-2xl"></i>
+      <!-- MAIN METRICS GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- Metric Cards -->
+          <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
+              <div class="flex justify-between items-center mb-8">
+                  <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 group-hover:text-[#f06427] flex items-center justify-center text-2xl transition-colors">
+                      <i class="bi bi-collection-fill"></i>
+                  </div>
+                  <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Equipamiento</span>
               </div>
-              <div class="text-blue-100/70 font-bold text-xs uppercase tracking-[0.2em] mb-1">Inventario Total</div>
-              <div class="text-5xl font-black tracking-tighter">{{ data.inventory().length }}</div>
-              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-blue-200/80">
-                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                Sincronizado en línea
-              </div>
-            </div>
+              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Disponible</div>
+              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ data.inventory().length }}</div>
           </div>
 
-          <!-- Pending Requests -->
-          <div class="group relative overflow-hidden bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-2">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-50 dark:bg-amber-900/20 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
-            <div class="relative z-10">
-              <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-6">
-                <i class="bi bi-send-check text-2xl"></i>
+          <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
+              <div class="flex justify-between items-center mb-8">
+                  <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 group-hover:text-[#f06427] flex items-center justify-center text-2xl transition-colors">
+                      <i class="bi bi-clock-history"></i>
+                  </div>
+                  <span class="text-[9px] font-black text-[#f06427] uppercase tracking-widest">Pendientes</span>
               </div>
-              <div class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mb-1">Pendientes</div>
-              <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{{ pendingReservations().length }}</div>
-              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
-                <i class="bi bi-arrow-right-circle"></i>
-                Gestionar ahora
-              </div>
-            </div>
+              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Por Aprobar</div>
+              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ pendingReservations().length }}</div>
           </div>
 
-          <!-- Active Loans -->
-          <div class="group relative overflow-hidden bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-emerald-500/10 transition-all duration-500 hover:-translate-y-2">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 dark:bg-emerald-900/20 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
-            <div class="relative z-10">
-              <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6">
-                <i class="bi bi-person-check text-2xl"></i>
+          <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
+              <div class="flex justify-between items-center mb-8">
+                  <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 group-hover:text-emerald-500 flex items-center justify-center text-2xl transition-colors">
+                      <i class="bi bi-shield-fill-check"></i>
+                  </div>
+                  <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Activas</span>
               </div>
-              <div class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mb-1">Activos</div>
-              <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{{ activeReservations().length }}</div>
-              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <i class="bi bi-check2-circle"></i>
-                En posesión
-              </div>
-            </div>
+              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">En Posesión</div>
+              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ activeReservations().length }}</div>
           </div>
 
-          <!-- Low Stock -->
-          <div class="group relative overflow-hidden bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-rose-500/10 transition-all duration-500 hover:-translate-y-2">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 dark:bg-rose-900/20 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
-            <div class="relative z-10">
-              <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-6">
-                <i class="bi bi-lightning-charge text-2xl"></i>
+          <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
+              <div class="flex justify-between items-center mb-8">
+                  <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 group-hover:text-rose-500 flex items-center justify-center text-2xl transition-colors">
+                      <i class="bi bi-exclamation-octagon-fill"></i>
+                  </div>
+                  <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest">Crítico</span>
               </div>
-              <div class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mb-1">Criticos</div>
-              <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{{ criticalStock().length }}</div>
-              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400">
-                <i class="bi bi-exclamation-triangle"></i>
-                Requieren recompra
-              </div>
-            </div>
+              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sin Stock</div>
+              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ criticalStock().length }}</div>
           </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <!-- Left Column: Activity & Storage -->
-          <div class="lg:col-span-8 space-y-8">
-              <!-- Charts Section -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
-                      <h4 class="text-sm font-black text-uah-blue dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <span class="w-1.5 h-6 bg-uah-orange rounded-full"></span>
-                        Composición
-                      </h4>
-                      <div class="h-64 relative">
-                        <canvas id="inventoryChart"></canvas>
+      <!-- OPERATIONAL CORE -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          
+          <div class="lg:col-span-8 space-y-10">
+              <!-- Pending Requests: Table Redesign -->
+              <div class="bg-white dark:bg-[#0f0f12] rounded-[2rem] shadow-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
+                  <div class="p-8 bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 flex justify-between items-center">
+                      <div class="flex items-center gap-4">
+                         <div class="w-10 h-10 rounded-xl bg-[#f06427] text-white flex items-center justify-center">
+                            <i class="bi bi-clipboard-pulse text-xl"></i>
+                         </div>
+                         <h4 class="text-sm font-black text-black dark:text-white uppercase tracking-widest">Solicitudes de Equipamiento</h4>
+                      </div>
+                      <div class="flex items-center gap-4">
+                         <span class="text-[10px] font-black bg-black text-white px-4 py-2 rounded-xl uppercase tracking-widest">{{ pendingReservations().length }} ACTIVAS</span>
                       </div>
                   </div>
-                  <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
-                      <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span>
-                        Soporte
-                      </h4>
-                      <div class="h-64 relative">
-                        <canvas id="ticketsChart"></canvas>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- Pending Requests Table -->
-              <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
-                  <div class="p-8 border-b border-slate-50 dark:border-slate-700 flex justify-between items-center">
-                      <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                         <span class="w-12 h-12 rounded-2xl bg-uah-orange/10 flex items-center justify-center text-uah-orange">
-                           <i class="bi bi-collection"></i>
-                         </span>
-                        Solicitudes por Aprobar
-                      </h4>
-                      <span class="text-[10px] font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-full">{{ pendingReservations().length }} PENDIENTES</span>
-                  </div>
-                  <div class="overflow-x-auto min-h-[300px]">
+                  <div class="overflow-x-auto min-h-[350px]">
                       <table class="w-full text-left">
                           <thead>
-                              <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                  <th class="p-8 pl-10">Solicitante</th>
-                                  <th class="p-8">Recurso</th>
-                                  <th class="p-8">Bloque</th>
-                                  <th class="p-8 text-center px-10">Acciones</th>
+                              <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-white/5">
+                                  <th class="p-6 pl-10">Identidad</th>
+                                  <th class="p-6">Material Solicitado</th>
+                                  <th class="p-6">Programación</th>
+                                  <th class="p-6 text-center pr-10">Acción</th>
                               </tr>
                           </thead>
-                          <tbody class="divide-y divide-slate-50 dark:divide-slate-700">
+                          <tbody class="divide-y divide-gray-50 dark:divide-white/5">
                               @for (res of pendingReservations(); track res.id) {
-                                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors group">
+                                  <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                                       <td class="p-6 pl-10">
-                                          <div class="flex items-center gap-4">
-                                              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center font-black text-slate-500 group-hover:scale-110 transition-transform">
+                                          <div class="flex items-center gap-5">
+                                              <div class="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center font-black group-hover:bg-[#f06427] transition-colors shadow-lg">
                                                   {{ res.nombreSolicitante.charAt(0) }}
                                               </div>
                                               <div>
-                                                  <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ res.nombreSolicitante }}</div>
-                                                  <div class="text-[10px] font-black text-slate-400 uppercase">{{ res.tipoUsuario }}</div>
+                                                  <div class="text-sm font-bold text-black dark:text-white">{{ res.nombreSolicitante }}</div>
+                                                  <div class="text-[9px] font-black text-[#f06427] uppercase tracking-widest mt-1">{{ res.tipoUsuario }}</div>
                                               </div>
                                           </div>
                                       </td>
                                       <td class="p-6">
                                           @let item = getItem(res.equipoId);
-                                          <div class="text-sm font-bold text-uah-blue dark:text-blue-400">{{ item?.marca }}</div>
-                                          <div class="text-[10px] font-bold text-slate-400 uppercase">{{ item?.subCategoria }} x{{ res.cantidad }}</div>
+                                          <div class="text-sm font-black text-black dark:text-gray-200">{{ item?.marca }}</div>
+                                          <div class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{{ item?.subCategoria }} <span class="text-black dark:text-white font-black">x{{ res.cantidad }}</span></div>
                                       </td>
                                       <td class="p-6">
-                                          <div class="text-xs font-black text-slate-700 dark:text-slate-200">{{ res.fecha }}</div>
-                                          <div class="text-[10px] font-bold text-slate-400 uppercase">{{ res.bloque }}</div>
+                                          <div class="text-xs font-black text-black dark:text-white">{{ res.fecha | date:'EE dd MMM' }}</div>
+                                          <div class="text-[10px] font-bold text-[#f06427] uppercase tracking-widest mt-1">{{ res.bloque }}</div>
                                       </td>
-                                      <td class="p-6 text-center px-10">
+                                      <td class="p-6 pr-10 text-center">
                                           <div class="flex items-center justify-center gap-3">
-                                              <button (click)="approve(res.id)" class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-lg border border-emerald-100 dark:border-emerald-800">
-                                                  <i class="bi bi-check-lg text-xl"></i>
+                                              <button (click)="approve(res.id)" class="w-10 h-10 rounded-xl bg-black text-white hover:bg-[#f06427] transition-all flex items-center justify-center shadow-lg active:scale-95">
+                                                  <i class="bi bi-check-lg"></i>
                                               </button>
-                                              <button (click)="reject(res.id)" class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center shadow-lg border border-rose-100 dark:border-rose-800">
-                                                  <i class="bi bi-x-lg text-xl"></i>
+                                              <button (click)="reject(res.id)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-400 hover:text-white hover:bg-rose-500 transition-all flex items-center justify-center shadow-lg active:scale-95">
+                                                  <i class="bi bi-x-lg"></i>
                                               </button>
                                           </div>
                                       </td>
                                   </tr>
                               }
                               @if (pendingReservations().length === 0) {
-                                  <tr><td colspan="4" class="p-20 text-center opacity-40">
-                                      <i class="bi bi-journal-check text-6xl mb-4 block"></i>
-                                      <p class="font-black text-xs uppercase tracking-widest text-slate-400">Totalmente al día</p>
+                                  <tr><td colspan="4" class="p-24 text-center">
+                                      <div class="w-24 h-24 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                                          <i class="bi bi-journal-check text-5xl text-gray-200"></i>
+                                      </div>
+                                      <p class="font-black text-[11px] uppercase tracking-[0.2em] text-gray-400">Excelente. No hay pendientes por hoy.</p>
                                   </td></tr>
                               }
                           </tbody>
@@ -199,124 +171,109 @@ declare var Swal: any;
                   </div>
               </div>
 
-              <!-- Control de Acceso (Check-in / Check-out) -->
-              <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden mb-8">
-                  <div class="p-8 border-b border-slate-50 dark:border-slate-700 flex justify-between items-center">
-                      <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                           <i class="bi bi-door-open-fill text-uah-orange"></i> Control de Acceso (Dashboard en Vivo)
-                      </h3>
-                      <span class="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black rounded-lg uppercase">Usuarios en Lab: {{ activeInLab().length }}</span>
+               <!-- Live Laboratorios Status -->
+               <div class="bg-black text-white rounded-[2rem] shadow-2xl p-8 border border-white/5">
+                  <div class="flex justify-between items-center mb-10">
+                      <div class="flex items-center gap-4">
+                         <div class="w-10 h-10 rounded-xl bg-[#f06427] text-white flex items-center justify-center">
+                             <i class="bi bi-activity text-xl"></i>
+                         </div>
+                         <h3 class="text-sm font-black uppercase tracking-widest">Actividad Live</h3>
+                      </div>
+                      <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                          <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+                          <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">En Línea</span>
+                      </div>
                   </div>
-                  <div class="overflow-x-auto">
-                      <table class="w-full text-left">
-                          <thead class="bg-slate-50/50 dark:bg-slate-900/50 text-slate-400 font-black text-[10px] uppercase tracking-widest">
-                              <tr>
-                                  <th class="p-6 pl-10">Usuario</th>
-                                  <th class="p-6">Estado</th>
-                                  <th class="p-6 text-center px-10">Acción de Registro</th>
-                              </tr>
-                          </thead>
-                          <tbody class="divide-y divide-slate-50 dark:divide-slate-700">
-                              @for (res of activeReservations(); track res.id) {
-                                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                                      <td class="p-4 pl-10">
-                                          <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ res.nombreSolicitante }}</div>
-                                          <div class="text-[10px] font-bold text-slate-400 uppercase italic">{{ getItem(res.equipoId)?.marca }} - {{ res.bloque }}</div>
-                                      </td>
-                                      <td class="p-4">
-                                          @if (res.clockOut) {
-                                              <span class="text-[9px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase">Finalizado</span>
-                                          } @else if (res.clockIn) {
-                                              <span class="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full uppercase">En Laboratorio</span>
-                                          } @else {
-                                              <span class="text-[9px] font-black bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full uppercase">Pendiente Ingreso</span>
-                                          }
-                                      </td>
-                                      <td class="p-4 text-center px-10">
-                                          @if (!res.clockIn) {
-                                              <button (click)="checkIn(res.id)" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black py-2 px-4 rounded-xl transition-all shadow-md">
-                                                  REGISTRAR ENTRADA
-                                              </button>
-                                          } @else if (!res.clockOut) {
-                                              <button (click)="checkOut(res.id)" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-black py-2 px-4 rounded-xl transition-all shadow-md">
-                                                  REGISTRAR SALIDA
-                                              </button>
-                                          } @else {
-                                              <div class="text-[10px] font-bold text-slate-400">
-                                                 {{ res.clockIn | date:'HH:mm' }} - {{ res.clockOut | date:'HH:mm' }}
-                                              </div>
-                                          }
-                                      </td>
-                                  </tr>
-                              }
-                          </tbody>
-                      </table>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      @for (res of activeReservations(); track res.id) {
+                          <div class="bg-white/5 p-6 rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all group">
+                              <div class="flex justify-between items-start mb-4">
+                                  <div class="w-10 h-10 rounded-xl bg-[#f06427] flex items-center justify-center text-sm font-black shadow-lg">
+                                      {{ res.nombreSolicitante.charAt(0) }}
+                                  </div>
+                                  <span class="text-[8px] font-black bg-white/10 px-2 py-1 rounded tracking-tighter uppercase">{{ res.bloque }}</span>
+                              </div>
+                              <h5 class="text-xs font-bold truncate mb-1">{{ res.nombreSolicitante }}</h5>
+                              <p class="text-[10px] text-gray-500 font-bold mb-6 overflow-hidden text-ellipsis">{{ getItem(res.equipoId)?.marca }}</p>
+                              
+                              <div class="flex justify-between items-center mt-auto pt-4 border-t border-white/5">
+                                  @if (!res.clockIn) {
+                                      <button (click)="checkIn(res.id)" class="bg-[#f06427] hover:bg-orange-600 text-[9px] font-black py-2 px-4 rounded-xl transition-all w-full uppercase tracking-widest shadow-xl shadow-orange-500/20">
+                                          Confirmar Entrada
+                                      </button>
+                                  } @else if (!res.clockOut) {
+                                      <button (click)="checkOut(res.id)" class="bg-white text-black hover:bg-gray-200 text-[9px] font-black py-2 px-4 rounded-xl transition-all w-full uppercase tracking-widest">
+                                          Registrar Salida
+                                      </button>
+                                  } @else {
+                                      <div class="text-[9px] font-black text-gray-500 uppercase text-center w-full bg-white/5 py-2 rounded-xl">
+                                          Sesión Finalizada
+                                      </div>
+                                  }
+                              </div>
+                          </div>
+                      }
+                      @if (activeReservations().length === 0) {
+                        <div class="col-span-full p-12 text-center text-gray-600 font-black text-[10px] uppercase tracking-widest border border-dashed border-white/10 rounded-3xl">
+                            Sin préstamos activos en este momento
+                        </div>
+                      }
                   </div>
-              </div>
+               </div>
+          </div>
 
-          <!-- Right Column: Widgets -->
-          <div class="lg:col-span-4 space-y-8">
-              <!-- Audit Logs: Recent Activity -->
-              <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col h-[600px]">
-                  <div class="p-8 border-b border-slate-50 dark:border-slate-700">
-                      <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                         <i class="bi bi-activity text-uah-orange"></i> Actividad del Sistema
+          <!-- SIDEBAR WIDGETS -->
+          <div class="lg:col-span-4 space-y-10">
+              
+              <!-- Charts Container -->
+              <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 space-y-10">
+                  <div>
+                      <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+                          <span class="w-1 h-4 bg-[#f06427] rounded-full"></span> Análisis de Inventario
                       </h4>
+                      <div class="h-60 relative">
+                        <canvas id="inventoryChart"></canvas>
+                      </div>
                   </div>
-                  <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/30">
-                      @for (log of data.auditLogs().slice(0, 15); track log.id) {
-                          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
-                              <div class="flex justify-between items-start mb-2">
-                                  <div class="text-[10px] font-black text-slate-400 uppercase">{{ log.fecha | date:'HH:mm • dd/MM' }}</div>
-                                  <span [class]="log.accion.includes('FAIL') ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'" 
-                                        class="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                     {{ log.accion }}
-                                  </span>
-                              </div>
-                              <div class="text-xs font-bold text-slate-800 dark:text-slate-100 mb-1 leading-tight">{{ log.detalle }}</div>
-                              <div class="flex items-center gap-2 mt-2">
-                                  <div class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[9px] font-black">{{ log.nombre.charAt(0) }}</div>
-                                  <span class="text-[10px] text-slate-500 truncate">{{ log.nombre }}</span>
-                              </div>
-                          </div>
-                      }
-                      @if (data.auditLogs().length === 0) {
-                          <div class="h-full flex flex-col items-center justify-center opacity-30 text-center p-10">
-                              <i class="bi bi-search text-4xl mb-3"></i>
-                              <p class="text-[10px] font-black uppercase tracking-widest">Esperando actividad...</p>
-                          </div>
-                      }
-                  </div>
-                  <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-center">
-                      <a routerLink="/audit" class="text-[10px] font-black text-uah-blue uppercase tracking-widest hover:underline">Ver Reporte Completo</a>
+                  <div class="pt-10 border-t border-gray-50 dark:border-white/5">
+                      <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+                          <span class="w-1 h-4 bg-[#f06427] rounded-full"></span> Soporte Técnico
+                      </h4>
+                      <div class="h-52">
+                        <canvas id="ticketsChart"></canvas>
+                      </div>
                   </div>
               </div>
 
-              <!-- Admin To-Do Quick Section -->
-              <div class="bg-indigo-950 rounded-[2rem] shadow-2xl p-8 text-white relative overflow-hidden min-h-[400px]">
-                 <div class="absolute -right-10 -bottom-10 opacity-10 rotate-12"><i class="bi bi-check-all text-[15rem]"></i></div>
-                 <div class="relative z-10 h-full flex flex-col">
-                    <h4 class="text-sm font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Recordatorios Rápidos</h4>
-                    <div class="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-6">
+              <!-- Agenda: Dark Theme -->
+              <div class="bg-[#f06427] rounded-[2.5rem] shadow-2xl p-10 text-white relative overflow-hidden flex flex-col group">
+                 <div class="absolute -right-20 -top-20 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700"></div>
+                 <div class="relative z-10">
+                    <h4 class="text-sm font-black uppercase tracking-widest mb-10 flex items-center gap-3">
+                        <i class="bi bi-stack text-lg"></i> Agenda Administrativa
+                    </h4>
+                    <div class="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar-white pr-4 mb-10">
                         @for (task of data.adminTasks(); track task.id) {
-                            <div class="group flex items-center gap-3 bg-white/5 hover:bg-white/10 p-3 rounded-2xl transition-all border border-white/5">
+                            <div class="group/task flex items-center gap-5 bg-black/10 hover:bg-black/20 p-5 rounded-2xl transition-all border border-white/10">
                                 <button (click)="toggleAdminTask(task)" 
-                                        class="w-6 h-6 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                                         [class]="task.status === 'done' ? 'bg-uah-orange border-uah-orange text-white' : 'border-white/20 text-transparent'">
-                                    <i class="bi bi-check-bold text-sm"></i>
+                                        class="w-8 h-8 rounded-xl border-2 flex-shrink-0 flex items-center justify-center transition-all bg-black/30"
+                                         [class]="task.status === 'done' ? 'bg-white border-white text-[#f06427]' : 'border-white/40 text-transparent'">
+                                    <i class="bi bi-check-lg text-lg"></i>
                                 </button>
-                                <span class="text-xs font-bold flex-1" [class.line-through]="task.status === 'done'" [class.opacity-40]="task.status === 'done'">{{ task.description }}</span>
-                                <button (click)="deleteAdminTask(task.id)" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 p-1">
+                                <span class="text-xs font-bold flex-1 leading-snug" [class.line-through]="task.status === 'done'" [class.opacity-50]="task.status === 'done'">{{ task.description }}</span>
+                                <button (click)="deleteAdminTask(task.id)" class="opacity-0 group-hover/task:opacity-100 text-white hover:text-black transition-opacity">
                                    <i class="bi bi-trash-fill"></i>
                                 </button>
                             </div>
                         }
                     </div>
                     <div class="relative">
-                       <input #dashTaskInput (keyup.enter)="addAdminTask(dashTaskInput)" type="text" placeholder="Agregar tarea..." 
-                              class="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-4 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all">
-                        <button (click)="addAdminTask(dashTaskInput)" class="absolute right-3 top-2.5 text-uah-orange hover:scale-110 transition-transform">
-                           <i class="bi bi-plus-circle-fill text-2xl"></i>
+                       <input #dashTaskInput (keyup.enter)="addAdminTask(dashTaskInput)" type="text" placeholder="Nueva nota..." 
+                              class="w-full bg-black/20 border border-white/20 rounded-2xl py-5 px-6 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-0 focus:border-white transition-all shadow-inner uppercase tracking-tighter font-black">
+                        <button (click)="addAdminTask(dashTaskInput)" class="absolute right-4 top-4 text-white hover:scale-110 transition-transform">
+                           <i class="bi bi-plus-circle-fill text-3xl"></i>
                         </button>
                     </div>
                  </div>
@@ -324,43 +281,51 @@ declare var Swal: any;
           </div>
       </div>
 
-      <!-- Financial Control Dashboard -->
-      <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 dark:border-slate-700">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-8 border-b border-slate-50 dark:border-slate-700">
+      <!-- BUDGET & BUDGET PERFORMANCE -->
+      <div class="bg-white dark:bg-[#0f0f12] rounded-[3rem] p-12 lg:p-16 shadow-2xl border border-gray-100 dark:border-white/5 relative overflow-hidden">
+          <div class="absolute right-0 top-0 w-[800px] h-[800px] bg-[#f06427]/5 rounded-full blur-[180px] -translate-y-1/2 translate-x-1/2"></div>
+          
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-10 mb-20 relative z-10">
              <div>
-                <h3 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Control Presupuestario</h3>
-                <p class="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">Gasto Real vs Presupuesto Asignado por Laboratorio</p>
+                <h3 class="text-4xl font-black text-black dark:text-white tracking-tighter mb-3 uppercase" style="font-family: 'Playfair Display', serif;">Presupuesto Institucional</h3>
+                <p class="text-[12px] text-gray-400 font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                    <span class="w-10 h-0.5 bg-[#f06427]"></span> Ejecución Real de Compras
+                </p>
              </div>
-              <div class="bg-blue-50 dark:bg-slate-900/50 p-4 rounded-3xl border border-blue-100 dark:border-blue-900/30">
-                 <div class="text-[10px] font-black text-uah-blue/60 uppercase tracking-widest mb-1">Total Consolidado</div>
-                 <div class="text-3xl font-black text-uah-blue dark:text-blue-400 tracking-tighter">$ {{ totalSpent() | number }} <span class="text-sm font-bold opacity-30">/ $ {{ totalBudget() | number }}</span></div>
+              <div class="bg-black p-8 lg:px-12 rounded-[2.5rem] shadow-2xl flex flex-col items-end border-b-4 border-[#f06427]">
+                 <div class="text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4 opacity-70 italic">Capital Ejecutado Global</div>
+                 <div class="text-6xl font-black text-white tracking-tighter">$ {{ totalSpent() | number }} <span class="text-xl font-black opacity-20 ml-2">Total</span></div>
               </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
              @for (lab of labsList; track lab) {
                 @let spent = budgetByLab(lab);
                 @let budget = data.labBudgets()[lab] || 1;
                 @let percent = (spent / budget) * 100;
-                <div class="flex flex-col">
-                   <div class="flex justify-between items-end mb-3">
-                      <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">{{ lab }}</span>
-                      <span class="text-[10px] font-black px-2 py-0.5 rounded-lg" [class]="percent > 90 ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'">{{ percent | number:'1.0-1' }}%</span>
+                <div class="flex flex-col bg-gray-50/50 dark:bg-white/[0.02] p-10 rounded-3xl border border-gray-100 dark:border-white/5 group/bar hover:bg-white dark:hover:bg-black transition-all hover:shadow-2xl hover:scale-[1.02] duration-500">
+                   <div class="flex justify-between items-end mb-6">
+                      <span class="text-sm font-black text-black dark:text-white uppercase tracking-widest">{{ lab }}</span>
+                      <span class="text-[11px] font-black px-4 py-1.5 rounded-full shadow-lg" [class]="percent > 90 ? 'bg-rose-500 text-white' : 'bg-black text-white'">{{ percent | number:'1.0-0' }}%</span>
                    </div>
-                   <div class="group relative h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
-                       <div class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm" 
+                   <div class="relative h-2.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden mb-8">
+                       <div class="h-full rounded-full transition-all duration-[1500ms] ease-in-out" 
                             [style.width.%]="percent"
-                            [class]="percent > 90 ? 'bg-rose-500' : 'bg-uah-blue'">
+                            [class]="percent > 90 ? 'bg-rose-500' : 'bg-[#f06427]'">
                        </div>
-                      <div class="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
                    </div>
-                   <div class="flex justify-between text-[10px] font-black uppercase">
-                      <span class="text-slate-400">Gasto: $ {{ spent | number }}</span>
-                      <span class="text-slate-800 dark:text-slate-200">$ {{ budget - spent | number }} Disp.</span>
+                   <div class="flex flex-col gap-3">
+                      <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                         <span class="text-gray-400">Gastado:</span>
+                         <span class="text-black dark:text-white">$ {{ spent | number }}</span>
+                      </div>
+                      <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest mt-2 pt-4 border-t border-gray-100 dark:border-white/10">
+                         <span class="text-gray-400">Fondo Lab:</span>
+                         <span class="text-black dark:text-gray-400">$ {{ budget | number }}</span>
+                      </div>
                    </div>
                 </div>
              }
-          </div>
       </div>
     </div>
   `
@@ -415,46 +380,80 @@ export class DashboardComponent implements OnInit {
       await this.data.updateAdminTask(task.id, { status: newStatus });
    }
 
-   async deleteAdminTask(id: number) {
+    async deleteAdminTask(id: number) {
       const result = await Swal.fire({
-         title: '¿Eliminar tarea?',
+         title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Tarea?</h3>',
+         text: 'Esta nota se borrará permanentemente de tu agenda.',
          icon: 'warning',
          showCancelButton: true,
          confirmButtonColor: '#ef4444',
-         confirmButtonText: 'Sí, eliminar'
+         cancelButtonColor: '#003366',
+         confirmButtonText: 'Sí, eliminar',
+         cancelButtonText: 'Cancelar'
       });
-      if (result.isConfirmed) {
-         await this.data.deleteAdminTask(id);
-      }
-   }
+     if (result.isConfirmed) {
+        await this.data.deleteAdminTask(id);
+     }
+    }
 
    async approve(id: number) {
       await this.data.updateReservationStatus(id, 'approve');
-      Swal.fire({ icon: 'success', toast: true, position: 'top-end', title: 'Reserva Aprobada', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        toast: true, 
+        position: 'top-end', 
+        title: '<span class="text-emerald-600 font-bold uppercase text-xs">Reserva Aprobada</span>', 
+        timer: 2000, 
+        showConfirmButton: false 
+      });
    }
 
    async reject(id: number) {
       const result = await Swal.fire({
-         title: 'Rechazar Reserva',
+         title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Rechazar Reserva</h3>',
          input: 'text',
-         inputPlaceholder: 'Motivo del rechazo...',
+         inputPlaceholder: 'Escriba el motivo del rechazo...',
          showCancelButton: true,
-         confirmButtonColor: '#ef4444'
+         confirmButtonColor: '#ef4444',
+         cancelButtonColor: '#003366',
+         cancelButtonText: 'Cancelar',
+         confirmButtonText: 'Confirmar Rechazo'
       });
       if (result.isConfirmed) {
          await this.data.updateReservationStatus(id, 'reject', { motivo: result.value });
-         Swal.fire({ icon: 'info', toast: true, position: 'top-end', title: 'Reserva Rechazada', timer: 1500, showConfirmButton: false });
+         Swal.fire({ 
+           icon: 'info', 
+           toast: true, 
+           position: 'top-end', 
+           title: '<span class="text-rose-500 font-bold uppercase text-xs">Reserva Rechazada</span>', 
+           timer: 2000, 
+           showConfirmButton: false 
+         });
       }
    }
 
    async checkIn(id: number) {
       await this.data.checkIn(id);
-      Swal.fire({ icon: 'success', toast: true, position: 'top-end', title: 'Ingreso Registrado', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        toast: true, 
+        position: 'top-end', 
+        title: '<span class="text-uah-blue font-bold uppercase text-xs">Ingreso Registrado</span>', 
+        timer: 2000, 
+        showConfirmButton: false 
+      });
    }
 
    async checkOut(id: number) {
       await this.data.checkOut(id);
-      Swal.fire({ icon: 'success', toast: true, position: 'top-end', title: 'Salida Registrada', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        toast: true, 
+        position: 'top-end', 
+        title: '<span class="text-uah-orange font-bold uppercase text-xs">Salida Registrada</span>', 
+        timer: 2000, 
+        showConfirmButton: false 
+      });
    }
 
    /**
@@ -553,6 +552,12 @@ export class DashboardComponent implements OnInit {
     */
    returnItem(res: any) {
       this.data.updateReservationStatus(res.id, 'return', { devuelto: res.cantidad });
-      Swal.fire({ icon: 'success', title: 'Devolución Exitosa', text: 'El inventario ha sido actualizado correctamente.', timer: 1500, showConfirmButton: false });
+      Swal.fire({ 
+        icon: 'success', 
+        title: '<h3 class="text-uah-blue font-black uppercase">Devolución Exitosa</h3>', 
+        text: 'El inventario institucional ha sido actualizado correctamente.', 
+        timer: 2500, 
+        showConfirmButton: false 
+      });
    }
 }

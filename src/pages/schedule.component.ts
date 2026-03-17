@@ -27,12 +27,34 @@ declare const Swal: any;
           
           <div class="mt-4 md:mt-0 flex items-center gap-4">
                @if (isAdmin()) {
-                 <button (click)="toggleEditMode()" 
-                         [class]="isEditMode() ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-600 hover:bg-gray-700'"
-                         class="px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                    <i class="bi" [class]="isEditMode() ? 'bi-pencil-fill' : 'bi-pencil'"></i>
-                    {{ isEditMode() ? 'Salir de Edición' : 'Modo Edición' }}
-                 </button>
+                 <div class="flex gap-2">
+                   <button (click)="downloadTemplate()" 
+                           title="Descargar Plantilla Excel"
+                           class="bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                     <i class="bi bi-file-earmark-arrow-down"></i>
+                     Plantilla
+                   </button>
+                   <button (click)="exportSchedule()" 
+                           title="Descargar Horario Actual"
+                           class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                     <i class="bi bi-file-earmark-spreadsheet"></i>
+                     Exportar
+                   </button>
+                   <button (click)="importInput.click()" 
+                           title="Carga Masiva desde Excel"
+                           class="bg-uah-blue hover:bg-blue-800 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                     <i class="bi bi-cloud-arrow-up"></i>
+                     Importar
+                   </button>
+                   <input #importInput type="file" (change)="importSchedule($event)" class="hidden" accept=".xlsx, .xls">
+                   
+                   <button (click)="toggleEditMode()" 
+                           [class]="isEditMode() ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-600 hover:bg-gray-700'"
+                           class="px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                     <i class="bi" [class]="isEditMode() ? 'bi-pencil-fill' : 'bi-pencil'"></i>
+                     {{ isEditMode() ? 'Salir de Edición' : 'Modo Edición' }}
+                   </button>
+                 </div>
                }
                 <div class="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 text-xs font-black text-uah-blue dark:text-blue-300 flex items-center gap-2 uppercase tracking-widest">
                    <span class="relative flex h-3 w-3">
@@ -252,5 +274,113 @@ export class ScheduleComponent {
                 }
             }
         });
+    }
+
+    // --- GESTIÓN MASIVA (IMPORT/EXPORT) ---
+
+    exportSchedule() {
+        const currentLab = this.selectedLab();
+        const data = this.data.classSchedules()
+            .filter(s => s.lab === currentLab)
+            .map(s => ({
+                'Laboratorio': s.lab,
+                'Día': s.day,
+                'Bloque': s.block,
+                'Asignatura / Docente': s.subject,
+                'Color Hex': s.color || '#3b82f6'
+            }));
+
+        if (data.length === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Sin Datos',
+                text: `No hay horarios registrados para ${currentLab} para exportar.`
+            });
+            return;
+        }
+
+        this.data.downloadExcel(data, `Horario_${currentLab}_${new Date().getFullYear()}`);
+    }
+
+    async importSchedule(event: any) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e: any) => {
+            try {
+                const XLSX = (window as any).XLSX;
+                if (!XLSX) {
+                    Swal.fire('Error', 'Librería de Excel no disponible', 'error');
+                    return;
+                }
+
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const rows: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+                if (rows.length === 0) {
+                    Swal.fire('Error', 'El archivo está vacío o no tiene el formato correcto', 'error');
+                    return;
+                }
+
+                const confirmation = await Swal.fire({
+                    title: '¿Confirmar Carga Masiva?',
+                    text: `Se procesarán ${rows.length} registros para los horarios académicos. Esto actualizará los bloques existentes.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, importar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#003366'
+                });
+
+                if (confirmation.isConfirmed) {
+                    Swal.fire({
+                        title: 'Procesando...',
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    const mappedSchedules = rows.map(row => ({
+                        lab: row['Laboratorio'],
+                        day: row['Día'],
+                        block: row['Bloque'],
+                        subject: row['Asignatura / Docente'],
+                        color: row['Color Hex'] || '#3b82f6'
+                    }));
+
+                    const success = await this.data.addBulkSchedules(mappedSchedules);
+
+                    if (success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Carga Exitosa',
+                            text: `${rows.length} bloques de horario han sido actualizados.`,
+                            confirmButtonColor: '#003366'
+                        });
+                    } else {
+                        throw new Error('Error al guardar en el servidor');
+                    }
+                }
+            } catch (error) {
+                console.error("Error importando:", error);
+                Swal.fire('Error', 'No se pudo procesar el archivo. Verifique que las columnas coincidan con el formato requerido.', 'error');
+            } finally {
+                event.target.value = ''; // Reset input
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    downloadTemplate() {
+        const template = [{
+            'Laboratorio': 'FABLAB',
+            'Día': 'Lunes',
+            'Bloque': '08:30 - 09:50',
+            'Asignatura / Docente': 'Ejemplo: Programación I - Dr. Garcia',
+            'Color Hex': '#3b82f6'
+        }];
+        this.data.downloadExcel(template, 'Plantilla_Horarios_UAH');
     }
 }
