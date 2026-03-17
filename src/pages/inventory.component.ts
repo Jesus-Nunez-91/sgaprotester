@@ -998,15 +998,17 @@ export class InventoryComponent {
       template = [
         {
           LABORATORIO: 'DESARROLLO TECNOLOGICO',
-          ITEM: 'MATERIAL',
+          ITEM: 'ARDUINO UNO R3',
           CANTIDAD: 25,
-          DESCRIPCION: 'PINZAS MEDEL 170 1MM',
+          DESCRIPCION: 'Microcontrolador ATmega328P para prototipado',
           UBICACIÓN: 'BODEGA',
           'FIJO/FUNGIBLE': 'FIJO',
-          OBS: 'Sin observaciones',
+          STATUS: 'Disponible',
           StockMinimo: 5,
           Factura: 'FAC-999',
-          FechaLlegada: '2024-03-01'
+          FechaLlegada: '2024-03-01',
+          CantLlegada: 25,
+          OBS: 'Sin observaciones'
         }
       ];
     }
@@ -1165,8 +1167,9 @@ export class InventoryComponent {
               esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
               stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
               stockMinimo: getNum(['MINIMO', 'STOCKMIN'], 0),
-              numeroFactura: getV(['FACTURA']),
-              fechaLlegada: getV(['FECHA', 'LLEGADA']),
+              numeroFactura: getV(['FACTURA', 'N* FACTURA']),
+              fechaLlegada: getV(['FECHA', 'LLEGADA', 'FECHALLEG']),
+              cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD', 'LLEGADA'], 0),
               categoria: cat,
               subCategoria: subCat,
               tipoInventario: cat === 'FABLAB' && tipInv === 'Equipos' ? 'Equipos' : 'Arduinos',
