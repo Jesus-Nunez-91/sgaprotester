@@ -1115,9 +1115,13 @@ export class InventoryComponent {
               }
             });
 
+            // Arreglo de Nombres: Si no hay marca, usamos el modelo/item
+            const rawMarca = marca;
+            const rawModelo = getV(['MODELO', 'MODEL', 'DESCRIPCION', 'ITEM']);
+            
             return {
-              marca: marca || 'Genérico',
-              modelo: getV(['MODELO', 'MODEL', 'DESCRIPCION']),
+              marca: rawMarca || rawModelo || 'Genérico',
+              modelo: rawMarca ? rawModelo : (rawModelo ? 'Notebook / AIO' : ''),
               ram: ram,
               rom: getV(['ROM', 'DISCO', 'HDD', 'SSD']),
               so: getV(['SO', 'SISTEMA', 'OPERATIVO']),
@@ -1142,7 +1146,10 @@ export class InventoryComponent {
               tipoInventario: tipInv
             };
           } else {
-            // Formato Insumo / Genérico
+            // Formato Insumo / Arduinos: Priorizar ITEM/DESCRIPCION sobre MARCA si esta es vacía
+            const itemDesc = getV(['ITEM', 'DESCRIPCION', 'PRODUCTO', 'MODELO']);
+            const marcaExpl = marca;
+
             const statusV = getV(['STATUS', 'STADO', 'ESTADO']);
             const mappedStatus = (v: string) => {
               const s = v.toUpperCase().replace('_', ' ');
@@ -1152,8 +1159,8 @@ export class InventoryComponent {
             };
 
             return {
-              marca: marca || 'Genérico',
-              modelo: getV(['DESCRIPCION', 'ITEM', 'MODELO']),
+              marca: marcaExpl || itemDesc || 'Insumo Genérico',
+              modelo: marcaExpl ? itemDesc : 'Electrónica / Insumo',
               status: mappedStatus(statusV),
               esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
               stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
