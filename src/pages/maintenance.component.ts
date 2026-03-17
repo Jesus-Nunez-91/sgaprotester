@@ -21,30 +21,31 @@ declare var Swal: any;
       <!-- Encabezado -->
       <div class="flex flex-col md:flex-row items-center justify-between mb-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-lg border border-white/40 dark:border-gray-700">
           <div>
-              <h2 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-                  <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-lg text-xl">
+              <h2 class="text-3xl font-black text-uah-blue dark:text-gray-100 flex items-center gap-3 tracking-tighter uppercase">
+                  <span class="w-12 h-12 rounded-2xl bg-uah-orange flex items-center justify-center text-white shadow-lg text-xl">
                       <i class="bi bi-wrench-adjustable-circle-fill"></i>
                   </span>
-                  Gestión de Mantención
+                  Plan de Mantención
               </h2>
-              <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 ml-16">Módulo ERP para seguimiento de reparaciones y costos.</p>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 ml-16">Seguimiento Institucional de Activos y Correctivos</p>
           </div>
           <div class="flex gap-3 mt-4 md:mt-0">
-             <button (click)="openModal()" class="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1 transition-all flex items-center gap-2">
-                 <i class="bi bi-plus-lg"></i> Nueva Orden
-             </button>
+              <button (click)="openModal()" class="bg-uah-blue text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-blue-500/20 hover:bg-blue-800 transition-all flex items-center gap-2 uppercase text-xs tracking-widest">
+                  <i class="bi bi-plus-lg"></i> Nueva Orden
+              </button>
           </div>
       </div>
 
       <!-- Cuadrícula de Estadísticas -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-             <div class="text-xs font-bold text-gray-400 uppercase">Ordenes Activas</div>
-             <div class="text-3xl font-black text-gray-800 dark:text-white mt-1">{{ activeTasks().length }}</div>
-             <div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full mt-3 overflow-hidden">
-                <div class="bg-orange-500 h-full rounded-full" style="width: 60%"></div>
-             </div>
-          </div>
+           <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-full h-1 bg-uah-orange"></div>
+              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ordenes Activas</div>
+              <div class="text-3xl font-black text-uah-blue dark:text-white mt-1">{{ activeTasks().length }}</div>
+              <div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full mt-3 overflow-hidden">
+                 <div class="bg-uah-orange h-full rounded-full" style="width: 60%"></div>
+              </div>
+           </div>
           <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
              <div class="text-xs font-bold text-gray-400 uppercase">Finalizadas (Mes)</div>
              <div class="text-3xl font-black text-gray-800 dark:text-white mt-1">{{ completedTasks().length }}</div>
@@ -57,11 +58,12 @@ declare var Swal: any;
              <div class="text-3xl font-black text-gray-800 dark:text-white mt-1">$ {{ totalCost().toLocaleString() }}</div>
              <div class="text-xs text-red-500 mt-2 font-bold"><i class="bi bi-graph-up"></i> +12% vs mes anterior</div>
           </div>
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-             <div class="text-xs font-bold text-gray-400 uppercase">Salud de Equipos</div>
-             <div class="text-3xl font-black text-gray-800 dark:text-white mt-1">94%</div>
-             <div class="text-xs text-green-500 mt-2 font-bold">Operativo</div>
-          </div>
+           <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-full h-1 bg-uah-blue"></div>
+              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estado de Activos</div>
+              <div class="text-3xl font-black text-uah-blue dark:text-white mt-1">94%</div>
+              <div class="text-[10px] text-green-500 mt-2 font-black uppercase tracking-widest">Operatividad Nominal</div>
+           </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -102,13 +104,13 @@ declare var Swal: any;
                                   </div>
                               </div>
                               <div class="flex flex-col items-end gap-2">
-                                  <span [ngClass]="{
-                                      'bg-gray-100 text-gray-500': task.status === 'Pendiente',
-                                      'bg-blue-100 text-blue-600 animate-pulse': task.status === 'En Progreso',
-                                      'bg-green-100 text-green-600': task.status === 'Finalizado'
-                                  }" class="px-2 py-1 rounded text-[10px] font-bold uppercase">
-                                      {{ task.status }}
-                                  </span>
+                                   <span [ngClass]="{
+                                       'bg-gray-100 text-gray-500': task.status === 'Pendiente',
+                                       'bg-uah-orange/10 text-uah-orange animate-pulse': task.status === 'En Progreso',
+                                       'bg-green-100 text-green-600': task.status === 'Finalizado'
+                                   }" class="px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest">
+                                       {{ task.status }}
+                                   </span>
                                   <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                       <button (click)="edit(task)" class="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600"><i class="bi bi-pencil"></i></button>
                                       <button (click)="del(task.id)" class="w-6 h-6 rounded bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-500"><i class="bi bi-trash"></i></button>
@@ -136,8 +138,8 @@ declare var Swal: any;
               </div>
 
               <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden">
-                  <div class="absolute -right-10 -top-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl"></div>
-                  <h4 class="font-bold mb-4 text-sm flex items-center gap-2"><i class="bi bi-lightning-charge-fill text-yellow-400"></i> Acciones Rápidas</h4>
+                  <div class="absolute -right-10 -top-10 w-40 h-40 bg-uah-orange/10 rounded-full blur-3xl"></div>
+                  <h4 class="font-black mb-4 text-[10px] uppercase tracking-widest flex items-center gap-2"><i class="bi bi-lightning-charge-fill text-uah-orange"></i> Operaciones</h4>
                   
                   <div class="space-y-3 relative z-10">
                       <button class="w-full bg-white/10 hover:bg-white/20 p-3 rounded-xl text-xs text-left flex items-center gap-3 transition-colors">
@@ -223,8 +225,8 @@ declare var Swal: any;
                       </div>
                   </div>
 
-                  <div class="p-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-                      <button (click)="save()" class="flex-1 bg-orange-600 text-white font-bold py-3 rounded-xl hover:bg-orange-700 transition-colors">Guardar Orden</button>
+                   <div class="p-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                      <button (click)="save()" class="flex-1 bg-uah-orange text-white font-black py-4 rounded-xl hover:bg-orange-600 transition-all shadow-xl shadow-orange-500/20 uppercase text-xs tracking-widest">Guardar Orden</button>
                       <button (click)="closeModal()" class="px-6 border border-gray-300 dark:border-gray-600 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cancelar</button>
                   </div>
               </div>

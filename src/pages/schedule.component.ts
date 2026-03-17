@@ -16,13 +16,13 @@ declare const Swal: any;
       <!-- Header Area -->
       <div class="flex flex-col md:flex-row items-center justify-between mb-8 bg-white/60 dark:bg-gray-800/60 p-6 rounded-3xl shadow-lg border border-white/40 dark:border-gray-700 backdrop-blur-xl">
           <div>
-              <h2 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-                  <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white shadow-lg text-xl">
+              <h2 class="text-3xl font-black text-uah-blue dark:text-gray-100 flex items-center gap-3 tracking-tighter uppercase">
+                  <span class="w-12 h-12 rounded-2xl bg-uah-orange flex items-center justify-center text-white shadow-lg text-xl">
                       <i class="bi bi-calendar-week-fill"></i>
                   </span>
-                  Horarios de Laboratorios
+                  Horarios Académicos
               </h2>
-              <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 ml-16">Consulta la disponibilidad académica y bloques reservados.</p>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 ml-16">Disponibilidad de Recintos y Bloques Reservados</p>
           </div>
           
           <div class="mt-4 md:mt-0 flex items-center gap-4">
@@ -34,10 +34,10 @@ declare const Swal: any;
                     {{ isEditMode() ? 'Salir de Edición' : 'Modo Edición' }}
                  </button>
                }
-               <div class="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
+                <div class="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 text-xs font-black text-uah-blue dark:text-blue-300 flex items-center gap-2 uppercase tracking-widest">
                    <span class="relative flex h-3 w-3">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                       <span class="relative inline-flex rounded-full h-3 w-3 bg-uah-orange"></span>
                    </span>
                    Semestre 1 - 2026
                </div>
@@ -47,10 +47,10 @@ declare const Swal: any;
       <!-- Lab Selector Tabs -->
       <div class="flex flex-wrap justify-center gap-4 mb-8">
           @for (lab of labs; track lab) {
-              <button (click)="selectedLab.set(lab)"
-                      [class]="selectedLab() === lab 
-                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105' 
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105'"
+               <button (click)="selectedLab.set(lab)"
+                       [class]="selectedLab() === lab 
+                         ? 'bg-uah-blue text-white shadow-lg shadow-blue-500/20 scale-105' 
+                         : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-uah-orange'"
                       class="px-6 py-3 rounded-2xl font-bold transition-all duration-300 border border-transparent flex items-center gap-2">
                   <i [class]="getIcon(lab)"></i>
                   {{ lab }}
@@ -69,11 +69,11 @@ declare const Swal: any;
               <div class="min-w-[1000px] p-6">
                   <!-- Days Header -->
                   <div class="grid grid-cols-6 gap-4 mb-4">
-                      <div class="text-center font-bold text-gray-400 uppercase text-xs tracking-widest self-end pb-2">Bloque</div>
+                       <div class="text-center font-black text-gray-400 uppercase text-[10px] tracking-widest self-end pb-2">BLOQUE HORARIO</div>
                       @for (day of days; track day) {
                           <div class="text-center">
-                              <div class="font-black text-gray-800 dark:text-gray-100 text-lg uppercase">{{ day }}</div>
-                              <div class="h-1 w-12 bg-indigo-500 rounded-full mx-auto mt-1 opacity-50"></div>
+                               <div class="font-black text-uah-blue dark:text-gray-100 text-lg uppercase tracking-tighter">{{ day }}</div>
+                               <div class="h-1 w-12 bg-uah-orange rounded-full mx-auto mt-1 opacity-50"></div>
                           </div>
                       }
                   </div>
@@ -83,7 +83,7 @@ declare const Swal: any;
                       @for (block of timeBlocks; track block) {
                           <div class="grid grid-cols-6 gap-4 group">
                               <!-- Time Column -->
-                              <div class="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors">
+                               <div class="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-xl text-[10px] font-black text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-indigo-900/20 transition-colors uppercase tracking-tight">
                                   {{ block }}
                               </div>
 
@@ -96,19 +96,19 @@ declare const Swal: any;
                                         [class]="cellClass ? 
                                            'shadow-sm hover:shadow-md hover:-translate-y-1' : 
                                            'bg-white/40 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700 opacity-60 hover:opacity-100'"
-                                        [style.backgroundColor]="cellClass?.color ? cellClass.color + '20' : (cellClass ? '#4f46e520' : '')"
-                                        [style.borderColor]="cellClass?.color ? cellClass.color : (cellClass ? '#4f46e5' : '')"
+                                         [style.backgroundColor]="cellClass?.color ? cellClass.color + '20' : (cellClass ? '#00336620' : '')"
+                                         [style.borderColor]="cellClass?.color ? cellClass.color : (cellClass ? '#003366' : '')"
                                         [class.cursor-pointer]="isEditMode()"
                                         [class.ring-2]="isEditMode()"
                                         [class.ring-amber-400]="isEditMode()">
                                        
                                        @if (cellClass) {
-                                           <span class="text-[10px] font-bold uppercase tracking-wide mb-1" [style.color]="cellClass.color || '#4f46e5'">Ocupado</span>
+                                            <span class="text-[10px] font-black uppercase tracking-widest mb-1" [style.color]="cellClass.color || '#003366'">OCUPADO</span>
                                           <div class="font-bold text-gray-800 dark:text-white text-xs leading-tight line-clamp-3">
                                               {{ cellClass.subject }}
                                           </div>
                                       } @else {
-                                          <span class="text-[10px] text-gray-300 dark:text-gray-600 font-medium">Disponible</span>
+                                           <span class="text-[10px] text-gray-300 dark:text-gray-600 font-bold uppercase tracking-widest">Disponible</span>
                                       }
 
                                       @if (isEditMode()) {

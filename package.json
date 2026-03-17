@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "ng build --watch & node --watch server.ts",
     "build": "ng build",
+    "build-server": "tsc -p tsconfig.server.json",
     "lint": "ng lint",
     "start": "node server.ts",
     "preview": "ng build && node server.ts"

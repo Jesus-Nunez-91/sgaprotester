@@ -8,11 +8,13 @@ module.exports = {
         extend: {
             colors: {
                 'uah-blue': '#003366',
+                'uah-orange': '#F37021',
                 'uah-gold': '#ffc107',
                 'uah-dark': '#0f172a'
             },
             fontFamily: {
-                sans: ['Inter', 'Segoe UI', 'sans-serif'],
+                sans: ['Inter', 'Montserrat', 'Segoe UI', 'sans-serif'],
+                heading: ['Montserrat', 'Inter', 'sans-serif'],
             },
             animation: {
                 'float': 'float 6s ease-in-out infinite',

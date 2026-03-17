@@ -24,7 +24,7 @@ declare const XLSX: any;
       <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-20 transition-colors">
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-3">
-             <h2 class="text-2xl font-bold text-uah-blue dark:text-blue-400 flex items-center gap-3">
+             <h2 class="text-2xl font-black text-uah-blue dark:text-blue-400 flex items-center gap-3 tracking-tighter uppercase">
                 {{ labName }}
              </h2>
           </div>
@@ -55,6 +55,10 @@ declare const XLSX: any;
               <button (click)="resetForm()" class="bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2" title="Nuevo Item">
                  <i class="bi bi-plus-lg text-lg"></i>
               </button>
+
+               <button (click)="clearAll()" class="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors flex items-center gap-2" title="VACÍAR INVENTARIO (LIMPIEZA TOTAL)">
+                  <i class="bi bi-trash3-fill"></i>
+               </button>
            }
            
            <div class="bg-gray-100 dark:bg-gray-700 p-1 rounded-xl flex shadow-inner">
@@ -97,17 +101,53 @@ declare const XLSX: any;
               </div>
               <div>
                 <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Marca / Nombre</label>
-                <input [(ngModel)]="editItem.marca" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: Dell">
+                 <input [(ngModel)]="editItem.marca" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-orange focus:border-transparent transition-all" placeholder="Ej: Dell">
               </div>
               <div>
                 <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Modelo / Detalle</label>
-                <input [(ngModel)]="editItem.modelo" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: Latitude 5420">
+                 <input [(ngModel)]="editItem.modelo" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-orange focus:border-transparent transition-all" placeholder="Ej: Latitude 5420">
               </div>
               <div>
                 <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">S/N (Serial Number)</label>
-                <input [(ngModel)]="editItem.sn" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: ABC123XYZ">
+                 <input [(ngModel)]="editItem.sn" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-orange focus:border-transparent transition-all" placeholder="Ej: ABC123XYZ">
+              </div>
+              <div>
+                <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Rótulo / ID Físico</label>
+                 <input [(ngModel)]="editItem.rotulo_ID" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-orange focus:border-transparent transition-all" placeholder="Ej: UAH-NOTE-001">
               </div>
               
+              @if (inventoryMode() === 'Equipos') {
+                 <div class="grid grid-cols-2 gap-3">
+                   <div>
+                     <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">RAM</label>
+                     <input [(ngModel)]="editItem.ram" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: 16GB">
+                   </div>
+                   <div>
+                     <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Disco (ROM)</label>
+                     <input [(ngModel)]="editItem.rom" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: 512GB SSD">
+                   </div>
+                 </div>
+                 <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Sistema Operativo</label>
+                      <input [(ngModel)]="editItem.so" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: Windows 11 Pro">
+                    </div>
+                    <div>
+                      <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Procesador</label>
+                      <input [(ngModel)]="editItem.procesador" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: Intel Core i7">
+                    </div>
+                 </div>
+                 <div>
+                   <label class="text-xs font-bold text-uah-blue dark:text-blue-300 mb-1 block ml-1">Software Instalado</label>
+                   <textarea [(ngModel)]="editItem.softwareInstalado" rows="2" class="w-full text-sm border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all" placeholder="Ej: Office 2021, AutoCAD 2024, Adobe CC"></textarea>
+                 </div>
+              } @else {
+                  <div class="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-100 dark:border-purple-800">
+                     <input type="checkbox" [(ngModel)]="editItem.esFungible" id="chkFungible" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                     <label for="chkFungible" class="text-xs font-bold text-purple-700 dark:text-purple-300 cursor-pointer italic">¿Es un insumo consumible (Fungible)?</label>
+                  </div>
+              }
+
               <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
                 <h6 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Administración de Ingreso</h6>
                 <div class="space-y-3">
@@ -156,9 +196,9 @@ declare const XLSX: any;
                  </select>
               </div>
               <div class="pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-3">
-                 <button (click)="saveItem()" class="w-full bg-uah-blue text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl text-sm flex justify-center items-center gap-2">
-                    <i class="bi bi-save"></i> {{ editItem.id ? 'ACTUALIZAR' : 'GUARDAR' }}
-                 </button>
+                  <button (click)="saveItem()" class="w-full bg-uah-orange text-white font-black py-4 rounded-xl hover:bg-orange-600 transition-all shadow-lg hover:shadow-orange-500/20 text-sm flex justify-center items-center gap-2">
+                     <i class="bi bi-save"></i> {{ editItem.id ? 'ACTUALIZAR RECURSO' : 'REGISTRAR EN INVENTARIO' }}
+                  </button>
                  <button (click)="resetForm()" class="w-full bg-white dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 text-gray-500 dark:text-gray-300 font-bold py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm">
                     LIMPIAR
                  </button>
@@ -175,16 +215,16 @@ declare const XLSX: any;
                  <label for="searchInventory" class="text-xs font-bold text-gray-400 uppercase ml-1">Buscar Recurso</label>
                  <div class="relative group">
                     <i class="bi bi-search absolute left-3 top-2.5 text-gray-400 group-hover:text-uah-blue transition-colors"></i>
-                    <input id="searchInventory" type="text" [(ngModel)]="searchTerm" placeholder="Marca, Modelo, SN..." class="w-full pl-9 py-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent text-sm transition-all">
+                    <input id="searchInventory" type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Marca, Modelo, SN..." class="w-full pl-9 py-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-uah-blue focus:border-transparent text-sm transition-all">
                  </div>
               </div>
               <div class="w-36">
                  <label for="resDateFilter" class="text-xs font-bold text-gray-400 uppercase ml-1">Fecha Reserva</label>
-                 <input id="resDateFilter" type="date" [(ngModel)]="resDate" class="w-full py-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-uah-blue focus:border-transparent">
+                  <input id="resDateFilter" type="date" [ngModel]="resDate()" (ngModelChange)="resDate.set($event)" class="w-full py-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-uah-blue focus:border-transparent">
               </div>
               <div class="w-36">
                  <label for="resBlockFilter" class="text-xs font-bold text-gray-400 uppercase ml-1">Bloque</label>
-                 <select id="resBlockFilter" [(ngModel)]="resBlock" class="w-full py-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-uah-blue focus:border-transparent">
+                  <select id="resBlockFilter" [ngModel]="resBlock()" (ngModelChange)="resBlock.set($event)" class="w-full py-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-uah-blue focus:border-transparent">
                     <option>08:30 - 09:50</option>
                     <option>10:00 - 11:20</option>
                     <option>11:30 - 12:50</option>
@@ -210,9 +250,9 @@ declare const XLSX: any;
               }
 
               @if (selection().length > 0) {
-                 <button (click)="makeReservation()" class="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:shadow-green-200 transition-all animate-pulse active:scale-95">
-                    CONFIRMAR RESERVA ({{ selectionCount() }})
-                 </button>
+                  <button (click)="makeReservation()" class="bg-gradient-to-r from-uah-orange to-orange-500 hover:from-orange-600 hover:to-orange-500 text-white font-black py-2.5 px-8 rounded-xl shadow-lg hover:shadow-orange-500/20 transition-all active:scale-95 uppercase text-xs tracking-widest">
+                     CONFIRMAR RESERVA ({{ selectionCount() }})
+                  </button>
               }
            </div>
 
@@ -221,7 +261,8 @@ declare const XLSX: any;
               <table class="w-full text-left text-sm">
                  <thead class="bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm text-gray-600 dark:text-gray-300 font-bold uppercase text-xs sticky top-0 z-10 shadow-sm">
                     <tr>
-                       <th class="p-4">Recurso</th>
+                       <th class="p-4 text-[10px] font-black uppercase text-gray-400">Rótulo / ID</th>
+                        <th class="p-4">Recurso</th>
                        <th class="p-4">Especificaciones</th>
                        <th class="p-4">Disponibilidad Real</th>
                        <th class="p-4 text-center">Acción</th>
@@ -233,7 +274,16 @@ declare const XLSX: any;
                        @let isLowStock = item.stockActual <= item.stockMinimo;
                        
                        <tr [class]="isLowStock ? 'bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-l-4 border-red-400' : 'hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors group border-l-4 border-transparent'">
-                          <td class="p-4">
+                          <td class="p-4 whitespace-nowrap">
+                                @if (item.rotulo_ID) {
+                                   <span class="text-[10px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg font-black uppercase border border-blue-200 dark:border-blue-800 shadow-sm">
+                                      {{ item.rotulo_ID }}
+                                   </span>
+                                } @else {
+                                   <span class="text-[10px] text-gray-400 italic">Sin Rótulo</span>
+                                }
+                           </td>
+                           <td class="p-4">
                              <div class="flex items-start gap-3">
                                 <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ease-out">
                                     @if (item.imagenUrl) {
@@ -257,7 +307,12 @@ declare const XLSX: any;
                                    @if (item.ram) { <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px] font-bold text-gray-600 dark:text-gray-300">{{ item.ram }}</span> }
                                    @if (item.rom) { <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px] font-bold text-gray-600 dark:text-gray-300">{{ item.rom }}</span> }
                                 </div>
-                                <div class="text-xs text-gray-400 truncate max-w-[200px]" title="{{ item.so }}">{{ item.so }}</div>
+                                 <div class="text-xs text-gray-400 truncate max-w-[200px]" title="{{ item.so }}">{{ item.so }}</div>
+                                 @if (item.softwareInstalado) {
+                                    <div class="mt-1 flex items-center gap-1 text-[10px] text-uah-blue dark:text-blue-300 font-bold bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-lg w-fit max-w-xs truncate" title="{{ item.softwareInstalado }}">
+                                       <i class="bi bi-cpu"></i> {{ item.softwareInstalado }}
+                                    </div>
+                                 }
                              } @else {
                                 <span class="px-2 py-1 rounded text-xs font-bold border" [class]="item.esFungible ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-800' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-800'">
                                    {{ item.esFungible ? 'CONSUMIBLE' : 'DEVOLUTIVO' }}
@@ -297,9 +352,9 @@ declare const XLSX: any;
 
                                 @if (item.status === 'Disponible' && stock > 0) {
                                     <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm ml-2 h-8">
-                                       <input type="number" min="1" [max]="stock" #qtyInput [value]="1" class="w-12 text-center text-xs border-0 py-1 focus:ring-0 font-bold text-gray-700 dark:text-gray-200 bg-transparent">
+                                       <input type="number" min="1" [max]="stock" #qtyInput [value]="1" class="w-12 text-center text-xs border-0 py-1 focus:ring-0 font-bold text-gray-700 dark:text-gray-200">
                                        <button (click)="toggleSelection(item, +qtyInput.value)" 
-                                          [class]="isSelected(item.id) ? 'bg-uah-blue text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-uah-gold hover:text-uah-blue'"
+                                          [class]="isSelected(item.id) ? 'bg-uah-blue text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-uah-orange hover:text-white border-uah-orange'"
                                           class="border-l border-gray-300 dark:border-gray-500 px-3 h-full font-bold text-[10px] transition-colors">
                                           {{ isSelected(item.id) ? 'QUITAR' : 'PEDIR' }}
                                        </button>
@@ -323,14 +378,14 @@ declare const XLSX: any;
                 <div class="bg-uah-blue dark:bg-gray-900 p-6 text-white flex justify-between items-start shrink-0">
                     <div class="flex gap-6 items-center">
                         <div (click)="selectedImage.set(detailItem()?.imagenUrl || 'https://picsum.photos/seed/tech/400/400')" class="w-24 h-24 bg-white rounded-2xl p-1 shadow-lg overflow-hidden group relative cursor-zoom-in">
-                            <img [src]="detailItem()?.imagenUrl || 'https://picsum.photos/seed/tech/400/400'" alt="Vista previa del equipo" class="w-full h-full object-cover rounded-xl transition-transform group-hover:scale-110">
+                            <img [src]="detailItem()?.imagenUrl || 'https://picsum.photos/seed/tech/400/400'" class="w-full h-full object-cover rounded-xl transition-transform group-hover:scale-110">
                             <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                                 <i class="bi bi-search text-xl"></i>
                             </div>
                         </div>
                         <div>
-                            <h3 class="text-2xl font-bold tracking-tight">{{ detailItem()?.marca }}</h3>
-                            <p class="text-blue-200 text-lg">{{ detailItem()?.modelo }}</p>
+                             <h3 class="text-2xl font-black tracking-tighter uppercase text-white">{{ detailItem()?.marca }}</h3>
+                             <p class="text-blue-100/80 text-lg font-medium">{{ detailItem()?.modelo }}</p>
                             <div class="mt-2 flex gap-2">
                                 <span class="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider">{{ detailItem()?.subCategoria }}</span>
                                 <span class="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider">{{ detailItem()?.tipoInventario }}</span>
@@ -394,6 +449,24 @@ declare const XLSX: any;
                                         <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ detailItem()?.rom }}</p>
                                     </div>
                                 }
+                                @if (detailItem()?.so) {
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase">Sistema Operativo</p>
+                                        <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ detailItem()?.so }}</p>
+                                    </div>
+                                }
+                                @if (detailItem()?.procesador) {
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase">Procesador</p>
+                                        <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ detailItem()?.procesador }}</p>
+                                    </div>
+                                }
+                                @if (detailItem()?.softwareInstalado) {
+                                    <div class="col-span-2 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Software Instalado</p>
+                                        <p class="text-xs font-medium text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ detailItem()?.softwareInstalado }}</p>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -437,11 +510,11 @@ declare const XLSX: any;
                                 <div class="mt-3 grid grid-cols-2 gap-3">
                                     <div class="flex flex-col gap-1">
                                         <label for="resDateModal" class="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha de Reserva</label>
-                                        <input id="resDateModal" type="date" [(ngModel)]="resDate" class="w-full py-1.5 px-3 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
+                                        <input id="resDateModal" type="date" [ngModel]="resDate()" (ngModelChange)="resDate.set($event)" class="w-full py-1.5 px-3 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
                                     </div>
                                     <div class="flex flex-col gap-1">
                                         <label for="resBlockModal" class="text-[10px] font-bold text-gray-400 uppercase ml-1">Bloque Horario</label>
-                                        <select id="resBlockModal" [(ngModel)]="resBlock" class="w-full py-1.5 px-3 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
+                                        <select id="resBlockModal" [ngModel]="resBlock()" (ngModelChange)="resBlock.set($event)" class="w-full py-1.5 px-3 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-uah-blue focus:border-transparent transition-all">
                                             <option>08:30 - 09:50</option>
                                             <option>10:00 - 11:20</option>
                                             <option>11:30 - 12:50</option>
@@ -575,15 +648,28 @@ export class InventoryComponent {
   /** Items filtrados por área, laboratorio, modo, estado y término de búsqueda */
   filteredItems = computed(() => {
     const all = this.data.inventory();
-    console.log(`Filtrando para ${this.areaName} / ${this.labName} (${this.inventoryMode()}). Total items en DB: ${all.length}`);
-    const contextItems = all.filter(i =>
-      i.categoria?.toUpperCase() === this.areaName?.toUpperCase() &&
-      i.subCategoria?.toUpperCase() === this.labName?.toUpperCase() &&
-      i.tipoInventario === this.inventoryMode()
-    );
+    const contextItems = all.filter(i => {
+      const isCorrectArea = i.categoria?.toUpperCase() === this.areaName?.toUpperCase();
+      const isCorrectType = i.tipoInventario === this.inventoryMode();
+      
+      // Lógica de compartido para FABLAB Notebooks
+      if (this.areaName?.toUpperCase() === 'FABLAB' && 
+          ['BIOMATERIALES', 'TEXTIL', 'FABRICACIÓN DIGITAL'].includes(this.labName?.toUpperCase())) {
+        return isCorrectArea && isCorrectType && 
+               (i.subCategoria?.toUpperCase() === this.labName?.toUpperCase() || i.subCategoria?.toUpperCase() === 'NOTEBOOK');
+      }
+
+      return isCorrectArea && isCorrectType && i.subCategoria?.toUpperCase() === this.labName?.toUpperCase();
+    });
     console.log(`Items encontrados para este contexto: ${contextItems.length}`);
-    const filtered = this.statusFilter() === 'Todos' ? contextItems : contextItems.filter(i => i.status === this.statusFilter());
-    return this.data.fuzzySearch(filtered, this.searchTerm(), ['marca', 'modelo', 'sn', 'status', 'so', 'ram', 'rom']);
+    let filtered = this.statusFilter() === 'Todos' ? contextItems : contextItems.filter(i => i.status === this.statusFilter());
+
+    // Visibilidad: Alumnos/Docentes solo ven lo "Disponible"
+    if (!this.isAdmin()) {
+      filtered = filtered.filter(i => i.status === 'Disponible');
+    }
+
+    return this.data.fuzzySearch(filtered, this.searchTerm(), ['marca', 'modelo', 'sn', 'status', 'so', 'ram', 'rom', 'softwareInstalado', 'rotulo_ID']);
   });
 
   /** Estados disponibles en el inventario actual para filtrar */
@@ -619,7 +705,7 @@ export class InventoryComponent {
 
   /** Navega de regreso a la selección de áreas. */
   goBack() {
-    this.router.navigate(['/areas']);
+    this.router.navigate(['/areas'], { queryParams: { area: this.areaName } });
   }
 
   /** Exporta los items filtrados a un archivo Excel. */
@@ -687,12 +773,12 @@ export class InventoryComponent {
     const diffMs = reservationDateTime.getTime() - now.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
 
-    if (this.inventoryMode() === 'Equipos' && diffHours < 4) {
-      return "Las reservas de equipos deben realizarse con al menos 4 horas de antelación.";
+    if (this.inventoryMode() === 'Equipos' && diffHours < 12) {
+      return "Las reservas de equipos deben realizarse con al menos 12 horas de antelación.";
     }
 
-    if (this.inventoryMode() === 'Arduinos' && diffHours < 48) {
-      return "Las reservas de insumos (Arduinos) deben realizarse con al menos 48 horas de antelación.";
+    if (this.inventoryMode() === 'Arduinos' && diffHours < 12) {
+      return "Las reservas de insumos y arduinos deben realizarse con al menos 12 horas de antelación.";
     }
 
     return null;
@@ -768,6 +854,24 @@ export class InventoryComponent {
       return;
     }
 
+    // 12h Lead Time Restriction for Students/Docents
+    if (!this.isAdmin()) {
+      const blockStart = block.split(' - ')[0]; // HH:mm
+      const reservationDateTime = new Date(`${date}T${blockStart}:00`);
+      const now = new Date();
+      const diffMs = reservationDateTime.getTime() - now.getTime();
+      const diffHrs = diffMs / (1000 * 60 * 60);
+
+      if (diffMs < 0) {
+        Swal.fire('Error', 'No puedes reservar en tiempo pasado.', 'error');
+        return;
+      }
+      if (diffHrs < 12) {
+        Swal.fire('Restricción', 'Las reservas deben realizarse con al menos 12 horas de antelación.', 'warning');
+        return;
+      }
+    }
+
     this.selection().forEach(sel => {
       const item = this.data.inventory().find(i => i.id === sel.id);
       if (item) this.data.createReservation(item, date, block, sel.qty);
@@ -788,7 +892,16 @@ export class InventoryComponent {
 
   /** Reinicia el formulario de edición. */
   resetForm() {
-    this.editItem = { status: 'Disponible', esFungible: false, stockActual: 1, stockMinimo: 1, numeroFactura: '', fechaLlegada: '', cantidadLlegada: 0, sn: '' };
+    this.editItem = { 
+      status: 'Disponible', 
+      esFungible: false, 
+      stockActual: 1, 
+      stockMinimo: 1, 
+      numeroFactura: '', 
+      fechaLlegada: '', 
+      cantidadLlegada: 0, 
+      sn: '', rotulo_ID: '', ram: '', rom: '', so: '', procesador: '', softwareInstalado: '' 
+    };
   }
 
   /** Carga un item en el formulario para su edición. */
@@ -847,42 +960,50 @@ export class InventoryComponent {
     });
   }
 
-
-  /** Descarga una plantilla de Excel con datos de ejemplo para el inventario. */
+  /** Descarga una plantilla de Excel profesional según el modo. */
   downloadTemplate() {
-    const template = [
-      {
-        Marca: 'Dell',
-        Modelo: 'Latitude 5420',
-        RAM: '16GB',
-        ROM: '512GB SSD',
-        SO: 'Windows 11',
-        SN: 'ABC123XYZ',
-        StockActual: 10,
-        StockMinimo: 2,
-        Status: 'Disponible',
-        EsFungible: false,
-        Factura: 'FAC-0001',
-        FechaLlegada: '2026-03-01',
-        CantLlegada: 10
-      },
-      {
-        Marca: 'Arduino',
-        Modelo: 'Uno R3',
-        RAM: '',
-        ROM: '',
-        SO: '',
-        SN: '',
-        StockActual: 50,
-        StockMinimo: 10,
-        Status: 'Disponible',
-        EsFungible: true,
-        Factura: 'FAC-0002',
-        FechaLlegada: '2026-03-01',
-        CantLlegada: 50
-      }
-    ];
-    this.data.downloadExcel(template, 'Plantilla_Inventario');
+    let template: any[] = [];
+    
+    if (this.inventoryMode() === 'Equipos') {
+      template = [
+        {
+          UBICACIÓN: 'FABLAB',
+          'SUB-LAB_ID': 'FABLAB',
+          MARCA: 'LENOVO',
+          MODELO: 'THINKPAD L14',
+          SN: 'SN-001X',
+          STATUS: 'Disponible',
+          SO: 'Windows 11 Pro',
+          RAM: '16GB',
+          ROM: '512GB SSD',
+          PROCESADOR: 'Intel Core i7 11th Gen',
+          StockActual: 10,
+          StockMinimo: 2,
+          Factura: 'FAC-001',
+          FechaLlegada: '2024-03-01',
+          CantLlegada: 10,
+          'ADOBE ACROBAT': 'X',
+          'AUTODESK': 'X',
+          'CHROME': 'X'
+        }
+      ];
+    } else {
+      template = [
+        {
+          LABORATORIO: 'DESARROLLO TECNOLOGICO',
+          ITEM: 'MATERIAL',
+          CANTIDAD: 25,
+          DESCRIPCION: 'PINZAS MEDEL 170 1MM',
+          UBICACIÓN: 'BODEGA',
+          'FIJO/FUNGIBLE': 'FIJO',
+          OBS: 'Sin observaciones',
+          StockMinimo: 5,
+          Factura: 'FAC-999',
+          FechaLlegada: '2024-03-01'
+        }
+      ];
+    }
+    this.data.downloadExcel(template, `Plantilla_${this.inventoryMode()}`);
   }
 
   /** Importa datos desde un archivo Excel. */
@@ -899,33 +1020,148 @@ export class InventoryComponent {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       const itemsToUpload = jsonData
-        .filter((row: any) => row['Marca'] || row['Modelo'])
         .map((row: any) => {
-          const parseNum = (val: any, def: number) => {
-            if (val === undefined || val === null || val === '') return def;
-            const n = parseInt(val, 10);
+          const getV = (prefixes: string[]) => {
+            const keys = Object.keys(row);
+            const upperPrefixes = prefixes.map(p => p.toUpperCase());
+            // Prioridad 1: Match exacto
+            const exact = keys.find(k => upperPrefixes.includes(k.toUpperCase()));
+            if (exact) return String(row[exact] || '').trim();
+            // Prioridad 2: Match parcial (soporta truncados como UBICACIÓ -> UBICACIÓN)
+            const partial = keys.find(k => {
+              const uk = k.toUpperCase();
+              return upperPrefixes.some(up => up.includes(uk) || uk.includes(up));
+            });
+            return partial ? String(row[partial] || '').trim() : '';
+          };
+          
+          const getNum = (prefixes: string[], def: number) => {
+            const val = getV(prefixes);
+            if (!val) return def;
+            const n = parseInt(val.replace(/[^\d]/g, ''), 10);
             return isNaN(n) ? def : n;
           };
 
-          return {
-            marca: String(row['Marca'] || ''),
-            modelo: String(row['Modelo'] || ''),
-            ram: String(row['RAM'] || ''),
-            rom: String(row['ROM'] || ''),
-            so: String(row['SO'] || ''),
-            sn: String(row['SN'] || ''),
-            stockActual: parseNum(row['StockActual'], 0),
-            stockMinimo: parseNum(row['StockMinimo'], 5),
-            status: String(row['Status'] || 'Disponible'),
-            esFungible: row['EsFungible'] === true || row['EsFungible'] === 'true' || row['EsFungible'] === 'Sí' || row['EsFungible'] === 'VERDADERO',
-            numeroFactura: String(row['Factura'] || ''),
-            fechaLlegada: String(row['FechaLlegada'] || ''),
-            cantidadLlegada: parseNum(row['CantLlegada'], 0),
-            categoria: this.areaName,
-            subCategoria: this.labName,
-            tipoInventario: this.inventoryMode()
-          };
-        });
+          const normalize = (s: string) => s.toUpperCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+          // 1. Determinar Categoría y Ruteo Dinámico
+          let cat = this.areaName;
+          let subCat = this.labName;
+          let tipInv = this.inventoryMode();
+
+          const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA']));
+          const sH = normalize(getV(['SUB-LAB_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB']));
+          
+          // Detección de Formato (Movida arriba para ruteo)
+          const marca = getV(['MARCA', 'BRAND']);
+          const procesador = getV(['PROCESADOR', 'CPU']);
+          const ram = getV(['RAM', 'MEMORIA']);
+          const isNotebook = !!(marca || procesador || ram || getV(['SO', 'SISTEMA', 'SN', 'S/N']));
+
+          let matched = false;
+          // Buscar en la jerarquía oficial
+          for (const [area, labs] of Object.entries(this.data.hierarchy)) {
+            const nArea = normalize(area);
+            if (uH.includes(nArea) || sH.includes(nArea)) {
+              cat = area;
+              const sub = labs.find(l => uH.includes(normalize(l)) || sH.includes(normalize(l)));
+              if (sub) {
+                subCat = sub;
+              } else if (cat === 'FABLAB' && isNotebook) {
+                subCat = 'NOTEBOOK';
+              }
+              matched = true;
+              break;
+            }
+          }
+
+          if (!matched) {
+            if (uH.includes('HACKERLAB') || sH.includes('HACKERLAB')) {
+              cat = 'LAB INFORMATICA'; subCat = 'HACKERLAB';
+            } else if (uH.includes('INFORMATICA') || uH.includes('TECNOLOGICO') || sH.includes('DESARROLLO')) {
+              cat = 'LAB INFORMATICA'; subCat = 'DESARROLLO TECNOLOGICO';
+            }
+          }
+
+          if (cat === 'FABLAB' && isNotebook && subCat === 'FABLAB') {
+            subCat = 'NOTEBOOK';
+          }
+          
+          console.log(`Ruteo: Cat=${cat}, SubCat=${subCat}, Fila=${uH}|${sH}`);
+
+          // 2. Mapeo de Campos según Formato
+          if (isNotebook) {
+            const softwareList: string[] = [];
+            const standardKeys = [
+              'UBICACIÓN', 'UBICACIÓ', 'UBICACION', 'SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO',
+              'MARCA', 'MODELO', 'SN', 'STATUS', 'STADO', 'ESTADO', 'SO', 'RAM', 'ROM', 'PROCESADOR', 'CPU',
+              'STOCK', 'ACTUAL', 'MINIMO', 'FACTURA', 'LLEGADA', 'FECHA', 'CANT'
+            ];
+
+            Object.keys(row).forEach(key => {
+              const val = String(row[key]);
+              if (val.toUpperCase() === 'X' || val === 'true' || row[key] === true) {
+                const upperKey = key.toUpperCase();
+                if (!standardKeys.some(sk => upperKey.includes(sk))) {
+                  softwareList.push(key);
+                }
+              }
+            });
+
+            return {
+              marca: marca || 'Genérico',
+              modelo: getV(['MODELO', 'MODEL', 'DESCRIPCION']),
+              ram: ram,
+              rom: getV(['ROM', 'DISCO', 'HDD', 'SSD']),
+              so: getV(['SO', 'SISTEMA', 'OPERATIVO']),
+              sn: getV(['SN', 'S/N', 'SERIAL']),
+              rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO']),
+              procesador: procesador,
+              softwareInstalado: softwareList.join('\n'),
+              stockActual: getNum(['ACTUAL', 'STOCKACTUA', 'CANTIDAD'], 1),
+              stockMinimo: getNum(['MINIMO', 'STOCKMINIR'], 0),
+              status: (v => {
+                const s = v.toUpperCase().replace('_', ' ');
+                if (s.includes('DEFECT') || s.includes('FALLA') || s.includes('MALO')) return 'Defectuoso';
+                if (s.includes('NO DISPONIB') || s.includes('MANTEN') || s.includes('NO_')) return 'No Disponible';
+                return 'Disponible';
+              })(getV(['STATUS', 'STADO', 'ESTADO'])),
+              esFungible: false,
+              numeroFactura: getV(['FACTURA', 'N* FACTURA']),
+              fechaLlegada: getV(['FECHALLEG', 'LLEGADA', 'FECHA']),
+              cantidadLlegada: getNum(['CANTLLEGA', 'LLEGADA'], 0),
+              categoria: cat,
+              subCategoria: subCat,
+              tipoInventario: tipInv
+            };
+          } else {
+            // Formato Insumo / Genérico
+            const statusV = getV(['STATUS', 'STADO', 'ESTADO']);
+            const mappedStatus = (v: string) => {
+              const s = v.toUpperCase().replace('_', ' ');
+              if (s.includes('DEFECT') || s.includes('FALLA')) return 'Defectuoso';
+              if (s.includes('NO DISPONIB') || s.includes('MANTEN') || s.includes('NO_')) return 'No Disponible';
+              return 'Disponible';
+            };
+
+            return {
+              marca: marca || 'Genérico',
+              modelo: getV(['DESCRIPCION', 'ITEM', 'MODELO']),
+              status: mappedStatus(statusV),
+              esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
+              stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
+              stockMinimo: getNum(['MINIMO', 'STOCKMIN'], 0),
+              numeroFactura: getV(['FACTURA']),
+              fechaLlegada: getV(['FECHA', 'LLEGADA']),
+              categoria: cat,
+              subCategoria: subCat,
+              tipoInventario: cat === 'FABLAB' && tipInv === 'Equipos' ? 'Equipos' : 'Arduinos',
+              sn: getV(['OBS', 'SN', 'SERIAL', 'OBSERVACION']),
+              rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO', 'UBICACIÓN'])
+            };
+          }
+        })
+        .filter((row: any) => row.modelo || row.marca);
 
       console.log("Datos sanitizados para enviar:", itemsToUpload);
 
@@ -934,7 +1170,7 @@ export class InventoryComponent {
         Swal.fire({
           icon: 'success',
           title: 'Carga Completada',
-          text: `Se han procesado ${itemsToUpload.length} items.`,
+          text: `Se han procesado ${itemsToUpload.length} items ruteados correctamente.`,
           timer: 2000,
           showConfirmButton: false
         });
@@ -942,5 +1178,28 @@ export class InventoryComponent {
       event.target.value = '';
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  /** Función para vaciar todo el inventario */
+  async clearAll() {
+    Swal.fire({
+      title: '¿VACIAR TODO EL INVENTARIO?',
+      text: "Esta acción borrará TODOS los equipos e insumos de la base de datos. ¡No se puede deshacer!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'SÍ, BORRAR TODO',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result: any) => {
+      if (result.isConfirmed) {
+        const ok = await this.data.clearAllInventory();
+        if (ok) {
+          Swal.fire('Vaciado', 'El inventario ha sido limpiado por completo.', 'success');
+        } else {
+          Swal.fire('Error', 'No se pudo vaciar el inventario.', 'error');
+        }
+      }
+    });
   }
 }

@@ -8,6 +8,9 @@ export class InventoryItem {
     @Column()
     tipoInventario: 'Equipos' | 'Arduinos';
 
+    @Column({ nullable: true })
+    rotulo_ID: string;
+
     @Column()
     categoria: string;
 
@@ -30,10 +33,16 @@ export class InventoryItem {
     so: string;
 
     @Column({ nullable: true })
+    procesador: string;
+
+    @Column({ nullable: true })
     ram: string;
 
     @Column({ nullable: true })
     rom: string;
+
+    @Column({ type: 'text', nullable: true })
+    softwareInstalado: string;
 
     @Column({ default: 0 })
     stockActual: number;

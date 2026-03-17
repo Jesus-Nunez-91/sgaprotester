@@ -14,6 +14,11 @@ import { Reservation } from '../src/entities/Reservation';
 import { AdminTask } from '../src/entities/AdminTask';
 import { MaintenanceTask } from '../src/entities/MaintenanceTask';
 import { PurchaseOrder } from '../src/entities/PurchaseOrder';
+import { AuditLog } from '../src/entities/AuditLog';
+import { Project } from '../src/entities/Project';
+import { ProjectTask } from '../src/entities/ProjectTask';
+import { WikiDoc } from '../src/entities/WikiDoc';
+import { Bitacora } from '../src/entities/Bitacora';
 import dotenv from "dotenv";
 import helmet from "helmet";
 import bcrypt from 'bcryptjs';
@@ -58,6 +63,16 @@ AppDataSource.initialize()
   })
   .catch((err) => console.error("Error DB:", err));
 
+const logAudit = async (nombre: string, usuario: string, rol: string, accion: string, detalle: string) => {
+  try {
+    const auditRepo = AppDataSource.getRepository(AuditLog);
+    const log = auditRepo.create({ nombre, usuario, rol, accion, detalle });
+    await auditRepo.save(log);
+  } catch (error) {
+    console.error("Error saving audit log:", error);
+  }
+};
+
 // --- ENDPOINTS DE AUTENTICACION ---
 
 app.post('/api/auth/login', async (req, res) => {
@@ -67,19 +82,23 @@ app.post('/api/auth/login', async (req, res) => {
     const user = await userRepo.findOneBy({ correo });
 
     if (!user) {
+      await logAudit('Sistema', correo || 'N/A', 'N/A', 'LOGIN_FAIL', 'Intento de login fallido: Correo no encontrado');
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      await logAudit(user.nombreCompleto, user.correo, user.rol, 'LOGIN_FAIL', 'Intento de login fallido: Password incorrecta');
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
     const token = jwt.sign(
-      { id: user.id, rol: user.rol },
+      { id: user.id, rol: user.rol, nombre: user.nombreCompleto, correo: user.correo },
       JWT_SECRET,
       { expiresIn: '8h' }
     );
+
+    await logAudit(user.nombreCompleto, user.correo, user.rol, 'LOGIN_SUCCESS', 'Inicio de sesión exitoso');
 
     // No enviar la contraseña al cliente
     const { password: _, ...userWithoutPassword } = user;
@@ -115,6 +134,14 @@ app.get('/api/users', authMiddleware, async (req: any, res) => {
   }));
 });
 
+app.get('/api/audit', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  const logs = await AppDataSource.getRepository(AuditLog).find({ order: { fecha: 'DESC' }, take: 1000 });
+  res.json(logs);
+});
+
 app.post('/api/users', authMiddleware, async (req: any, res) => {
   if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
     return res.status(403).json({ message: 'Acceso denegado' });
@@ -125,6 +152,9 @@ app.post('/api/users', authMiddleware, async (req: any, res) => {
     const hashedPassword = await bcrypt.hash(password || 'uah123', 10);
     const newUser = userRepo.create({ ...userData, password: hashedPassword });
     const savedUser: any = await userRepo.save(newUser);
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'CREATE_USER', `Usuario creado: ${savedUser.nombreCompleto} (${savedUser.rol})`);
+
     const { password: _, ...result } = savedUser;
     res.status(201).json(result);
   } catch (error) {
@@ -269,8 +299,9 @@ app.post('/api/inventory', authMiddleware, async (req: any, res) => {
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     const newItem = itemRepo.create(req.body);
-    await itemRepo.save(newItem);
-    res.status(201).json(newItem);
+    const savedItem = await itemRepo.save(newItem) as any;
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_CREATE', `Item creado: ${savedItem.nombre} (${savedItem.rotulo || 'Sin rotulo'})`);
+    res.status(201).json(savedItem);
   } catch (error: any) {
     console.error("ERROR AL CREAR ITEM INDIVIDUAL:", error.message);
     if (error.detail) console.error("DETALLE DB:", error.detail);
@@ -294,8 +325,8 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
 
     // Guardar todos los items. save() de TypeORM maneja arrays y genera IDs si faltan.
     const savedItems = await itemRepo.save(itemsData);
-    console.log(`Carga masiva finalizada exitosamente. ${savedItems.length} items persistidos.`);
-
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_BULK', `Carga masiva: ${savedItems.length} items en ${itemsData[0]?.categoria}`);
+    
     res.status(201).json({
       message: 'Carga masiva exitosa',
       count: savedItems.length
@@ -317,8 +348,9 @@ app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
     const item = await itemRepo.findOneBy({ id: parseInt(req.params.id) });
     if (!item) return res.status(404).json({ message: 'Item no encontrado' });
     Object.assign(item, req.body);
-    await itemRepo.save(item);
-    res.json(item);
+    const updated = await itemRepo.save(item) as any;
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_UPDATE', `Item actualizado: ${updated.nombre} - ${updated.estado}`);
+    res.json(updated);
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar item' });
   }
@@ -336,6 +368,21 @@ app.delete('/api/inventory/:id', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Endpoint para vaciar TODO el inventario
+app.delete('/api/inventory/mass/clear', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const itemRepo = AppDataSource.getRepository(InventoryItem);
+    await itemRepo.clear(); // Esto vacía la tabla por completo
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error clearing inventory:", error);
+    res.status(500).json({ message: 'Error al vaciar el inventario' });
+  }
+});
+
 // --- ENDPOINTS DE RESERVAS ---
 
 app.get('/api/reservations', async (req, res) => {
@@ -347,8 +394,9 @@ app.post('/api/reservations', authMiddleware, async (req: any, res) => {
   try {
     const resRepo = AppDataSource.getRepository(Reservation);
     const newRes = resRepo.create(req.body);
-    await resRepo.save(newRes);
-    res.status(201).json(newRes);
+    const savedRes = await resRepo.save(newRes) as any;
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'RESERVATION_CREATE', `Reserva creada: ${savedRes.bloque} - ${savedRes.fecha}`);
+    res.status(201).json(savedRes);
   } catch (error) {
     res.status(400).json({ message: 'Error al crear reserva' });
   }
@@ -360,13 +408,53 @@ app.put('/api/reservations/:id', authMiddleware, async (req: any, res) => {
   }
   try {
     const resRepo = AppDataSource.getRepository(Reservation);
-    const reservation = await resRepo.findOneBy({ id: parseInt(req.params.id) });
+    const reservation = await resRepo.findOne({ where: { id: parseInt(req.params.id) } });
     if (!reservation) return res.status(404).json({ message: 'Reserva no encontrada' });
     Object.assign(reservation, req.body);
-    await resRepo.save(reservation);
-    res.json(reservation);
+    const updated = await resRepo.save(reservation) as any;
+    
+    // Si se aprueba, loguear
+    if (req.body.aprobada && !reservation.aprobada) {
+       await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'RESERVATION_APPROVE', `Reserva aprobada: ID ${updated.id} para ${updated.nombreSolicitante}`);
+    }
+
+    res.json(updated);
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar reserva' });
+  }
+});
+
+app.post('/api/reservations/:id/check-in', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const resRepo = AppDataSource.getRepository(Reservation);
+    const reservation = await resRepo.findOne({ where: { id: parseInt(req.params.id) } });
+    if (!reservation) return res.status(404).json({ message: 'Reserva no encontrada' });
+    
+    reservation.clockIn = new Date();
+    await resRepo.save(reservation);
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'CHECK_IN', `Ingreso registrado: ${reservation.nombreSolicitante} - Reserva ID ${reservation.id}`);
+    res.json(reservation);
+  } catch (error) {
+    res.status(500).json({ message: 'Error en check-in' });
+  }
+});
+
+app.post('/api/reservations/:id/check-out', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const resRepo = AppDataSource.getRepository(Reservation);
+    const reservation = await resRepo.findOne({ where: { id: parseInt(req.params.id) } });
+    if (!reservation) return res.status(404).json({ message: 'Reserva no encontrada' });
+    
+    reservation.clockOut = new Date();
+    await resRepo.save(reservation);
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'CHECK_OUT', `Salida registrada: ${reservation.nombreSolicitante} - Reserva ID ${reservation.id}`);
+    res.json(reservation);
+  } catch (error) {
+    res.status(500).json({ message: 'Error en check-out' });
   }
 });
 
@@ -521,6 +609,86 @@ app.delete('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
 });
 
 
+// --- ENDPOINTS DE PROYECTOS ---
+
+app.get('/api/projects', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  const repo = AppDataSource.getRepository(Project);
+  const projects = await repo.find({ relations: ['tasks'] });
+  res.json(projects);
+});
+
+app.post('/api/projects', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const repo = AppDataSource.getRepository(Project);
+    const project = repo.create(req.body);
+    await repo.save(project);
+    res.status(201).json(project);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear proyecto' });
+  }
+});
+
+app.put('/api/projects/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const repo = AppDataSource.getRepository(Project);
+    const p = await repo.findOne({ where: { id: parseInt(req.params.id) }, relations: ['tasks'] });
+    if (!p) return res.status(404).json({ message: 'No encontrado' });
+    Object.assign(p, req.body);
+    await repo.save(p);
+    res.json(p);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar proyecto' });
+  }
+});
+
+app.delete('/api/projects/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  await AppDataSource.getRepository(Project).delete(req.params.id);
+  res.status(204).send();
+});
+
+// --- ENDPOINTS DE WIKI/DOCUMENTACIÓN ---
+
+app.get('/api/wiki', authMiddleware, async (req: any, res) => {
+  const isAdmin = req.user.rol === 'SuperUser' || req.user.rol === 'Admin';
+  const repo = AppDataSource.getRepository(WikiDoc);
+  
+  let docs;
+  if (isAdmin) {
+    docs = await repo.find({ order: { createdAt: 'DESC' } });
+  } else {
+    docs = await repo.find({ 
+      where: { isPublic: true },
+      order: { createdAt: 'DESC' } 
+    });
+  }
+  res.json(docs);
+});
+
+app.post('/api/wiki', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const repo = AppDataSource.getRepository(WikiDoc);
+    const doc = repo.create(req.body);
+    await repo.save(doc);
+    res.status(201).json(doc);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear documento' });
+  }
+});
+
+app.delete('/api/wiki/:id', authMiddleware, async (req: any, res) => {
+    if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+    await AppDataSource.getRepository(WikiDoc).delete(req.params.id);
+    res.status(204).send();
+});
+
+
 // --- LÓGICA DE SOCKETS (SOPORTE) ---
 io.on('connection', async (socket) => {
   const ticketRepo = AppDataSource.getRepository(Ticket);
@@ -579,6 +747,8 @@ io.on('connection', async (socket) => {
 
       await msgRepo.save(newMessage);
 
+      await logAudit(userName, user?.correo || 'N/A', user?.rol || 'Alumno', 'CREATE_TICKET', `Ticket creado: ${subject}`);
+
       // Añadir el mensaje al objeto ticket para la emisión
       newTicket.messages = [newMessage];
 
@@ -608,6 +778,8 @@ io.on('connection', async (socket) => {
       });
 
       await msgRepo.save(newMessage);
+
+      await logAudit(sender, 'N/A', role, 'SEND_MESSAGE', `Mensaje en ticket ${ticketId}: ${text.substring(0,20)}...`);
 
       // Actualizar metadata del ticket
       ticket.lastMessage = text;
@@ -639,7 +811,9 @@ io.on('connection', async (socket) => {
         const adminName = (socket as any).userName || 'Administrador';
         const logMsg = msgRepo.create({
           ticketId: String(ticketId),
-          text: `[SISTEMA]: El ticket ha sido marcado como ${status === 'Open' ? 'ABIERTO' : 'CERRADO'} por ${adminName}.`,
+          text: `[SISTEMA]: El ticket ha sido marcado como ${
+            status === 'Open' ? 'ABIERTO' : status === 'In Progress' ? 'EN CURSO' : 'CERRADO'
+          } por ${adminName}.`,
           sender: 'Sistema',
           senderRole: 'admin',
           timestamp: new Date().toISOString(),
@@ -684,6 +858,38 @@ io.on('connection', async (socket) => {
   });
 });
 
+// --- ENDPOINTS DE BITACORA ---
+
+app.get('/api/bitacora', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  const repo = AppDataSource.getRepository(Bitacora);
+  const entries = await repo.find({ order: { id: 'DESC' } });
+  res.json(entries);
+});
+
+app.post('/api/bitacora', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const repo = AppDataSource.getRepository(Bitacora);
+    const entry = repo.create({
+        ...req.body,
+        adminName: req.user.nombre,
+        adminId: req.user.id
+    });
+    const savedEntry = await repo.save(entry) as any;
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'BITACORA_ENTRY', `Nueva anotación: ${savedEntry.section} - ${savedEntry.type}`);
+    res.status(201).json(savedEntry);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear entrada en bitácora' });
+  }
+});
+
+app.delete('/api/bitacora/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  await AppDataSource.getRepository(Bitacora).delete(req.params.id);
+  res.status(204).send();
+});
+
 // --- SERVIR FRONTEND ---
 const publicPath = path.join(process.cwd(), 'dist/sga-pro/browser');
 app.use(express.static(publicPath));
@@ -692,6 +898,7 @@ app.use(express.static(publicPath));
 app.get('*', (req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'));
 });
+
 
 httpServer.listen(PORT, () => {
   console.log(`🚀 Servidor listo en puerto ${PORT}`);

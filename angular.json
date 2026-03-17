@@ -50,7 +50,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "port": 3000
+            "port": 3030
           },
           "configurations": {
             "production": {

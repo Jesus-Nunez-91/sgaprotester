@@ -15,46 +15,66 @@ declare var Swal: any;
   standalone: true,
   imports: [FormsModule, CommonModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center -mt-10">
+    <div class="min-h-screen flex items-center justify-center bg-transparent p-6">
       <div class="w-full max-w-md">
-        <!-- Contenedor principal con efecto Glassmorphism -->
-        <div class="glass-panel p-8 rounded-3xl shadow-2xl text-center transform transition-all hover:scale-[1.01]">
-          <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="w-32 h-32 mx-auto mb-6 rounded-full shadow-lg object-contain bg-white p-2" alt="Logo UAH">
-          
-          <h2 class="text-2xl font-bold text-uah-blue mb-2">Portal de Ingeniería</h2>
-          <p class="text-gray-500 text-sm mb-8">Gestión de Laboratorios & Activos</p>
+        <!-- Contenedor principal con estilo institucional -->
+        <div class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,51,102,0.15)] overflow-hidden border border-gray-100 flex flex-col">
+          <!-- Banner Superior -->
+          <div class="bg-uah-blue p-10 flex flex-col items-center text-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+              <div class="absolute -top-20 -left-20 w-64 h-64 bg-uah-orange rounded-full blur-3xl"></div>
+              <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-uah-gold rounded-full blur-3xl"></div>
+            </div>
+            
+            <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="w-24 h-24 mb-6 rounded-full shadow-2xl relative z-10 object-contain bg-white p-2" alt="Logo UAH">
+            <h1 class="text-white text-3xl font-black tracking-tighter relative z-10">SGA <span class="text-uah-orange">PRO</span></h1>
+            <p class="text-blue-100 text-xs font-bold uppercase tracking-widest mt-2 relative z-10 opacity-80">Facultad de Ingeniería</p>
+          </div>
 
-          <!-- Formulario de Login -->
-          <form (submit)="onLogin($event)" class="space-y-4 text-left">
-            <div>
-              <label class="block text-xs font-bold text-uah-blue uppercase mb-1 ml-1">Correo Electrónico</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="bi bi-envelope text-gray-400"></i>
-                </div>
-                <input type="email" [(ngModel)]="email" name="email" class="w-full pl-10 pr-4 py-3 rounded-xl border-gray-200 focus:border-uah-blue focus:ring-uah-blue bg-white/50 backdrop-blur-sm shadow-sm transition-all" placeholder="nombre@uahurtado.cl">
-              </div>
+          <div class="p-10">
+            <div class="mb-8">
+              <h2 class="text-xl font-black text-uah-blue tracking-tight">Bienvenido al Portal</h2>
+              <p class="text-gray-400 text-sm font-medium">Gestión de Laboratorios e Infraestructura</p>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-uah-blue uppercase mb-1 ml-1">Contraseña</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="bi bi-lock text-gray-400"></i>
+            <!-- Formulario de Login -->
+            <form (submit)="onLogin($event)" class="space-y-6">
+              <div class="space-y-2">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Institucional Email</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="bi bi-person-fill text-uah-blue"></i>
+                  </div>
+                  <input type="email" [(ngModel)]="email" name="email" 
+                    class="w-full pl-12 pr-4 py-4 rounded-2xl border-none bg-gray-50 focus:bg-white focus:ring-2 focus:ring-uah-blue text-sm font-bold text-gray-700 transition-all shadow-inner" 
+                    placeholder="ejemplo@uahurtado.cl">
                 </div>
-                <input type="password" [(ngModel)]="pass" name="pass" class="w-full pl-10 pr-4 py-3 rounded-xl border-gray-200 focus:border-uah-blue focus:ring-uah-blue bg-white/50 backdrop-blur-sm shadow-sm transition-all" placeholder="•••••••">
               </div>
+
+              <div class="space-y-2">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contraseña</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="bi bi-shield-lock-fill text-uah-blue"></i>
+                  </div>
+                  <input type="password" [(ngModel)]="pass" name="pass" 
+                    class="w-full pl-12 pr-4 py-4 rounded-2xl border-none bg-gray-50 focus:bg-white focus:ring-2 focus:ring-uah-blue text-sm font-bold text-gray-700 transition-all shadow-inner" 
+                    placeholder="••••••••">
+                </div>
+              </div>
+
+              <button type="submit" 
+                class="w-full bg-uah-orange hover:bg-orange-600 text-white font-black py-5 rounded-2xl shadow-lg shadow-orange-500/30 hover:shadow-xl transition-all flex items-center justify-center gap-3 group mt-4 tracking-tighter">
+                ACCEDER AL SGA
+                <i class="bi bi-arrow-right-circle-fill text-xl group-hover:translate-x-1 transition-transform"></i>
+              </button>
+            </form>
+
+            <div class="mt-8 pt-8 border-t border-gray-50 flex justify-between items-center text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+              <span>Alberto Hurtado</span>
+              <span>v2.0 Beta</span>
             </div>
-
-            <button type="submit" class="w-full bg-uah-blue hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group mt-6">
-              INGRESAR AL SISTEMA
-              <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
-            </button>
-
-          </form>
-          <p class="text-gray-500 text-sm mb-8">Gestión de Laboratorios & Activos</p>
-
-          <!-- Sección de ayuda removida por seguridad -->
+          </div>
         </div>
       </div>
     </div>

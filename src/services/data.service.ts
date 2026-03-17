@@ -18,13 +18,16 @@ export interface InventoryItem {
   tipoInventario: 'Equipos' | 'Arduinos';
   categoria: string;
   subCategoria: string;
+  rotulo_ID?: string;
   marca: string;
   modelo: string;
   sn?: string;
   status: string;
   so?: string;
+  procesador?: string;
   ram?: string;
   rom?: string;
+  softwareInstalado?: string;
   stockActual: number;
   stockMinimo: number;
   stockDefectuoso: number;
@@ -49,6 +52,8 @@ export interface Reservation {
   rechazada: boolean;
   motivoRechazo?: string;
   devuelto?: number;
+  clockIn?: Date | string;
+  clockOut?: Date | string;
 }
 
 export interface AuditLog {
@@ -66,9 +71,41 @@ export interface SupportTicket {
   userId: number;
   userName: string;
   subject: string;
-  status: 'Open' | 'Closed';
+  status: 'Open' | 'In Progress' | 'Closed';
   messages: any[];
   lastUpdate: string;
+}
+
+export interface ProjectTask {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  progress: number;
+  projectId: number;
+  assigneeId?: number;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: 'Planeacion' | 'En Progreso' | 'Finalizado';
+  color: string;
+  managerId: number;
+  tasks: ProjectTask[];
+}
+
+export interface WikiDoc {
+  id: number;
+  title: string;
+  category: 'Protocolo' | 'Manual' | 'Guia';
+  content: string;
+  isPublic: boolean;
+  fileUrl?: string;
+  createdAt: string;
 }
 
 export interface MaintenanceTask {
@@ -117,6 +154,7 @@ export interface ClassSchedule {
   day: string;
   block: string;
   subject: string;
+  color?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -137,12 +175,15 @@ export class DataService {
   maintenanceTasks = signal<MaintenanceTask[]>([]);
   purchaseOrders = signal<PurchaseOrder[]>([]);
   classSchedules = signal<ClassSchedule[]>([]);
+  projects = signal<Project[]>([]);
+  wikiDocs = signal<WikiDoc[]>([]);
   labBudgets = signal<Record<string, number>>({ 'FABLAB': 15000000, 'QUIMICA': 8000000, 'FISICA': 8000000, 'INFORMATICA': 12000000 });
   darkMode = signal<boolean>(false);
   adminTasks = signal<any[]>([]);
+  bitacora = signal<any[]>([]);
 
   hierarchy: Record<string, string[]> = {
-    'FABLAB': ['TEXTIL', 'FABRICACION DIGITAL', 'BIOMATERIALES', 'NOTEBOOK'],
+    'FABLAB': ['BIOMATERIALES', 'TEXTIL', 'FABRICACIÓN DIGITAL'],
     'LAB CIENCIAS BASICAS': ['QUIMICA', 'FISICA'],
     'LAB INFORMATICA': ['HACKERLAB', 'DESARROLLO TECNOLOGICO']
   };
@@ -157,6 +198,9 @@ export class DataService {
     this.fetchMaintenanceTasks();
     this.fetchPurchaseOrders();
     this.fetchAdminTasks();
+    this.fetchAuditLogs();
+    this.fetchProjects();
+    this.fetchWiki();
     effect(() => document.documentElement.classList.toggle('dark', this.darkMode()));
   }
 
@@ -229,6 +273,10 @@ export class DataService {
     this.save();
   }
   toggleDarkMode() { this.darkMode.update(v => !v); }
+  updateBudgets(newBudgets: Record<string, number>) {
+    this.labBudgets.set(newBudgets);
+    this.save();
+  }
 
   async addItem(item: any) {
     if (!this.token()) return;
@@ -244,6 +292,36 @@ export class DataService {
       if (res.ok) await this.fetchInventory();
     } catch (e) {
       console.error("Error al añadir item", e);
+    }
+  }
+
+  async checkIn(id: number) {
+    try {
+      const res = await fetch(`/api/reservations/${id}/check-in`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        this.reservations.update(list => list.map(r => r.id === id ? { ...r, clockIn: updated.clockIn } : r));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async checkOut(id: number) {
+    try {
+      const res = await fetch(`/api/reservations/${id}/check-out`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        this.reservations.update(list => list.map(r => r.id === id ? { ...r, clockOut: updated.clockOut } : r));
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -291,6 +369,21 @@ export class DataService {
       if (res.ok) await this.fetchInventory();
     } catch (e) {
       console.error("Error en carga masiva", e);
+    }
+  }
+
+  async clearAllInventory() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/inventory/mass/clear', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchInventory();
+      return res.ok;
+    } catch (e) {
+      console.error("Error al vaciar inventario", e);
+      return false;
     }
   }
 
@@ -351,6 +444,21 @@ export class DataService {
       }
     } catch (e) {
       console.error("Error al actualizar reserva en API", e);
+    }
+  }
+
+  async fetchAuditLogs() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/audit', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        this.auditLogs.set(data);
+      }
+    } catch (e) {
+      console.error("Error al cargar logs", e);
     }
   }
 
@@ -432,8 +540,9 @@ export class DataService {
     } catch (e) { console.error("Error al crear OC", e); }
   }
 
-  async updatePurchaseOrder(id: number, data: any) {
+  async updatePurchaseOrder(id: number, data: any, stage?: PurchaseStage) {
     if (!this.token()) return;
+    const payload = stage ? { ...data, stage } : data;
     try {
       const res = await fetch(`/api/procurement/${id}`, {
         method: 'PUT',
@@ -441,7 +550,7 @@ export class DataService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       if (res.ok) await this.fetchPurchaseOrders();
     } catch (e) { console.error("Error al actualizar OC", e); }
@@ -534,6 +643,10 @@ export class DataService {
 
   closeTicket(id: number) {
     this.socket.emit('ticket:update_status', { ticketId: id, status: 'Closed' });
+  }
+
+  updateTicketStatus(ticketId: number, status: string) {
+    this.socket.emit('ticket:update_status', { ticketId, status });
   }
 
   // --- GESTIÓN DE USUARIOS API ---
@@ -685,6 +798,7 @@ export class DataService {
       this.token.set(token);
       this.currentUser.set(JSON.parse(session));
       this.fetchUsers();
+      this.fetchAuditLogs();
     }
   }
 
@@ -764,5 +878,71 @@ export class DataService {
     } catch (e) {
       console.error("Error al cargar reservas", e);
     }
+  }
+
+  // --- GESTIÓN DE PROYECTOS API ---
+  async fetchProjects() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/projects', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      if (res.ok) this.projects.set(await res.json());
+    } catch (e) { console.error("Error al cargar proyectos", e); }
+  }
+
+  async saveProject(project: any) {
+    if (!this.token()) return;
+    const method = project.id ? 'PUT' : 'POST';
+    const url = project.id ? `/api/projects/${project.id}` : '/api/projects';
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
+        body: JSON.stringify(project)
+      });
+      if (res.ok) await this.fetchProjects();
+    } catch (e) { console.error("Error al guardar proyecto", e); }
+  }
+
+  async deleteProject(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchProjects();
+    } catch (e) { console.error("Error al eliminar proyecto", e); }
+  }
+
+  // --- GESTIÓN DE WIKI API ---
+  async fetchWiki() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/wiki', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      if (res.ok) this.wikiDocs.set(await res.json());
+    } catch (e) { console.error("Error al cargar wiki", e); }
+  }
+
+  async saveWiki(doc: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/wiki', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
+        body: JSON.stringify(doc)
+      });
+      if (res.ok) await this.fetchWiki();
+    } catch (e) { console.error("Error al guardar wiki", e); }
+  }
+
+  async deleteWiki(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/wiki/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchWiki();
+    } catch (e) { console.error("Error al eliminar wiki", e); }
   }
 }

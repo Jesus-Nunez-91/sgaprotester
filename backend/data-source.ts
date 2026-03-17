@@ -9,15 +9,15 @@ import { Reservation } from "../src/entities/Reservation";
 import { AdminTask } from "../src/entities/AdminTask";
 import { MaintenanceTask } from "../src/entities/MaintenanceTask";
 import { PurchaseOrder } from "../src/entities/PurchaseOrder";
+import { AuditLog } from "../src/entities/AuditLog";
+import { Project } from "../src/entities/Project";
+import { ProjectTask } from "../src/entities/ProjectTask";
+import { WikiDoc } from "../src/entities/WikiDoc";
+import { Bitacora } from "../src/entities/Bitacora";
 import dotenv from "dotenv";
 
-// Cargar variables de entorno desde el archivo .env
 dotenv.config();
 
-/**
- * Configuración de la conexión a la base de datos PostgreSQL.
- * Utiliza variables de entorno para mayor seguridad y flexibilidad.
- */
 export const AppDataSource = new DataSource({
     type: "postgres",
     host: process.env.DB_HOST || "localhost",
@@ -25,13 +25,9 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USERNAME || "postgres",
     password: process.env.DB_PASSWORD || "postgres_pass",
     database: process.env.DB_NAME || "sga_db",
-
-    // Sincronización automática del esquema (solo para desarrollo)
     synchronize: true,
     logging: false,
-
-    // Entidades que forman parte del modelo de datos
-    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder],
+    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora],
     migrations: [],
     subscribers: [],
 });

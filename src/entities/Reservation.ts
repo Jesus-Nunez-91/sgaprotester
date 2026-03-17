@@ -29,6 +29,9 @@ export class Reservation {
     @Column()
     tipoUsuario: string;
 
+    @Column({ nullable: true })
+    userId: number;
+
     @Column({ default: false })
     aprobada: boolean;
 
@@ -38,8 +41,14 @@ export class Reservation {
     @Column({ nullable: true })
     motivoRechazo: string;
 
-    @Column({ default: 0 })
+    @Column({ nullable: true })
     devuelto: number;
+
+    @Column({ type: 'timestamp', nullable: true })
+    clockIn: Date;
+
+    @Column({ type: 'timestamp', nullable: true })
+    clockOut: Date;
 
     @CreateDateColumn()
     createdAt: Date;

@@ -11,6 +11,9 @@ import { SupportComponent } from './pages/support.component';
 import { MaintenanceComponent } from './pages/maintenance.component';
 import { ScheduleComponent } from './pages/schedule.component';
 import { ProcurementComponent } from './pages/procurement.component';
+import { ProjectsComponent } from './pages/projects.component';
+import { WikiComponent } from './pages/wiki.component';
+import { BitacoraComponent } from './pages/bitacora.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -25,5 +28,8 @@ export const routes: Routes = [
   { path: 'maintenance', component: MaintenanceComponent },
   { path: 'schedule', component: ScheduleComponent },
   { path: 'procurement', component: ProcurementComponent },
+  { path: 'projects', component: ProjectsComponent },
+  { path: 'wiki', component: WikiComponent },
+  { path: 'bitacora', component: BitacoraComponent },
   { path: '**', redirectTo: 'login' }
 ];

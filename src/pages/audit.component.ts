@@ -24,11 +24,11 @@ import { RouterLink } from '@angular/router';
        <!-- Encabezado del Registro de Auditoría -->
        <div class="flex flex-col md:flex-row items-center justify-between p-8 border-b border-gray-800/60 bg-[#0f0f16]/90 relative z-10 backdrop-blur-sm">
           <div>
-              <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 flex items-center gap-4 tracking-tighter">
-                 <span class="w-12 h-12 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 text-2xl shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+              <h2 class="text-3xl font-black text-white flex items-center gap-4 tracking-tighter uppercase">
+                 <span class="w-12 h-12 rounded-lg bg-uah-orange/10 border border-uah-orange/20 flex items-center justify-center text-uah-orange text-2xl shadow-[0_0_15px_rgba(243,112,33,0.3)]">
                     <i class="bi bi-incognito"></i>
                  </span>
-                 CAJA NEGRA
+                 CAJA NEGRA <span class="text-uah-orange opacity-50">STATION</span>
               </h2>
               <div class="flex items-center gap-2 mt-2">
                  <div class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></div>
@@ -40,14 +40,14 @@ import { RouterLink } from '@angular/router';
           <div class="flex items-center gap-3 mt-4 md:mt-0 flex-wrap justify-end">
              <div class="relative">
                  <i class="bi bi-search absolute left-3 top-2.5 text-gray-600"></i>
-                 <input [(ngModel)]="searchTerm" class="pl-9 pr-4 py-2 rounded-lg border border-gray-800 bg-[#16161e] text-xs focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-300 w-48" placeholder="Buscar logs...">
+                 <input [(ngModel)]="searchTerm" class="pl-9 pr-4 py-2 rounded-lg border border-gray-800 bg-[#16161e] text-xs focus:ring-1 focus:ring-uah-orange focus:border-uah-orange text-gray-300 w-48" placeholder="Buscar logs...">
              </div>
 
              <button (click)="exportLog()" class="group bg-gray-900 hover:bg-gray-800 text-gray-300 text-xs font-bold px-5 py-2.5 rounded-lg transition-all flex items-center gap-2 border border-gray-700 shadow-lg hover:shadow-gray-700/20 hover:border-gray-500">
                 <i class="bi bi-file-earmark-code group-hover:text-green-400 transition-colors"></i> EXPORTAR LOG
              </button>
-             <a routerLink="/areas" class="group bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 text-xs font-bold px-5 py-2.5 rounded-lg transition-all flex items-center gap-2 border border-red-500/20 hover:border-red-500/40">
-                <i class="bi bi-arrow-left group-hover:-translate-x-1 transition-transform"></i> ABORTAR
+             <a routerLink="/areas" class="group bg-uah-orange/10 hover:bg-uah-orange/20 text-uah-orange hover:text-orange-400 text-xs font-bold px-5 py-2.5 rounded-lg transition-all flex items-center gap-2 border border-uah-orange/20 hover:border-uah-orange/40">
+                <i class="bi bi-arrow-left group-hover:-translate-x-1 transition-transform"></i> REGRESAR
              </a>
           </div>
        </div>
@@ -66,7 +66,7 @@ import { RouterLink } from '@angular/router';
              <tbody class="font-mono">
                 @for (log of filteredLogs(); track log.id) {
                    <tr class="hover:bg-white/[0.03] transition-colors group">
-                      <td class="p-4 border-l-2 border-transparent group-hover:border-red-500/50 text-gray-600 group-hover:text-gray-400 whitespace-nowrap">
+                      <td class="p-4 border-l-2 border-transparent group-hover:border-uah-orange/50 text-gray-600 group-hover:text-gray-400 whitespace-nowrap text-[10px] font-bold">
                           {{ log.fecha | date:'yyyy-MM-dd HH:mm:ss' }}
                       </td>
                       <td class="p-4">
@@ -84,9 +84,8 @@ import { RouterLink } from '@angular/router';
                                [class.text-green-500]="log.accion.includes('CREATE') || log.accion.includes('APROBAR')"
                                [class.shadow-[0_0_10px_rgba(74,222,128,0.2)]]="log.accion.includes('CREATE') || log.accion.includes('APROBAR')"
                                
-                               [class.text-red-400]="log.accion.includes('DELETE') || log.accion.includes('RECHAZAR')"
-                               [class.text-red-500]="log.accion.includes('DELETE') || log.accion.includes('RECHAZAR')"
-                               [class.shadow-[0_0_10px_rgba(248,113,113,0.2)]]="log.accion.includes('DELETE') || log.accion.includes('RECHAZAR')"
+                               [class.text-uah-orange]="log.accion.includes('DELETE') || log.accion.includes('RECHAZAR')"
+                               [class.shadow-[0_0_10px_rgba(243,112,33,0.2)]]="log.accion.includes('DELETE') || log.accion.includes('RECHAZAR')"
                                
                                [class.text-cyan-400]="log.accion.includes('LOGIN') || log.accion.includes('RESERVA')"
                                [class.text-cyan-500]="log.accion.includes('LOGIN') || log.accion.includes('RESERVA')"

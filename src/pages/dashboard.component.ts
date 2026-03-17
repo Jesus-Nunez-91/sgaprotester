@@ -17,343 +17,349 @@ declare var Swal: any;
    standalone: true,
    imports: [CommonModule],
    template: `
-    <div class="animate-fadeIn pb-10">
+    <div class="animate-fadeIn pb-16 space-y-8">
       
-      <!-- Tarjetas de Acción Rápida (Estadísticas) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <!-- Total Inventario -->
-          <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-6 text-white shadow-xl shadow-blue-200 dark:shadow-none hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group border border-white/10">
-              <div class="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110 blur-xl"></div>
-              <div class="relative z-10">
-                  <div class="text-blue-100 font-bold text-xs uppercase tracking-wider mb-2">Total Inventario</div>
-                  <div class="text-4xl font-black tracking-tight">{{ data.inventory().length }}</div>
-                  <div class="mt-2 text-xs text-blue-100 bg-white/20 inline-block px-2 py-1 rounded-lg">Items registrados</div>
+      <!-- Welcome Section -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-2xl shadow-blue-900/5">
+        <div>
+          <h1 class="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
+            Hola, <span class="text-uah-orange uppercase">{{ data.currentUser()?.nombreCompleto?.split(' ')[0] }}</span> 👋
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Aquí tienes un resumen de lo que está pasando hoy.</p>
+        </div>
+        <div class="flex gap-3">
+           <div class="bg-white/80 dark:bg-slate-700/80 px-4 py-2 rounded-2xl shadow-sm border border-white/50 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+                 <i class="bi bi-calendar-check text-xl"></i>
               </div>
-              <i class="bi bi-box-seam absolute bottom-4 right-4 text-6xl text-white/10"></i>
-          </div>
-
-          <!-- Solicitudes Pendientes -->
-          <div class="glass-panel bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-xl hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group">
-              <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 dark:bg-orange-900/20 rounded-bl-full transition-transform group-hover:scale-110"></div>
-              <div class="relative z-10">
-                  <div class="text-gray-400 dark:text-gray-500 font-bold text-xs uppercase tracking-wider mb-2">Solicitudes Pendientes</div>
-                  <div class="text-4xl font-black text-gray-800 dark:text-white tracking-tight">{{ pendingReservations().length }}</div>
-                  <div class="mt-2 text-xs text-orange-600 dark:text-orange-400 font-bold flex items-center gap-1">
-                      <i class="bi bi-clock-history"></i> Requieren acción
-                  </div>
+              <div class="text-left">
+                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Fecha de hoy</div>
+                 <div class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ today | date:'dd MMM, yyyy' }}</div>
               </div>
-          </div>
-
-          <!-- Préstamos Activos -->
-          <div class="glass-panel bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-xl hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group">
-               <div class="absolute right-0 top-0 w-24 h-24 bg-green-50 dark:bg-green-900/20 rounded-bl-full transition-transform group-hover:scale-110"></div>
-               <div class="relative z-10">
-                  <div class="text-gray-400 dark:text-gray-500 font-bold text-xs uppercase tracking-wider mb-2">Préstamos Activos</div>
-                  <div class="text-4xl font-black text-gray-800 dark:text-white tracking-tight">{{ activeReservations().length }}</div>
-                   <div class="mt-2 text-xs text-green-600 dark:text-green-400 font-bold flex items-center gap-1">
-                      <i class="bi bi-person-check"></i> En uso ahora
-                  </div>
-               </div>
-          </div>
-
-          <!-- Stock Crítico -->
-          <div class="glass-panel bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-xl hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group">
-               <div class="absolute right-0 top-0 w-24 h-24 bg-red-50 dark:bg-red-900/20 rounded-bl-full transition-transform group-hover:scale-110"></div>
-               <div class="relative z-10">
-                  <div class="text-gray-400 dark:text-gray-500 font-bold text-xs uppercase tracking-wider mb-2">Stock Crítico</div>
-                  <div class="text-4xl font-black text-gray-800 dark:text-white tracking-tight">{{ criticalStock().length }}</div>
-                   <div class="mt-2 text-xs text-red-500 dark:text-red-400 font-bold flex items-center gap-1">
-                      <i class="bi bi-exclamation-triangle"></i> Reponer
-                  </div>
-               </div>
-          </div>
+           </div>
+        </div>
       </div>
 
-      <!-- Gráficos de Análisis -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-         <!-- Gráfico de Composición de Inventario -->
-         <div class="glass-panel bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white/50 dark:border-gray-700 flex flex-col h-[400px]">
-             <div class="flex justify-between items-center mb-4">
-                 <h4 class="text-lg font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <span class="w-2 h-6 bg-uah-blue rounded-full"></span>
-                    Composición del Inventario
-                 </h4>
-             </div>
-             <div class="relative w-full flex-1">
-                <canvas id="inventoryChart"></canvas>
-             </div>
-         </div>
-
-         <!-- Gráfico de Análisis de Consultas -->
-         <div class="glass-panel bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white/50 dark:border-gray-700 flex flex-col h-[400px]">
-             <div class="flex justify-between items-center mb-4">
-                 <h4 class="text-lg font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <span class="w-2 h-6 bg-purple-500 rounded-full"></span>
-                    Análisis de Consultas
-                 </h4>
-                 <div class="text-xs text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                    Total: {{ data.supportTickets().length }}
-                 </div>
-             </div>
-             <div class="relative w-full flex-1">
-                <canvas id="ticketsChart"></canvas>
-             </div>
-         </div>
-      </div>
-      
-      <!-- Sección de Alertas Críticas de Stock -->
-      <div class="mb-10 lg:grid lg:grid-cols-3 lg:gap-8">
-         <!-- Alertas de Stock -->
-         <div class="lg:col-span-2 mb-8 lg:mb-0">
-            <div class="glass-panel bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-3xl shadow-lg border border-white/50 dark:border-gray-700 overflow-hidden flex flex-col h-[350px]">
-               <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-red-50/50 dark:bg-red-900/10 flex justify-between items-center">
-                    <h4 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2 text-red-600 dark:text-red-400">
-                      <i class="bi bi-bell-fill animate-swing"></i> Alertas de Stock
-                   </h4>
-               </div>
-               
-               <div class="flex-1 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-4 custom-scrollbar">
-                  @if (criticalStock().length === 0) {
-                     <div class="col-span-full h-full flex flex-col items-center justify-center text-emerald-600 dark:text-emerald-400 opacity-60">
-                        <i class="bi bi-check-circle-fill text-6xl mb-4"></i>
-                        <span class="text-sm font-bold uppercase tracking-widest">Sin alertas pendientes</span>
-                     </div>
-                  }
-                  @for (item of criticalStock(); track item.id) {
-                     <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm border border-red-100 dark:border-red-900/30 hover:shadow-md transition-shadow relative overflow-hidden group">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500 group-hover:w-1.5 transition-all"></div>
-                        <div class="flex justify-between items-start mb-1">
-                           <span class="font-bold text-gray-800 dark:text-gray-200 text-sm truncate pr-2">{{ item.marca }}</span>
-                           <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] px-2 py-1 rounded-lg font-bold uppercase tracking-wide">Bajo Stock</span>
-                        </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ item.categoria }} • {{ item.subCategoria }}</div>
-                        
-                        <div class="flex items-center gap-2">
-                           <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                               <div class="bg-red-500 h-full rounded-full relative overflow-hidden" [style.width.%]="(item.stockActual/item.stockMinimo)*100">
-                                   <div class="absolute inset-0 bg-white/30 w-full animate-[shimmer_1s_infinite]"></div>
-                               </div>
-                           </div>
-                           <span class="text-xs font-bold text-gray-700 dark:text-gray-300 w-12 text-right">{{ item.stockActual }} / {{ item.stockMinimo }}</span>
-                        </div>
-                     </div>
-                  }
-               </div>
-            </div>
-         </div>
-
-         <!-- Widget de Tareas Admin (To-Do) -->
-         <div class="lg:col-span-1">
-            <div class="glass-panel bg-uah-blue dark:bg-slate-900 rounded-3xl shadow-xl border border-blue-400/20 overflow-hidden flex flex-col h-[350px]">
-               <div class="p-5 border-b border-blue-800 dark:border-gray-800 flex justify-between items-center bg-blue-700/30">
-                  <h4 class="text-white font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
-                     <i class="bi bi-list-task"></i> Tareas Administrativas
-                  </h4>
-                  <span class="bg-yellow-400 text-blue-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">{{ pendingAdminTasks().length }}</span>
-               </div>
-               
-               <!-- Add Task Input -->
-               <div class="p-4 bg-blue-950/20">
-                  <div class="relative">
-                     <input #taskInput type="text" (keyup.enter)="addAdminTask(taskInput)" placeholder="Nueva tarea pendiente..." class="w-full bg-white/10 border border-white/20 rounded-xl py-2 px-4 text-sm text-white placeholder-white/40 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all">
-                     <button (click)="addAdminTask(taskInput)" class="absolute right-2 top-1.5 text-yellow-400 hover:text-white transition-colors">
-                        <i class="bi bi-plus-circle-fill text-xl"></i>
-                     </button>
-                  </div>
-               </div>
-
-               <div class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
-                  @for (task of data.adminTasks(); track task.id) {
-                     <div class="flex items-center gap-3 p-3 rounded-2xl transition-all group" [ngClass]="task.status === 'done' ? 'bg-white/5 opacity-50' : 'bg-white/10 hover:bg-white/15'">
-                        <button (click)="toggleAdminTask(task)" class="w-5 h-5 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all" [ngClass]="task.status === 'done' ? 'bg-yellow-400 border-yellow-400 text-blue-900Scale' : 'border-white/30 text-transparent'">
-                           <i class="bi bi-check-bold text-xs"></i>
-                        </button>
-                        <span class="text-sm font-medium text-white flex-1 leading-snug" [ngClass]="{'line-through text-white/50': task.status === 'done'}">{{ task.description }}</span>
-                        <button (click)="deleteAdminTask(task.id)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 p-1 transition-all">
-                           <i class="bi bi-trash3-fill"></i>
-                        </button>
-                     </div>
-                  }
-                  @if (data.adminTasks().length === 0) {
-                     <div class="h-full flex flex-col items-center justify-center text-white/30 py-8">
-                        <i class="bi bi-journal-check text-4xl mb-2"></i>
-                        <span class="text-xs font-bold uppercase">Sin tareas pendientes</span>
-                     </div>
-                  }
-               </div>
-            </div>
-         </div>
-      </div>
-
-      <!-- Métricas Avanzadas: Presupuesto y Finanzas -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-         <div class="md:col-span-1 glass-panel p-6 rounded-3xl bg-gradient-to-br from-uah-blue to-blue-800 text-white shadow-lg relative overflow-hidden">
-            <div class="absolute -right-6 -bottom-6 opacity-10 rotate-12">
-               <i class="bi bi-currency-dollar text-9xl"></i>
-            </div>
+      <!-- Main Action Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Inventory Card -->
+          <div class="group relative overflow-hidden bg-uah-blue p-8 rounded-[2.5rem] text-white shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 hover:-translate-y-2 border border-white/10">
+            <div class="absolute -right-8 -top-8 w-40 h-40 bg-uah-orange rounded-full blur-[80px] opacity-20 group-hover:scale-110 transition-transform"></div>
             <div class="relative z-10">
-               <h4 class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Presupuesto Total Lab</h4>
-               <div class="text-3xl font-black mb-4">$ {{ totalBudget() | number }}</div>
-               <div class="flex justify-between items-center text-[10px] font-bold">
-                  <span class="text-blue-200 uppercase">Utilizado: {{ (totalSpent() / totalBudget() * 100) | number:'1.0-1' }}%</span>
-                  <span class="bg-yellow-400 text-blue-900 px-2 py-0.5 rounded-full">$ {{ totalRemaining() | number }} Libre</span>
-               </div>
-               <div class="w-full bg-white/20 h-2 rounded-full mt-3 overflow-hidden">
-                  <div class="bg-yellow-400 h-full rounded-full" [style.width.%]="(totalSpent() / totalBudget() * 100)"></div>
-               </div>
+              <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6 backdrop-blur-md">
+                <i class="bi bi-box-seam text-2xl"></i>
+              </div>
+              <div class="text-blue-100/70 font-bold text-xs uppercase tracking-[0.2em] mb-1">Inventario Total</div>
+              <div class="text-5xl font-black tracking-tighter">{{ data.inventory().length }}</div>
+              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-blue-200/80">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                Sincronizado en línea
+              </div>
             </div>
-         </div>
-
-         <div class="md:col-span-3 glass-panel p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border-gray-700">
-            <div class="flex items-center justify-between mb-4">
-               <h4 class="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Desglose de Gasto por Laboratorio</h4>
-               <div class="text-[10px] font-bold text-gray-400 uppercase">Calculado según O.C. Adjudicadas</div>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-               @for (lab of labsList; track lab) {
-                  <div class="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
-                     <div class="text-[10px] font-bold text-gray-500 uppercase mb-1">{{ lab }}</div>
-                     <div class="text-sm font-black text-uah-blue dark:text-blue-400">$ {{ budgetByLab(lab) | number }}</div>
-                     <div class="mt-2 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-uah-blue" [style.width.%]="(budgetByLab(lab) / (data.labBudgets()[lab] || 1)) * 100"></div>
-                     </div>
-                  </div>
-               }
-            </div>
-         </div>
-      </div>
-
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <!-- Solicitudes Pendientes de Aprobación -->
-          <div class="glass-panel bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
-             <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-sm">
-                        <i class="bi bi-hourglass-split text-lg"></i>
-                    </div>
-                    <div>
-                        <h5 class="font-bold text-gray-800 dark:text-white text-sm uppercase tracking-wide">Solicitudes Pendientes</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Requieren aprobación</p>
-                    </div>
-                </div>
-                <span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold px-3 py-1 rounded-full">{{ pendingReservations().length }}</span>
-             </div>
-             
-             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                   <thead class="bg-gray-50/50 dark:bg-gray-900/50 text-gray-400 font-bold uppercase text-[10px] tracking-wider">
-                      <tr>
-                         <th class="p-4 pl-6">Solicitante</th>
-                         <th class="p-4">Recurso</th>
-                         <th class="p-4">Bloque</th>
-                         <th class="p-4 text-center">Acciones</th>
-                      </tr>
-                   </thead>
-                   <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-                      @for (res of pendingReservations(); track res.id) {
-                         <tr class="hover:bg-amber-50/30 dark:hover:bg-amber-900/10 transition-colors">
-                            <td class="p-4 pl-6">
-                               <div class="flex items-center gap-3">
-                                   <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
-                                       {{ res.nombreSolicitante.charAt(0) }}
-                                   </div>
-                                   <div>
-                                       <div class="font-bold text-gray-800 dark:text-gray-200 text-xs">{{ res.nombreSolicitante }}</div>
-                                       <div class="text-[10px] text-gray-400 uppercase font-bold">{{ res.tipoUsuario }}</div>
-                                   </div>
-                               </div>
-                            </td>
-                            <td class="p-4">
-                                @let item = getItem(res.equipoId);
-                                <div class="font-bold text-uah-blue dark:text-blue-400 text-xs">{{ item?.marca || 'Desconocido' }}</div>
-                                <div class="flex items-center gap-1 mt-0.5">
-                                    <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400">{{ item?.subCategoria }}</span>
-                                    <span class="text-[10px] font-bold text-gray-400">x{{ res.cantidad }}</span>
-                                </div>
-                            </td>
-                            <td class="p-4">
-                               <div class="text-xs font-bold text-gray-600 dark:text-gray-300">{{ res.fecha }}</div>
-                               <div class="text-[10px] text-gray-400">{{ res.bloque }}</div>
-                            </td>
-                            <td class="p-4 text-center">
-                               <div class="flex items-center justify-center gap-2">
-                                   <button (click)="approve(res.id)" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:scale-110 transition-all flex items-center justify-center shadow-sm" title="Aprobar">
-                                       <i class="bi bi-check-lg"></i>
-                                   </button>
-                                   <button (click)="reject(res.id)" class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:scale-110 transition-all flex items-center justify-center shadow-sm" title="Rechazar">
-                                       <i class="bi bi-x-lg"></i>
-                                   </button>
-                               </div>
-                            </td>
-                         </tr>
-                      }
-                      @if (pendingReservations().length === 0) {
-                         <tr><td colspan="4" class="p-8 text-center text-gray-400 text-xs font-medium italic">No hay solicitudes pendientes.</td></tr>
-                      }
-                   </tbody>
-                </table>
-             </div>
           </div>
 
-          <!-- Préstamos Activos (En uso) -->
-          <div class="glass-panel bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
-             <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
-                        <i class="bi bi-box-arrow-right text-lg"></i>
-                    </div>
-                    <div>
-                        <h5 class="font-bold text-gray-800 dark:text-white text-sm uppercase tracking-wide">Préstamos Activos</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">En posesión de usuarios</p>
-                    </div>
-                </div>
-                <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full">{{ activeReservations().length }}</span>
-             </div>
+          <!-- Pending Requests -->
+          <div class="group relative overflow-hidden bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-50 dark:bg-amber-900/20 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
+            <div class="relative z-10">
+              <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-6">
+                <i class="bi bi-send-check text-2xl"></i>
+              </div>
+              <div class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mb-1">Pendientes</div>
+              <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{{ pendingReservations().length }}</div>
+              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
+                <i class="bi bi-arrow-right-circle"></i>
+                Gestionar ahora
+              </div>
+            </div>
+          </div>
 
-             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                   <thead class="bg-gray-50/50 dark:bg-gray-900/50 text-gray-400 font-bold uppercase text-[10px] tracking-wider">
-                      <tr>
-                         <th class="p-4 pl-6">Responsable</th>
-                         <th class="p-4">Item</th>
-                         <th class="p-4">Vencimiento</th>
-                         <th class="p-4 text-center">Devolución</th>
-                      </tr>
-                   </thead>
-                   <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-                      @for (res of activeReservations(); track res.id) {
-                         <tr class="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                            <td class="p-4 pl-6">
-                                <div class="font-bold text-gray-700 dark:text-gray-200 text-xs">{{ res.nombreSolicitante }}</div>
-                                <div class="text-[10px] text-gray-400">{{ res.emailSolicitante }}</div>
-                            </td>
-                            <td class="p-4">
-                                @let item = getItem(res.equipoId);
-                                <div class="font-bold text-uah-blue dark:text-blue-400 text-xs">{{ item?.marca }}</div>
-                                <div class="text-[10px] text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 inline-block px-1 rounded mt-1">{{ item?.sn || 'N/A' }}</div>
-                            </td>
-                            <td class="p-4">
-                               <div class="flex items-center gap-2">
-                                   <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                                   <div>
-                                       <div class="font-bold text-gray-700 dark:text-gray-200 text-xs">{{ res.bloque }}</div>
-                                       <div class="text-[10px] text-gray-400">{{ res.fecha }}</div>
-                                   </div>
-                               </div>
-                            </td>
-                            <td class="p-4 text-center">
-                               <button (click)="returnItem(res)" class="text-xs font-bold bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-uah-gold hover:text-uah-blue hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-2 mx-auto">
-                                  <i class="bi bi-box-arrow-in-left"></i> Recibir
-                               </button>
-                            </td>
-                         </tr>
+          <!-- Active Loans -->
+          <div class="group relative overflow-hidden bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-emerald-500/10 transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 dark:bg-emerald-900/20 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
+            <div class="relative z-10">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6">
+                <i class="bi bi-person-check text-2xl"></i>
+              </div>
+              <div class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mb-1">Activos</div>
+              <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{{ activeReservations().length }}</div>
+              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <i class="bi bi-check2-circle"></i>
+                En posesión
+              </div>
+            </div>
+          </div>
+
+          <!-- Low Stock -->
+          <div class="group relative overflow-hidden bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-rose-500/10 transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 dark:bg-rose-900/20 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
+            <div class="relative z-10">
+              <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-6">
+                <i class="bi bi-lightning-charge text-2xl"></i>
+              </div>
+              <div class="text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mb-1">Criticos</div>
+              <div class="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{{ criticalStock().length }}</div>
+              <div class="mt-4 flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400">
+                <i class="bi bi-exclamation-triangle"></i>
+                Requieren recompra
+              </div>
+            </div>
+          </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <!-- Left Column: Activity & Storage -->
+          <div class="lg:col-span-8 space-y-8">
+              <!-- Charts Section -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
+                      <h4 class="text-sm font-black text-uah-blue dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-uah-orange rounded-full"></span>
+                        Composición
+                      </h4>
+                      <div class="h-64 relative">
+                        <canvas id="inventoryChart"></canvas>
+                      </div>
+                  </div>
+                  <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
+                      <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span>
+                        Soporte
+                      </h4>
+                      <div class="h-64 relative">
+                        <canvas id="ticketsChart"></canvas>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Pending Requests Table -->
+              <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                  <div class="p-8 border-b border-slate-50 dark:border-slate-700 flex justify-between items-center">
+                      <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                         <span class="w-12 h-12 rounded-2xl bg-uah-orange/10 flex items-center justify-center text-uah-orange">
+                           <i class="bi bi-collection"></i>
+                         </span>
+                        Solicitudes por Aprobar
+                      </h4>
+                      <span class="text-[10px] font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-full">{{ pendingReservations().length }} PENDIENTES</span>
+                  </div>
+                  <div class="overflow-x-auto min-h-[300px]">
+                      <table class="w-full text-left">
+                          <thead>
+                              <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                  <th class="p-8 pl-10">Solicitante</th>
+                                  <th class="p-8">Recurso</th>
+                                  <th class="p-8">Bloque</th>
+                                  <th class="p-8 text-center px-10">Acciones</th>
+                              </tr>
+                          </thead>
+                          <tbody class="divide-y divide-slate-50 dark:divide-slate-700">
+                              @for (res of pendingReservations(); track res.id) {
+                                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors group">
+                                      <td class="p-6 pl-10">
+                                          <div class="flex items-center gap-4">
+                                              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center font-black text-slate-500 group-hover:scale-110 transition-transform">
+                                                  {{ res.nombreSolicitante.charAt(0) }}
+                                              </div>
+                                              <div>
+                                                  <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ res.nombreSolicitante }}</div>
+                                                  <div class="text-[10px] font-black text-slate-400 uppercase">{{ res.tipoUsuario }}</div>
+                                              </div>
+                                          </div>
+                                      </td>
+                                      <td class="p-6">
+                                          @let item = getItem(res.equipoId);
+                                          <div class="text-sm font-bold text-uah-blue dark:text-blue-400">{{ item?.marca }}</div>
+                                          <div class="text-[10px] font-bold text-slate-400 uppercase">{{ item?.subCategoria }} x{{ res.cantidad }}</div>
+                                      </td>
+                                      <td class="p-6">
+                                          <div class="text-xs font-black text-slate-700 dark:text-slate-200">{{ res.fecha }}</div>
+                                          <div class="text-[10px] font-bold text-slate-400 uppercase">{{ res.bloque }}</div>
+                                      </td>
+                                      <td class="p-6 text-center px-10">
+                                          <div class="flex items-center justify-center gap-3">
+                                              <button (click)="approve(res.id)" class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-lg border border-emerald-100 dark:border-emerald-800">
+                                                  <i class="bi bi-check-lg text-xl"></i>
+                                              </button>
+                                              <button (click)="reject(res.id)" class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center shadow-lg border border-rose-100 dark:border-rose-800">
+                                                  <i class="bi bi-x-lg text-xl"></i>
+                                              </button>
+                                          </div>
+                                      </td>
+                                  </tr>
+                              }
+                              @if (pendingReservations().length === 0) {
+                                  <tr><td colspan="4" class="p-20 text-center opacity-40">
+                                      <i class="bi bi-journal-check text-6xl mb-4 block"></i>
+                                      <p class="font-black text-xs uppercase tracking-widest text-slate-400">Totalmente al día</p>
+                                  </td></tr>
+                              }
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+
+              <!-- Control de Acceso (Check-in / Check-out) -->
+              <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden mb-8">
+                  <div class="p-8 border-b border-slate-50 dark:border-slate-700 flex justify-between items-center">
+                      <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                           <i class="bi bi-door-open-fill text-uah-orange"></i> Control de Acceso (Dashboard en Vivo)
+                      </h3>
+                      <span class="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black rounded-lg uppercase">Usuarios en Lab: {{ activeInLab().length }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                      <table class="w-full text-left">
+                          <thead class="bg-slate-50/50 dark:bg-slate-900/50 text-slate-400 font-black text-[10px] uppercase tracking-widest">
+                              <tr>
+                                  <th class="p-6 pl-10">Usuario</th>
+                                  <th class="p-6">Estado</th>
+                                  <th class="p-6 text-center px-10">Acción de Registro</th>
+                              </tr>
+                          </thead>
+                          <tbody class="divide-y divide-slate-50 dark:divide-slate-700">
+                              @for (res of activeReservations(); track res.id) {
+                                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                                      <td class="p-4 pl-10">
+                                          <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ res.nombreSolicitante }}</div>
+                                          <div class="text-[10px] font-bold text-slate-400 uppercase italic">{{ getItem(res.equipoId)?.marca }} - {{ res.bloque }}</div>
+                                      </td>
+                                      <td class="p-4">
+                                          @if (res.clockOut) {
+                                              <span class="text-[9px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase">Finalizado</span>
+                                          } @else if (res.clockIn) {
+                                              <span class="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full uppercase">En Laboratorio</span>
+                                          } @else {
+                                              <span class="text-[9px] font-black bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full uppercase">Pendiente Ingreso</span>
+                                          }
+                                      </td>
+                                      <td class="p-4 text-center px-10">
+                                          @if (!res.clockIn) {
+                                              <button (click)="checkIn(res.id)" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black py-2 px-4 rounded-xl transition-all shadow-md">
+                                                  REGISTRAR ENTRADA
+                                              </button>
+                                          } @else if (!res.clockOut) {
+                                              <button (click)="checkOut(res.id)" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-black py-2 px-4 rounded-xl transition-all shadow-md">
+                                                  REGISTRAR SALIDA
+                                              </button>
+                                          } @else {
+                                              <div class="text-[10px] font-bold text-slate-400">
+                                                 {{ res.clockIn | date:'HH:mm' }} - {{ res.clockOut | date:'HH:mm' }}
+                                              </div>
+                                          }
+                                      </td>
+                                  </tr>
+                              }
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+
+          <!-- Right Column: Widgets -->
+          <div class="lg:col-span-4 space-y-8">
+              <!-- Audit Logs: Recent Activity -->
+              <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col h-[600px]">
+                  <div class="p-8 border-b border-slate-50 dark:border-slate-700">
+                      <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                         <i class="bi bi-activity text-uah-orange"></i> Actividad del Sistema
+                      </h4>
+                  </div>
+                  <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/30">
+                      @for (log of data.auditLogs().slice(0, 15); track log.id) {
+                          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
+                              <div class="flex justify-between items-start mb-2">
+                                  <div class="text-[10px] font-black text-slate-400 uppercase">{{ log.fecha | date:'HH:mm • dd/MM' }}</div>
+                                  <span [class]="log.accion.includes('FAIL') ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'" 
+                                        class="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                     {{ log.accion }}
+                                  </span>
+                              </div>
+                              <div class="text-xs font-bold text-slate-800 dark:text-slate-100 mb-1 leading-tight">{{ log.detalle }}</div>
+                              <div class="flex items-center gap-2 mt-2">
+                                  <div class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[9px] font-black">{{ log.nombre.charAt(0) }}</div>
+                                  <span class="text-[10px] text-slate-500 truncate">{{ log.nombre }}</span>
+                              </div>
+                          </div>
                       }
-                      @if (activeReservations().length === 0) {
-                          <tr><td colspan="4" class="p-8 text-center text-gray-400 text-xs font-medium italic">No hay préstamos activos.</td></tr>
+                      @if (data.auditLogs().length === 0) {
+                          <div class="h-full flex flex-col items-center justify-center opacity-30 text-center p-10">
+                              <i class="bi bi-search text-4xl mb-3"></i>
+                              <p class="text-[10px] font-black uppercase tracking-widest">Esperando actividad...</p>
+                          </div>
                       }
-                   </tbody>
-                </table>
+                  </div>
+                  <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-center">
+                      <a routerLink="/audit" class="text-[10px] font-black text-uah-blue uppercase tracking-widest hover:underline">Ver Reporte Completo</a>
+                  </div>
+              </div>
+
+              <!-- Admin To-Do Quick Section -->
+              <div class="bg-indigo-950 rounded-[2rem] shadow-2xl p-8 text-white relative overflow-hidden min-h-[400px]">
+                 <div class="absolute -right-10 -bottom-10 opacity-10 rotate-12"><i class="bi bi-check-all text-[15rem]"></i></div>
+                 <div class="relative z-10 h-full flex flex-col">
+                    <h4 class="text-sm font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Recordatorios Rápidos</h4>
+                    <div class="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-6">
+                        @for (task of data.adminTasks(); track task.id) {
+                            <div class="group flex items-center gap-3 bg-white/5 hover:bg-white/10 p-3 rounded-2xl transition-all border border-white/5">
+                                <button (click)="toggleAdminTask(task)" 
+                                        class="w-6 h-6 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                                         [class]="task.status === 'done' ? 'bg-uah-orange border-uah-orange text-white' : 'border-white/20 text-transparent'">
+                                    <i class="bi bi-check-bold text-sm"></i>
+                                </button>
+                                <span class="text-xs font-bold flex-1" [class.line-through]="task.status === 'done'" [class.opacity-40]="task.status === 'done'">{{ task.description }}</span>
+                                <button (click)="deleteAdminTask(task.id)" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 p-1">
+                                   <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                    <div class="relative">
+                       <input #dashTaskInput (keyup.enter)="addAdminTask(dashTaskInput)" type="text" placeholder="Agregar tarea..." 
+                              class="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-4 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all">
+                        <button (click)="addAdminTask(dashTaskInput)" class="absolute right-3 top-2.5 text-uah-orange hover:scale-110 transition-transform">
+                           <i class="bi bi-plus-circle-fill text-2xl"></i>
+                        </button>
+                    </div>
+                 </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Financial Control Dashboard -->
+      <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 dark:border-slate-700">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-8 border-b border-slate-50 dark:border-slate-700">
+             <div>
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Control Presupuestario</h3>
+                <p class="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">Gasto Real vs Presupuesto Asignado por Laboratorio</p>
              </div>
+              <div class="bg-blue-50 dark:bg-slate-900/50 p-4 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+                 <div class="text-[10px] font-black text-uah-blue/60 uppercase tracking-widest mb-1">Total Consolidado</div>
+                 <div class="text-3xl font-black text-uah-blue dark:text-blue-400 tracking-tighter">$ {{ totalSpent() | number }} <span class="text-sm font-bold opacity-30">/ $ {{ totalBudget() | number }}</span></div>
+              </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+             @for (lab of labsList; track lab) {
+                @let spent = budgetByLab(lab);
+                @let budget = data.labBudgets()[lab] || 1;
+                @let percent = (spent / budget) * 100;
+                <div class="flex flex-col">
+                   <div class="flex justify-between items-end mb-3">
+                      <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">{{ lab }}</span>
+                      <span class="text-[10px] font-black px-2 py-0.5 rounded-lg" [class]="percent > 90 ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'">{{ percent | number:'1.0-1' }}%</span>
+                   </div>
+                   <div class="group relative h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
+                       <div class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm" 
+                            [style.width.%]="percent"
+                            [class]="percent > 90 ? 'bg-rose-500' : 'bg-uah-blue'">
+                       </div>
+                      <div class="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
+                   </div>
+                   <div class="flex justify-between text-[10px] font-black uppercase">
+                      <span class="text-slate-400">Gasto: $ {{ spent | number }}</span>
+                      <span class="text-slate-800 dark:text-slate-200">$ {{ budget - spent | number }} Disp.</span>
+                   </div>
+                </div>
+             }
           </div>
       </div>
     </div>
@@ -362,12 +368,16 @@ declare var Swal: any;
 export class DashboardComponent implements OnInit {
    data = inject(DataService);
    router = inject(Router);
+   today = new Date();
 
    // Solicitudes que aún no han sido aprobadas ni rechazadas
    pendingReservations = computed(() => this.data.reservations().filter(r => !r.aprobada && !r.rechazada));
 
    // Préstamos que ya han sido aprobados
    activeReservations = computed(() => this.data.reservations().filter(r => r.aprobada && !r.rechazada));
+
+   // Usuarios que han hecho check-in pero no check-out
+   activeInLab = computed(() => this.activeReservations().filter(r => r.clockIn && !r.clockOut));
 
    // Items cuyo stock actual es menor o igual al stock mínimo definido
    criticalStock = computed(() => this.data.inventory().filter(i => i.stockActual <= i.stockMinimo));
@@ -418,6 +428,35 @@ export class DashboardComponent implements OnInit {
       }
    }
 
+   async approve(id: number) {
+      await this.data.updateReservationStatus(id, 'approve');
+      Swal.fire({ icon: 'success', toast: true, position: 'top-end', title: 'Reserva Aprobada', timer: 1500, showConfirmButton: false });
+   }
+
+   async reject(id: number) {
+      const result = await Swal.fire({
+         title: 'Rechazar Reserva',
+         input: 'text',
+         inputPlaceholder: 'Motivo del rechazo...',
+         showCancelButton: true,
+         confirmButtonColor: '#ef4444'
+      });
+      if (result.isConfirmed) {
+         await this.data.updateReservationStatus(id, 'reject', { motivo: result.value });
+         Swal.fire({ icon: 'info', toast: true, position: 'top-end', title: 'Reserva Rechazada', timer: 1500, showConfirmButton: false });
+      }
+   }
+
+   async checkIn(id: number) {
+      await this.data.checkIn(id);
+      Swal.fire({ icon: 'success', toast: true, position: 'top-end', title: 'Ingreso Registrado', timer: 1500, showConfirmButton: false });
+   }
+
+   async checkOut(id: number) {
+      await this.data.checkOut(id);
+      Swal.fire({ icon: 'success', toast: true, position: 'top-end', title: 'Salida Registrada', timer: 1500, showConfirmButton: false });
+   }
+
    /**
     * Obtiene un item del inventario por su ID.
     */
@@ -458,9 +497,9 @@ export class DashboardComponent implements OnInit {
          data: {
             labels: labs,
             datasets: [{
-               data: dataCounts,
-               backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
-               borderWidth: 0,
+                data: dataCounts,
+                backgroundColor: ['#003366', '#F37021', '#1e293b'],
+                borderWidth: 0,
                hoverOffset: 10
             }]
          },
@@ -491,9 +530,9 @@ export class DashboardComponent implements OnInit {
             labels: ['Abiertos', 'Cerrados'],
             datasets: [{
                label: 'Estado de Consultas',
-               data: [open, closed],
-               backgroundColor: ['#8b5cf6', '#9ca3af'],
-               borderRadius: 6,
+                data: [open, closed],
+                backgroundColor: ['#F37021', '#003366'],
+                borderRadius: 8,
                barThickness: 40
             }]
          },
@@ -506,24 +545,6 @@ export class DashboardComponent implements OnInit {
                x: { grid: { display: false } }
             }
          }
-      });
-   }
-
-   /**
-    * Aprueba una solicitud de reserva.
-    */
-   approve(id: number) {
-      Swal.fire({ title: '¿Aprobar solicitud?', icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', cancelButtonText: 'Cancelar' }).then((r: any) => {
-         if (r.isConfirmed) this.data.updateReservationStatus(id, 'approve');
-      });
-   }
-
-   /**
-    * Rechaza una solicitud de reserva pidiendo un motivo.
-    */
-   reject(id: number) {
-      Swal.fire({ input: 'text', title: 'Motivo de Rechazo', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonText: 'Cancelar', placeholder: 'Escriba el motivo aquí...' }).then((r: any) => {
-         if (r.isConfirmed) this.data.updateReservationStatus(id, 'reject', { motivo: r.value });
       });
    }
 

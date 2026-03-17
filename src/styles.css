@@ -8,13 +8,20 @@
    * Se define un fondo con degradado y una imagen de la universidad con efecto fijo.
    */
   body {
-    background-image: linear-gradient(rgba(244, 247, 246, 0.85), rgba(244, 247, 246, 0.85)), url('https://i.postimg.cc/5N8WFvbw/images.jpg');
+    background-color: #f8fafc;
+    background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), url('https://i.postimg.cc/5N8WFvbw/images.jpg');
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
     min-height: 100vh;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0;
+    color: #1e293b;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
   }
 }
 
@@ -24,11 +31,9 @@
    * Utiliza backdrop-filter para desenfocar el fondo.
    */
   .glass-sidebar {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-right: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 5px 0 25px rgba(0,0,0,0.05);
+    background: #003366;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
   }
   
   /* Ajuste de la barra lateral para el modo oscuro */
@@ -41,11 +46,11 @@
    * Paneles genéricos con efecto de cristal.
    */
   .glass-panel {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 51, 102, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 51, 102, 0.05);
   }
   
   /* Ajuste de paneles para el modo oscuro */

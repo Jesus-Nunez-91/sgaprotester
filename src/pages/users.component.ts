@@ -16,8 +16,8 @@ declare const XLSX: any;
         <!-- Header -->
         <div class="flex flex-col md:flex-row items-center justify-between mb-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-6 rounded-3xl shadow-lg border border-white/40 dark:border-gray-700 sticky top-4 z-30 transition-colors">
             <div>
-                <h2 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-                    <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg text-xl">
+                <h2 class="text-3xl font-black text-uah-blue dark:text-gray-100 flex items-center gap-3 tracking-tighter uppercase">
+                    <span class="w-12 h-12 rounded-2xl bg-uah-orange flex items-center justify-center text-white shadow-lg text-xl">
                         <i class="bi bi-shield-lock"></i>
                     </span>
                     Gestión de Usuarios
@@ -33,7 +33,7 @@ declare const XLSX: any;
            <!-- Form -->
            <div class="lg:col-span-4 h-fit">
                <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                  <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+                  <div class="absolute top-0 left-0 w-full h-2 bg-uah-orange"></div>
                   
                   <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
                      {{ editUser.id ? 'Editar Perfil' : 'Nuevo Registro' }}
@@ -43,32 +43,32 @@ declare const XLSX: any;
                      <div class="group">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Nombre Completo</label>
                         <div class="relative">
-                            <i class="bi bi-person absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
-                            <input [(ngModel)]="editUser.nombreCompleto" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:text-white transition-all text-sm font-medium outline-none" placeholder="Ej: Juan Pérez">
+                            <i class="bi bi-person absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
+                            <input [(ngModel)]="editUser.nombreCompleto" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="Ej: Juan Pérez">
                         </div>
                      </div>
                      
                      <div class="group">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">RUT</label>
                         <div class="relative">
-                            <i class="bi bi-card-heading absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
-                            <input [(ngModel)]="editUser.rut" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:text-white transition-all text-sm font-medium outline-none" placeholder="Ej: 12345678-9">
+                            <i class="bi bi-card-heading absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
+                            <input [(ngModel)]="editUser.rut" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="Ej: 12345678-9">
                         </div>
                      </div>
 
                      <div class="group">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Correo Institucional</label>
                         <div class="relative">
-                            <i class="bi bi-envelope absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
-                            <input [(ngModel)]="editUser.correo" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:text-white transition-all text-sm font-medium outline-none" placeholder="nombre@uah.cl">
+                            <i class="bi bi-envelope absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
+                            <input [(ngModel)]="editUser.correo" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="nombre@uah.cl">
                         </div>
                      </div>
 
                      <div class="group">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Rol del Usuario</label>
                         <div class="relative">
-                            <i class="bi bi-award absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
-                            <select [(ngModel)]="editUser.rol" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:text-white transition-all text-sm font-medium outline-none appearance-none">
+                            <i class="bi bi-award absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
+                            <select [(ngModel)]="editUser.rol" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none appearance-none">
                                 <option value="Alumno">Alumno</option>
                                 <option value="Docente">Docente</option>
                                 <option value="Admin">Admin</option>
@@ -81,14 +81,14 @@ declare const XLSX: any;
                      <div class="group">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Contraseña (Opcional)</label>
                         <div class="relative">
-                            <i class="bi bi-key absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
-                            <input [(ngModel)]="editUser.password" type="password" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:text-white transition-all text-sm font-medium outline-none" placeholder="•••••••">
+                            <i class="bi bi-key absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
+                            <input [(ngModel)]="editUser.password" type="password" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="•••••••">
                         </div>
                      </div>
                      
                      <div class="pt-4 flex flex-col gap-3">
-                         <button (click)="save()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all flex justify-center items-center gap-2 active:scale-95">
-                            <i class="bi bi-check-circle-fill"></i> {{ editUser.id ? 'ACTUALIZAR' : 'REGISTRAR' }}
+                         <button (click)="save()" class="w-full bg-uah-blue hover:bg-blue-800 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-blue-500/20 transition-all flex justify-center items-center gap-2 active:scale-95 uppercase text-xs tracking-widest">
+                            <i class="bi bi-check-circle-fill"></i> {{ editUser.id ? 'ACTUALIZAR USUARIO' : 'REGISTRAR USUARIO' }}
                          </button>
                          <button (click)="reset()" class="w-full bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 font-bold py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all text-xs flex items-center justify-center gap-2">
                             <i class="bi bi-x-lg"></i> CANCELAR
@@ -104,8 +104,8 @@ declare const XLSX: any;
                   <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-900/50">
                      <div class="flex items-center gap-4 w-full sm:w-auto">
                          <div>
-                            <h4 class="font-bold text-gray-800 dark:text-white text-lg">Directorio de Usuarios</h4>
-                            <p class="text-xs text-gray-400">Total: {{ data.users().length }} registros</p>
+                            <h4 class="font-black text-uah-blue dark:text-white text-lg tracking-tight uppercase">Directorio de Usuarios</h4>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total: {{ data.users().length }} registros</p>
                          </div>
                      </div>
                      
@@ -122,7 +122,7 @@ declare const XLSX: any;
 
                          <div class="relative w-full sm:w-64">
                              <i class="bi bi-search absolute left-3 top-2.5 text-gray-400"></i>
-                             <input [(ngModel)]="searchTerm" class="w-full pl-9 py-2 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm dark:text-white transition-all" placeholder="Buscar usuario...">
+                             <input [(ngModel)]="searchTerm" class="w-full pl-9 py-2 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-uah-orange focus:border-transparent text-sm dark:text-white transition-all" placeholder="Buscar usuario...">
                          </div>
                       </div>
                   </div>
@@ -139,10 +139,10 @@ declare const XLSX: any;
                          </thead>
                          <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
                             @for (u of filteredUsers(); track u.id) {
-                               <tr class="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group">
+                               <tr class="hover:bg-uah-blue/5 dark:hover:bg-uah-blue/10 transition-colors group">
                                   <td class="p-5 pl-6">
                                      <div class="flex items-center gap-4">
-                                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-600 dark:text-gray-300 font-bold flex items-center justify-center shadow-sm group-hover:from-indigo-100 group-hover:to-purple-100 group-hover:text-indigo-600 transition-all">
+                                         <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-uah-blue font-black flex items-center justify-center shadow-sm group-hover:bg-uah-blue group-hover:text-white transition-all">
                                              {{ u.nombreCompleto.charAt(0) }}
                                          </div>
                                          <div>

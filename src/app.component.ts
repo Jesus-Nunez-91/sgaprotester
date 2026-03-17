@@ -19,15 +19,15 @@ import { FormsModule } from '@angular/forms';
       <!-- BARRA LATERAL IZQUIERDA (Glassmorphism) -->
       <aside class="w-20 lg:w-64 glass-sidebar flex flex-col justify-between z-50 transition-all duration-300 shadow-2xl relative">
           <!-- Área del Logo -->
-          <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-200/30 dark:border-white/5">
+          <div class="h-24 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/10 dark:border-white/5 bg-black/10">
               <a routerLink="/areas" class="flex items-center gap-3 group cursor-pointer">
                   <div class="relative">
-                      <div class="absolute inset-0 bg-uah-gold rounded-full blur-sm opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                      <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="h-10 w-10 rounded-full shadow-lg relative z-10 object-contain bg-white p-0.5" alt="Logo UAH">
+                      <div class="absolute inset-0 bg-uah-orange rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity"></div>
+                      <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="h-12 w-12 rounded-full shadow-2xl relative z-10 object-contain bg-white p-1" alt="Logo UAH">
                   </div>
                   <div class="hidden lg:flex flex-col">
-                      <span class="text-uah-blue dark:text-white font-bold text-lg leading-none tracking-tight text-shadow">SGA <span class="text-uah-gold">PRO</span></span>
-                      <span class="text-[10px] text-gray-600 dark:text-gray-300 font-medium tracking-widest uppercase text-shadow">Ingeniería</span>
+                      <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-uah-orange">PRO</span></span>
+                      <span class="text-[9px] text-blue-200 font-black tracking-widest uppercase mt-1">Facultad de Ingeniería</span>
                   </div>
               </a>
           </div>
@@ -37,19 +37,19 @@ import { FormsModule } from '@angular/forms';
               
               <!-- Dashboard (Solo para Administradores) -->
               @if (isAdmin()) {
-                  <a routerLink="/dashboard" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
+                  <a routerLink="/dashboard" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
+                     class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
                       <i class="bi bi-speedometer2 text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Panel de Control</span>
+                      <span class="hidden lg:inline text-sm">Dashboard General</span>
                   </a>
               }
 
-              <!-- Áreas e Inventario -->
-              <a routerLink="/areas" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                 class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                  <i class="bi bi-grid-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Áreas & Labs</span>
-              </a>
+               <!-- Áreas e Inventario -->
+               <a routerLink="/areas" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
+                  class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
+                   <i class="bi bi-grid-fill text-xl group-hover:scale-110 transition-transform"></i>
+                   <span class="hidden lg:inline text-sm">Laboratorios & Inventario</span>
+               </a>
 
               <!-- Horarios -->
               <a routerLink="/schedule" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
@@ -58,6 +58,7 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Horarios</span>
               </a>
 
+
               <!-- Mis Solicitudes -->
               <a routerLink="/requests" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
                  class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
@@ -65,16 +66,16 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Mis Solicitudes</span>
               </a>
 
-              <!-- Soporte -->
-              <a routerLink="/support" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
-                 class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
-                  <i class="bi bi-chat-heart-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Soporte</span>
-              </a>
+               <!-- Soporte -->
+               <a routerLink="/support" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
+                  class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
+                   <i class="bi bi-chat-heart-fill text-xl group-hover:scale-110 transition-transform"></i>
+                   <span class="hidden lg:inline text-sm">Centro de Ayuda</span>
+               </a>
 
               @if (isAdmin()) {
-                  <div class="my-2 border-t border-gray-200/30 dark:border-white/10"></div>
-                  <span class="hidden lg:block px-4 text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-2 text-shadow">Administración</span>
+                   <div class="my-4 border-t border-white/10"></div>
+                   <span class="hidden lg:block px-4 text-[10px] font-black text-blue-300 uppercase tracking-widest mb-3">Gestión Universitaria</span>
                   
                   <!-- Gestión de Compras -->
                   <a routerLink="/procurement" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
@@ -97,6 +98,27 @@ import { FormsModule } from '@angular/forms';
                       <span class="hidden lg:inline text-sm">Usuarios</span>
                   </a>
 
+                  <!-- Proyectos -->
+                  <a routerLink="/projects" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
+                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
+                      <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform text-blue-500"></i>
+                      <span class="hidden lg:inline text-sm">Proyectos</span>
+                  </a>
+
+                   <!-- Wiki & Protocolos -->
+                   <a routerLink="/wiki" routerLinkActive="bg-white/10 text-white shadow-lg border-r-4 border-uah-orange" 
+                      class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-blue-100 hover:bg-white/5 hover:text-white transition-all group font-bold tracking-tight">
+                       <i class="bi bi-book-half text-xl group-hover:scale-110 transition-transform text-uah-orange"></i>
+                       <span class="hidden lg:inline text-sm">Wiki & Protocolos</span>
+                   </a>
+
+                  <!-- Bitácora -->
+                  <a routerLink="/bitacora" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
+                     class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
+                      <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform text-emerald-500"></i>
+                      <span class="hidden lg:inline text-sm">Bitácora</span>
+                  </a>
+
                   <!-- Auditoría -->
                   <a routerLink="/audit" routerLinkActive="bg-white/50 dark:bg-white/10 text-uah-blue dark:text-white shadow-sm border-l-4 border-uah-blue dark:border-uah-gold" 
                      class="flex items-center gap-4 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-white/5 hover:text-uah-blue dark:hover:text-white transition-all group font-bold text-shadow">
@@ -106,24 +128,24 @@ import { FormsModule } from '@angular/forms';
               }
           </nav>
 
-          <!-- Perfil de Usuario Mini -->
-          <div class="p-4 border-t border-gray-200/30 dark:border-white/5 bg-white/20 dark:bg-black/20 backdrop-blur-md">
-              <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-uah-blue to-blue-500 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white/30">
-                      {{ authService.currentUser()?.nombreCompleto?.charAt(0) }}
-                  </div>
-                  <div class="hidden lg:block overflow-hidden">
-                      <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate text-shadow">{{ authService.currentUser()?.nombreCompleto }}</h4>
-                      <p class="text-[10px] text-gray-600 dark:text-gray-300 truncate font-medium">{{ authService.currentUser()?.rol }}</p>
-                  </div>
-                  <button (click)="authService.logout()" class="ml-auto text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors lg:hidden" title="Logout">
-                      <i class="bi bi-box-arrow-right"></i>
-                  </button>
-              </div>
-              <button (click)="authService.logout()" class="hidden lg:flex w-full mt-3 items-center justify-center gap-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-colors">
-                  <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-              </button>
-          </div>
+           <!-- Perfil de Usuario Mini -->
+           <div class="p-4 border-t border-white/10 bg-black/20">
+               <div class="flex items-center gap-3">
+                   <div class="w-10 h-10 rounded-full bg-uah-orange flex items-center justify-center text-white font-black shadow-lg ring-2 ring-white/20">
+                       {{ authService.currentUser()?.nombreCompleto?.charAt(0) }}
+                   </div>
+                   <div class="hidden lg:block overflow-hidden">
+                       <h4 class="text-sm font-black text-white truncate uppercase tracking-tighter">{{ authService.currentUser()?.nombreCompleto }}</h4>
+                       <p class="text-[10px] text-blue-200 truncate font-bold uppercase">{{ authService.currentUser()?.rol }}</p>
+                   </div>
+                   <button (click)="authService.logout()" class="ml-auto text-blue-200 hover:text-uah-orange transition-colors lg:hidden" title="Logout">
+                       <i class="bi bi-box-arrow-right"></i>
+                   </button>
+               </div>
+               <button (click)="authService.logout()" class="hidden lg:flex w-full mt-4 items-center justify-center gap-2 text-[10px] font-black text-white hover:bg-uah-orange py-2.5 rounded-xl transition-all border border-white/10">
+                   <i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN
+               </button>
+           </div>
       </aside>
 
       <!-- ÁREA DE CONTENIDO PRINCIPAL -->
@@ -156,16 +178,16 @@ import { FormsModule } from '@angular/forms';
                        <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
                    </button>
 
-                   <!-- Notificaciones -->
-                   <div class="relative group/notif">
-                      <button (click)="toggleNotif()" class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-uah-blue dark:hover:text-blue-400 hover:scale-110 transition-all shadow-sm relative border border-white/40">
-                          <i class="bi bi-bell-fill" [class.animate-swing]="unreadCount() > 0"></i>
-                          @if (unreadCount() > 0) {
-                              <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-white dark:border-gray-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                                  {{ unreadCount() > 9 ? '+9' : unreadCount() }}
-                              </span>
-                          }
-                      </button>
+                    <!-- Notificaciones -->
+                    <div class="relative group/notif">
+                       <button (click)="toggleNotif()" class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-uah-blue dark:hover:text-blue-400 hover:scale-110 transition-all shadow-sm relative border border-white/40">
+                           <i class="bi bi-bell-fill" [class.animate-swing]="unreadCount() > 0"></i>
+                           @if (unreadCount() > 0) {
+                               <span class="absolute -top-1 -right-1 w-5 h-5 bg-uah-orange border-2 border-white dark:border-gray-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+                                   {{ unreadCount() > 9 ? '+9' : unreadCount() }}
+                               </span>
+                           }
+                       </button>
                       
                       @if (showNotif()) {
                           <div class="absolute right-0 top-12 w-80 glass-panel bg-white/95 dark:bg-[#0f0f16]/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden animate-fadeIn z-50 origin-top-right ring-1 ring-black/5">

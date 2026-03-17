@@ -16,8 +16,8 @@ declare var Swal: any;
       <!-- Top Header Row for Budgets -->
       <div class="flex justify-between items-end mb-4 px-2">
           <div>
-              <h2 class="text-xl font-bold text-gray-800 dark:text-white">Control Presupuestario</h2>
-              <p class="text-xs text-gray-500">Estado financiero por centro de costo</p>
+              <h2 class="text-2xl font-black text-uah-blue dark:text-white tracking-tighter uppercase">Gestión Presupuestaria</h2>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Estado financiero por centro de costo</p>
           </div>
           <button (click)="openBudgetEditor()" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 bg-white/50 dark:bg-black/20 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-all hover:bg-white dark:hover:bg-gray-800">
               <i class="bi bi-gear-fill"></i> Ajustar Presupuestos
@@ -31,7 +31,7 @@ declare var Swal: any;
               @let spent = getLabSpent(lab);
               @let percent = (spent / allocated) * 100;
               
-              <div class="rounded-3xl p-5 text-white shadow-xl relative overflow-hidden group transition-transform hover:-translate-y-1"
+              <div class="rounded-3xl p-5 text-white shadow-xl relative overflow-hidden group transition-all hover:-translate-y-1 border border-white/10"
                    [ngClass]="getLabGradient(lab)">
                   
                   <div class="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl group-hover:scale-110 transition-transform"></div>
@@ -66,7 +66,7 @@ declare var Swal: any;
           <div class="flex overflow-x-auto gap-2 bg-white/50 dark:bg-gray-800/50 p-1.5 rounded-2xl backdrop-blur-sm flex-1 w-full md:w-auto">
               @for (tab of tabs; track tab.id) {
                   <button (click)="currentStage.set(tab.id)" 
-                          [class]="currentStage() === tab.id ? 'bg-white dark:bg-gray-700 text-uah-blue dark:text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50'"
+                           [class]="currentStage() === tab.id ? 'bg-white dark:bg-gray-700 text-uah-orange dark:text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50'"
                           class="flex-1 py-2 px-4 rounded-xl transition-all flex items-center justify-center gap-2 font-bold text-xs whitespace-nowrap">
                       <i [class]="tab.icon"></i>
                       <span class="hidden sm:inline">{{ tab.label }}</span>
@@ -80,7 +80,7 @@ declare var Swal: any;
           <!-- Lab Filter -->
           <div class="relative min-w-[180px]">
               <i class="bi bi-funnel-fill absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-              <select [(ngModel)]="selectedLabFilter" class="w-full pl-9 pr-8 py-2.5 rounded-xl border-none bg-white dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
+               <select [ngModel]="selectedLabFilter()" (ngModelChange)="selectedLabFilter.set($event)" class="w-full pl-9 pr-8 py-2.5 rounded-xl border-none bg-white dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-uah-orange appearance-none cursor-pointer">
                   <option value="ALL">Todos los Laboratorios</option>
                   <option *ngFor="let l of labTypes" [value]="l">{{ l }}</option>
               </select>
@@ -88,7 +88,7 @@ declare var Swal: any;
           </div>
 
           <!-- New Button -->
-          <button (click)="openCreateModal()" class="bg-gradient-to-r from-uah-blue to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl px-6 py-2.5 shadow-lg shadow-blue-300 dark:shadow-blue-900/20 flex items-center gap-2 transition-transform hover:scale-[1.02] font-bold text-sm">
+           <button (click)="openCreateModal()" class="bg-gradient-to-r from-uah-orange to-orange-500 hover:from-orange-600 hover:to-orange-500 text-white rounded-xl px-6 py-2.5 shadow-lg shadow-orange-500/20 flex items-center gap-2 transition-transform hover:scale-[1.02] font-black text-xs uppercase tracking-widest">
              <i class="bi bi-plus-lg"></i>
              <span>Nueva Solicitud</span>
           </button>
@@ -99,12 +99,12 @@ declare var Swal: any;
           <!-- Table Header -->
           <div class="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-black/20 flex justify-between items-center">
               <div>
-                  <h3 class="font-bold text-gray-800 dark:text-white text-base">{{ getStageLabel() }}</h3>
+                   <h3 class="font-black text-uah-blue dark:text-white text-sm uppercase tracking-widest">{{ getStageLabel() }}</h3>
                   <p class="text-xs text-gray-500">Gestión centralizada • {{ selectedLabFilter() === 'ALL' ? 'Vista Global' : selectedLabFilter() }}</p>
               </div>
               <div class="relative">
                   <i class="bi bi-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-                  <input [(ngModel)]="searchTerm" placeholder="Buscar orden..." class="pl-8 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-xs bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 w-56">
+                  <input [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Buscar orden..." class="pl-8 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-xs bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 w-56">
               </div>
           </div>
 
@@ -171,7 +171,7 @@ declare var Swal: any;
                                   <div class="flex justify-center gap-2">
                                       <!-- Action Logic -->
                                       @if (currentStage() === 'Solicitud') {
-                                          <button (click)="promoteToAdjudication(order)" class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-lg hover:bg-emerald-200 transition-colors flex items-center justify-center" title="Adjudicar">
+                                           <button (click)="promoteToAdjudication(order)" class="bg-emerald-50 text-emerald-600 border border-emerald-100 w-8 h-8 rounded-lg hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center font-bold" title="Adjudicar">
                                               <i class="bi bi-check-lg"></i>
                                           </button>
                                       }
@@ -216,7 +216,7 @@ declare var Swal: any;
       @if (showBudgetModal()) {
           <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
               <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-                  <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                   <div class="p-6 bg-uah-blue text-white">
                       <h3 class="font-bold text-lg">Configurar Presupuestos</h3>
                       <p class="text-xs opacity-80">Asignación de fondos por laboratorio</p>
                   </div>
@@ -226,13 +226,13 @@ declare var Swal: any;
                               <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1 block">{{ lab }}</label>
                               <div class="relative">
                                   <span class="absolute left-3 top-2.5 text-gray-400 font-bold">$</span>
-                                  <input type="number" [(ngModel)]="editingBudgets[lab]" class="w-full pl-7 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 text-sm font-bold">
+                                   <input type="number" [(ngModel)]="editingBudgets[lab]" class="w-full pl-7 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-uah-orange text-sm font-bold">
                               </div>
                           </div>
                       }
                   </div>
                   <div class="p-6 bg-gray-50 dark:bg-gray-900 flex gap-3">
-                      <button (click)="saveBudgets()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors">Guardar Cambios</button>
+                       <button (click)="saveBudgets()" class="flex-1 bg-uah-orange text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition-colors uppercase text-xs tracking-widest">Guardar Cambios</button>
                       <button (click)="showBudgetModal.set(false)" class="px-6 border border-gray-300 dark:border-gray-600 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cancelar</button>
                   </div>
               </div>
@@ -388,7 +388,7 @@ declare var Swal: any;
                   </div>
 
                   <div class="p-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-                      <button (click)="saveOrder()" class="flex-1 bg-gradient-to-r from-uah-blue to-blue-700 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">Guardar Operación</button>
+                       <button (click)="saveOrder()" class="flex-1 bg-gradient-to-r from-uah-blue to-blue-800 text-white font-black py-4 rounded-xl hover:shadow-xl transition-all uppercase text-xs tracking-widest">Guardar Operación</button>
                       <button (click)="closeModal()" class="px-6 border border-gray-300 dark:border-gray-600 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cancelar</button>
                   </div>
               </div>
@@ -452,10 +452,10 @@ export class ProcurementComponent {
 
   getLabGradient(lab: LabType): string {
       switch(lab) {
-          case 'FABLAB': return 'bg-gradient-to-br from-blue-500 to-blue-700';
-          case 'QUIMICA': return 'bg-gradient-to-br from-emerald-500 to-emerald-700';
-          case 'FISICA': return 'bg-gradient-to-br from-purple-500 to-purple-700';
-          case 'INFORMATICA': return 'bg-gradient-to-br from-orange-500 to-orange-700';
+           case 'FABLAB': return 'bg-uah-blue';
+           case 'QUIMICA': return 'bg-emerald-600';
+           case 'FISICA': return 'bg-indigo-600';
+           case 'INFORMATICA': return 'bg-uah-orange';
           default: return 'bg-gray-500';
       }
   }
