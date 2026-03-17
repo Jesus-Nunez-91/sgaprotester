@@ -1162,7 +1162,7 @@ export class InventoryComponent {
 
             return {
               marca: marcaExpl || itemDesc || 'Insumo Genérico',
-              modelo: marcaExpl ? itemDesc : 'Electrónica / Insumo',
+              modelo: itemDesc || marcaExpl || 'N/A',
               status: mappedStatus(statusV),
               esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
               stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
