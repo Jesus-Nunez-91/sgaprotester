@@ -26,7 +26,7 @@ declare const Swal: any;
           </div>
           
           <div class="mt-4 md:mt-0 flex items-center gap-4">
-               @if (isAdmin()) {
+               @if (canEditSchedules()) {
                  <div class="flex gap-2">
                    <button (click)="downloadTemplate()" 
                            title="Descargar Plantilla Excel"
@@ -79,7 +79,7 @@ declare const Swal: any;
               </button>
           }
           
-          @if (isAdmin()) {
+          @if (canEditSchedules()) {
               <div class="flex gap-2 ml-4">
                   <button (click)="addNewLab()"
                           class="px-5 py-3 rounded-2xl font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all duration-300 flex items-center gap-2">
@@ -202,9 +202,9 @@ export class ScheduleComponent {
         '17:30 - 18:50'
     ];
 
-    isAdmin = computed(() => {
+    canEditSchedules = computed(() => {
         const role = this.data.currentUser()?.rol;
-        return role === 'Admin' || role === 'SuperUser';
+        return role === 'Admin' || role === 'SuperUser' || role === 'Académico';
     });
 
     getIcon(lab: string): string {

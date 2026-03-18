@@ -71,6 +71,7 @@ declare const XLSX: any;
                             <select [(ngModel)]="editUser.rol" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none appearance-none">
                                 <option value="Alumno">Alumno</option>
                                 <option value="Docente">Docente</option>
+                                <option value="Académico">Académico</option>
                                 <option value="Admin">Admin</option>
                                 <option value="SuperUser">SuperUser</option>
                             </select>
@@ -184,6 +185,7 @@ declare const XLSX: any;
                                            [ngClass]="{
                                               'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-100 dark:border-red-900': u.rol === 'SuperUser',
                                               'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-100 dark:border-amber-900': u.rol === 'Admin',
+                                              'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900': u.rol === 'Académico',
                                               'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900': u.rol === 'Docente',
                                               'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-600': u.rol === 'Alumno'
                                            }">
@@ -191,6 +193,7 @@ declare const XLSX: any;
                                               [ngClass]="{
                                                 'bg-red-500': u.rol === 'SuperUser',
                                                 'bg-amber-500': u.rol === 'Admin',
+                                                'bg-emerald-500': u.rol === 'Académico',
                                                 'bg-blue-500': u.rol === 'Docente',
                                                 'bg-gray-400': u.rol === 'Alumno'
                                               }"></span>

@@ -13,7 +13,7 @@ export interface User {
   rut: string;
   correo: string;
   password?: string;
-  rol: 'Alumno' | 'Docente' | 'Admin' | 'SuperUser';
+  rol: 'Alumno' | 'Docente' | 'Académico' | 'Admin' | 'SuperUser';
   carrera?: string;
   anioIngreso?: number;
 }

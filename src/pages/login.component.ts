@@ -145,6 +145,7 @@ export class LoginComponent {
             <select id="rec-role" class="swal2-input !m-0 !w-full !rounded-xl !text-sm !border-2 !border-gray-50 !bg-gray-50 focus:!border-[#f06427] !h-12">
                 <option value="Alumno">Soy Alumno</option>
                 <option value="Docente">Soy Docente</option>
+                <option value="Académico">Soy Académico</option>
             </select>
           </div>
 
