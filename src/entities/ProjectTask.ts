@@ -10,6 +10,9 @@ export class ProjectTask {
     @Column()
     name: string;
 
+    @Column({ type: 'text', nullable: true })
+    description: string;
+
     @Column()
     startDate: string;
 
@@ -18,6 +21,13 @@ export class ProjectTask {
 
     @Column({ default: 0 })
     progress: number;
+
+    @Column({
+        type: 'enum',
+        enum: ['En espera', 'En proceso', 'Pendiente de Aprobacion', 'Finalizada'],
+        default: 'En espera'
+    })
+    status: 'En espera' | 'En proceso' | 'Pendiente de Aprobacion' | 'Finalizada';
 
     @ManyToOne('Project', (project: any) => project.tasks)
     project: Project;

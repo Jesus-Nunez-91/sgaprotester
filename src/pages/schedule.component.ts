@@ -67,8 +67,8 @@ declare const Swal: any;
       </div>
 
       <!-- Lab Selector Tabs -->
-      <div class="flex flex-wrap justify-center gap-4 mb-8">
-          @for (lab of labs; track lab) {
+      <div class="flex flex-wrap justify-center items-center gap-4 mb-8">
+          @for (lab of dynamicLabs(); track lab) {
                <button (click)="selectedLab.set(lab)"
                        [class]="selectedLab() === lab 
                          ? 'bg-uah-blue text-white shadow-lg shadow-blue-500/20 scale-105' 
@@ -77,6 +77,22 @@ declare const Swal: any;
                   <i [class]="getIcon(lab)"></i>
                   {{ lab }}
               </button>
+          }
+          
+          @if (isAdmin()) {
+              <div class="flex gap-2 ml-4">
+                  <button (click)="addNewLab()"
+                          class="px-5 py-3 rounded-2xl font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all duration-300 flex items-center gap-2">
+                      <i class="bi bi-plus-lg text-lg"></i> Sala
+                  </button>
+                  @if (!['FABLAB', 'HACKERLAB', 'DESARROLLO TECNOLOGICO'].includes(selectedLab())) {
+                    <button (click)="deleteCurrentLab()"
+                            class="px-5 py-3 rounded-2xl font-black text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all duration-300 flex items-center gap-2"
+                            [title]="'Eliminar sala ' + selectedLab()">
+                        <i class="bi bi-dash-lg text-lg"></i>
+                    </button>
+                  }
+              </div>
           }
       </div>
 
@@ -159,7 +175,18 @@ declare const Swal: any;
 export class ScheduleComponent {
     data = inject(DataService);
 
-    labs = ['FABLAB', 'HACKERLAB', 'DESARROLLO TECNOLOGICO'];
+    dynamicLabs = computed(() => {
+        const defaultLabs = ['FABLAB', 'HACKERLAB', 'DESARROLLO TECNOLOGICO'];
+        const dbLabs = Array.from(new Set(this.data.classSchedules().map(c => c.lab)));
+        const allLabs = Array.from(new Set([...defaultLabs, ...dbLabs]));
+        return allLabs.sort((a, b) => {
+            // Give preference to basic labs in ordering
+            if (defaultLabs.includes(a) && !defaultLabs.includes(b)) return -1;
+            if (!defaultLabs.includes(a) && defaultLabs.includes(b)) return 1;
+            return a.localeCompare(b);
+        });
+    });
+
     selectedLab = signal('FABLAB');
     isEditMode = signal(false);
 
@@ -196,6 +223,61 @@ export class ScheduleComponent {
 
     toggleEditMode() {
         this.isEditMode.update(v => !v);
+    }
+
+    async deleteCurrentLab() {
+        const lab = this.selectedLab();
+        Swal.fire({
+            title: `¿Eliminar sala ${lab}?`,
+            text: "Esta acción borrará permanentemente todo el cronograma y bloques horarios vinculados a este recinto. No se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar recinto',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#003366',
+        }).then(async (result: any) => {
+            if (result.isConfirmed) {
+                const success = await this.data.deleteLabSchedules(lab);
+                if (success) {
+                    this.selectedLab.set('FABLAB');
+                    Swal.fire('Eliminado', `La sala ${lab} y sus horarios han sido removidos del sistema.`, 'success');
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar la sala. Verifique su conexión.', 'error');
+                }
+            }
+        });
+    }
+
+    addNewLab() {
+        Swal.fire({
+            title: 'Nueva Sala / Laboratorio',
+            input: 'text',
+            inputPlaceholder: 'Ej. LABORATORIO DE FÍSICA',
+            showCancelButton: true,
+            confirmButtonText: 'Crear',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981',
+            inputValidator: (value: string) => {
+                if (!value) return 'Debes ingresar un nombre';
+                if (this.dynamicLabs().includes(value.toUpperCase())) return 'Esa sala ya existe';
+                return null;
+            }
+        }).then(async (result: any) => {
+            if (result.isConfirmed) {
+                const newLab = result.value.toUpperCase();
+                // Crea una entrada oculta para forzar que el backend guarde el lab
+                await this.data.updateSchedule({
+                    lab: newLab,
+                    day: 'HIDDEN',
+                    block: 'HIDDEN',
+                    subject: 'HIDDEN',
+                    color: '#ffffff'
+                });
+                this.selectedLab.set(newLab);
+                Swal.fire('Creado', `La sala ${newLab} ha sido añadida exitosamente.`, 'success');
+            }
+        });
     }
 
     async editCell(day: string, block: string, current?: ClassSchedule) {

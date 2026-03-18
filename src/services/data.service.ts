@@ -84,11 +84,13 @@ export interface SupportTicket {
 export interface ProjectTask {
   id: number;
   name: string;
+  description?: string;
   startDate: string;
   endDate: string;
   progress: number;
   projectId: number;
   assigneeId?: number;
+  status?: 'En espera' | 'En proceso' | 'Pendiente de Aprobacion' | 'Finalizada';
 }
 
 export interface Project {
@@ -1020,5 +1022,67 @@ export class DataService {
       });
       if (res.ok) await this.fetchWiki();
     } catch (e) { console.error("Error al eliminar wiki", e); }
+  }
+
+  async updateWiki(id: number, doc: any) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/wiki/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
+        body: JSON.stringify(doc)
+      });
+      if (res.ok) await this.fetchWiki();
+    } catch (e) { console.error("Error al actualizar wiki", e); }
+  }
+
+  // --- GESTIÓN DE BITÁCORA API ---
+  async fetchBitacora() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch('/api/bitacora', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      if (res.ok) this.bitacora.set(await res.json());
+    } catch (e) { console.error("Error al cargar bitácora", e); }
+  }
+
+  async saveBitacora(entry: any) {
+    if (!this.token()) return;
+    const method = entry.id ? 'PUT' : 'POST';
+    const url = entry.id ? `/api/bitacora/${entry.id}` : '/api/bitacora';
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
+        body: JSON.stringify(entry)
+      });
+      if (res.ok) await this.fetchBitacora();
+    } catch (e) { console.error("Error al guardar bitácora", e); }
+  }
+
+  async deleteBitacora(id: number) {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(`/api/bitacora/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) await this.fetchBitacora();
+    } catch (e) { console.error("Error al eliminar bitácora", e); }
+  }
+
+  // --- GESTIÓN DE HORARIOS ---
+  async deleteLabSchedules(lab: string): Promise<boolean> {
+    if (!this.token()) return false;
+    try {
+      const res = await fetch(`/api/schedules/lab/${lab}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        await this.fetchSchedules();
+        return true;
+      }
+    } catch (e) { console.error("Error al eliminar laboratorio", e); }
+    return false;
   }
 }

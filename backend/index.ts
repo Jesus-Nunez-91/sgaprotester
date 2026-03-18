@@ -435,7 +435,7 @@ app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
     if (!item) return res.status(404).json({ message: 'Item no encontrado' });
     Object.assign(item, req.body);
     const updated = await itemRepo.save(item) as any;
-    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_UPDATE', `Item actualizado: ${updated.nombre} - ${updated.estado}`);
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_UPDATE', `Item actualizado: ${updated.marca} ${updated.modelo} - ${updated.status}`);
     res.json(updated);
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar item' });
@@ -768,6 +768,21 @@ app.post('/api/wiki', authMiddleware, async (req: any, res) => {
   }
 });
 
+app.put('/api/wiki/:id', authMiddleware, async (req: any, res) => {
+    if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+    try {
+        const repo = AppDataSource.getRepository(WikiDoc);
+        const doc = await repo.findOneBy({ id: parseInt(req.params.id) });
+        if (!doc) return res.status(404).json({ message: 'Documento no encontrado' });
+        
+        Object.assign(doc, req.body);
+        await repo.save(doc);
+        res.json(doc);
+    } catch (error) {
+        res.status(400).json({ message: 'Error al actualizar documento' });
+    }
+});
+
 app.delete('/api/wiki/:id', authMiddleware, async (req: any, res) => {
     if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
     await AppDataSource.getRepository(WikiDoc).delete(req.params.id);
@@ -982,10 +997,38 @@ app.post('/api/bitacora', authMiddleware, async (req: any, res) => {
   }
 });
 
+app.put('/api/bitacora/:id', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const repo = AppDataSource.getRepository(Bitacora);
+    const entry = await repo.findOneBy({ id: parseInt(req.params.id) });
+    if (!entry) return res.status(404).json({ message: 'Entrada no encontrada' });
+    
+    Object.assign(entry, req.body);
+    await repo.save(entry);
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'BITACORA_EDIT', `Anotación editada: ${entry.id}`);
+    res.json(entry);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar entrada en bitácora' });
+  }
+});
+
 app.delete('/api/bitacora/:id', authMiddleware, async (req: any, res) => {
   if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
   await AppDataSource.getRepository(Bitacora).delete(req.params.id);
   res.status(204).send();
+});
+
+app.delete('/api/schedules/lab/:lab', authMiddleware, async (req: any, res) => {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin') return res.status(403).json({ message: 'Acceso denegado' });
+  try {
+    const repo = AppDataSource.getRepository(Schedule);
+    await repo.delete({ lab: req.params.lab });
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar horarios del laboratorio' });
+  }
 });
 
 // --- SERVIR FRONTEND ---

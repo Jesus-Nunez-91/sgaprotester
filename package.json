@@ -29,6 +29,8 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "pg": "^8.19.0",
     "postcss": "^8.5.8",
     "reflect-metadata": "^0.2.2",

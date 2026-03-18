@@ -254,14 +254,30 @@ declare const XLSX: any;
                   <button (click)="makeReservation()" class="bg-gradient-to-r from-uah-orange to-orange-500 hover:from-orange-600 hover:to-orange-500 text-white font-black py-2.5 px-8 rounded-xl shadow-lg hover:shadow-orange-500/20 transition-all active:scale-95 uppercase text-xs tracking-widest">
                      CONFIRMAR RESERVA ({{ selectionCount() }})
                   </button>
-              }
-           </div>
+               }
+               @if (selectedAdminIds().size > 0 && isAdmin()) {
+                   <div class="flex gap-2">
+                       <button (click)="exportSelectedItems()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-2 px-6 rounded-xl shadow-lg transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                           <i class="bi bi-file-earmark-spreadsheet"></i> Exportar ({{ selectedAdminIds().size }})
+                       </button>
+                       <button (click)="deleteSelectedItems()" class="bg-red-600 hover:bg-red-700 text-white font-black py-2 px-6 rounded-xl shadow-lg transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                           <i class="bi bi-trash-fill"></i> Eliminar ({{ selectedAdminIds().size }})
+                       </button>
+                       <button (click)="clearAdminSelection()" class="text-gray-400 hover:text-gray-600 font-bold text-[10px] uppercase px-2 transition-colors">Limpiar</button>
+                   </div>
+               }
+            </div>
 
            <!-- La Grilla -->
            <div class="flex-1 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm custom-scrollbar">
               <table class="w-full text-left text-sm">
                   <thead class="bg-black text-white font-black uppercase text-[10px] tracking-[0.1em] sticky top-0 z-10 shadow-xl border-b border-white/10">
                     <tr>
+                       @if (isAdmin()) {
+                         <th class="p-6 text-center w-10">
+                           <input type="checkbox" (change)="toggleAllAdmin($event)" [checked]="isAllAdminSelected()" class="rounded border-gray-600 bg-gray-900 text-uah-blue focus:ring-uah-blue">
+                         </th>
+                       }
                        <th class="p-6 pl-10">Rótulo / ID</th>
                         <th class="p-6">Recurso</th>
                        <th class="p-6">Especificaciones</th>
@@ -274,7 +290,13 @@ declare const XLSX: any;
                        @let stock = getAvailableStock(item);
                        @let isLowStock = item.stockActual <= item.stockMinimo;
                        
-                       <tr [class]="isLowStock ? 'bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-l-4 border-red-400' : 'hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors group border-l-4 border-transparent'">
+                        <tr [class]="isLowStock ? 'bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-l-4 border-red-400' : 'hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors group border-l-4 border-transparent'"
+                            [class.bg-blue-50]="isAdmin() && selectedAdminIds().has(item.id)">
+                           @if (isAdmin()) {
+                             <td class="p-4 text-center">
+                               <input type="checkbox" [checked]="selectedAdminIds().has(item.id)" (change)="toggleAdminSelection(item.id)" class="rounded border-gray-300 text-uah-blue focus:ring-uah-blue">
+                             </td>
+                           }
                           <td class="p-4 whitespace-nowrap">
                                 @if (item.rotulo_ID) {
                                    <span class="text-[10px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg font-black uppercase border border-blue-200 dark:border-blue-800 shadow-sm">
@@ -597,6 +619,15 @@ export class InventoryComponent {
   router = inject(Router);
   data = inject(DataService);
 
+  isAdmin = computed(() => ['Admin', 'SuperUser'].includes(this.data.currentUser()?.rol || ''));
+
+  /** Selección administrativa para acciones masivas (Administradores) */
+  selectedAdminIds = signal<Set<number>>(new Set());
+  isAllAdminSelected = computed(() => {
+    const items = this.filteredItems();
+    return items.length > 0 && Array.from(this.selectedAdminIds()).length === items.length;
+  });
+
   /** Nombre del área (ej: FABLAB) */
   areaName = '';
   /** Nombre del laboratorio (ej: Electrónica) */
@@ -642,9 +673,6 @@ export class InventoryComponent {
 
   /** Item en edición (para el formulario de administración) */
   editItem: Partial<InventoryItem> = {};
-
-  /** Indica si el usuario actual tiene rol de administrador */
-  isAdmin = computed(() => ['Admin', 'SuperUser'].includes(this.data.currentUser()?.rol || ''));
 
   /** Items filtrados por área, laboratorio, modo, estado y término de búsqueda */
   filteredItems = computed(() => {
@@ -1061,11 +1089,12 @@ export class InventoryComponent {
           const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA']));
           const sH = normalize(getV(['SUB-LAB_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB']));
           
-          // Detección de Formato (Movida arriba para ruteo)
+          // Detección de Formato: Solo Notebooks si tienen campos específicos de PC
           const marca = getV(['MARCA', 'BRAND']);
           const procesador = getV(['PROCESADOR', 'CPU']);
           const ram = getV(['RAM', 'MEMORIA']);
-          const isNotebook = !!(marca || procesador || ram || getV(['SO', 'SISTEMA', 'SN', 'S/N']));
+          const so = getV(['SO', 'SISTEMA', 'OPERATIVO']);
+          const isNotebook = !!(procesador || ram || so || (marca && getV(['ROTULO_ID', 'ID']).includes('NB')));
 
           let matched = false;
           // Buscar en la jerarquía oficial
@@ -1148,8 +1177,8 @@ export class InventoryComponent {
               tipoInventario: tipInv || 'Equipos'
             };
           } else {
-            // Formato Insumo / Arduinos: Priorizar ITEM/DESCRIPCION sobre MARCA si esta es vacía
-            const itemDesc = getV(['ITEM', 'DESCRIPCION', 'PRODUCTO', 'MODELO']);
+            // Formato Insumo / Arduinos: Priorizar ITEM/DESCRIPCION/NOMBRE sobre MARCA
+            const itemDesc = getV(['ITEM', 'DESCRIPCION', 'PRODUCTO', 'MODELO', 'NOMBRE']);
             const marcaExpl = marca;
 
             const statusV = getV(['STATUS', 'STADO', 'ESTADO']);
@@ -1161,8 +1190,8 @@ export class InventoryComponent {
             };
 
             return {
-              marca: marcaExpl || itemDesc || 'Insumo Genérico',
-              modelo: itemDesc || marcaExpl || 'N/A',
+              marca: (marcaExpl && marcaExpl !== itemDesc) ? marcaExpl : (itemDesc || 'Insumo Genérico'),
+              modelo: (itemDesc && itemDesc !== marcaExpl) ? itemDesc : (marcaExpl || 'N/A'),
               status: mappedStatus(statusV),
               esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
               stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
@@ -1222,5 +1251,59 @@ export class InventoryComponent {
         }
       }
     });
+  }
+
+  toggleAdminSelection(id: number) {
+    this.selectedAdminIds.update(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  toggleAllAdmin(event: any) {
+    if (event.target.checked) {
+      const allIds = this.filteredItems().map(i => i.id);
+      this.selectedAdminIds.set(new Set(allIds));
+    } else {
+      this.selectedAdminIds.set(new Set());
+    }
+  }
+
+  // Clear admin selection
+  clearAdminSelection() {
+    this.selectedAdminIds.set(new Set());
+  }
+
+  async deleteSelectedItems() {
+    const ids = Array.from(this.selectedAdminIds());
+    if (ids.length === 0) return;
+
+    Swal.fire({
+      title: `¿Eliminar ${ids.length} recursos?`,
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Sí, eliminar seleccionados'
+    }).then(async (result: any) => {
+      if (result.isConfirmed) {
+        Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        let deleted = 0;
+        for (const id of ids) {
+          await this.data.deleteItem(id);
+          deleted++;
+        }
+        this.selectedAdminIds.set(new Set());
+        Swal.fire('Eliminados', `Se han eliminado ${deleted} recursos exitosamente.`, 'success');
+      }
+    });
+  }
+
+  exportSelectedItems() {
+    const ids = Array.from(this.selectedAdminIds());
+    const items = this.data.inventory().filter(i => ids.includes(i.id));
+    this.data.downloadExcel(items, `Inventario_Seleccion_${this.labName}_${this.inventoryMode()}`);
   }
 }
