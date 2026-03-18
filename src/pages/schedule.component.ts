@@ -424,13 +424,23 @@ export class ScheduleComponent {
                         didOpen: () => { Swal.showLoading(); }
                     });
 
+                    const getCol = (prefixes: string[], row: any) => {
+                        const keys = Object.keys(row);
+                        const upperPrefixes = prefixes.map(p => p.toUpperCase());
+                        const match = keys.find(k => {
+                            const nk = k.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            return upperPrefixes.some(up => nk.includes(up) || up.includes(nk));
+                        });
+                        return match ? row[match] : undefined;
+                    };
+
                     const mappedSchedules = rows.map(row => ({
-                        lab: row['Laboratorio'],
-                        day: row['Día'],
-                        block: row['Bloque'],
-                        subject: row['Asignatura / Docente'],
-                        color: row['Color Hex'] || '#3b82f6'
-                    }));
+                        lab: getCol(['Laboratorio', 'Lab', 'Sala', 'Recinto'], row),
+                        day: getCol(['Día', 'Dia', 'Day'], row),
+                        block: getCol(['Bloque', 'Block', 'Horario'], row),
+                        subject: getCol(['Asignatura', 'Subject', 'Docente', 'Ramo'], row),
+                        color: getCol(['Color Hex', 'Color'], row) || '#3b82f6'
+                    })).filter(s => s.lab && s.day && s.block && s.subject);
 
                     const success = await this.data.addBulkSchedules(mappedSchedules);
 

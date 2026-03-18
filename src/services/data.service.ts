@@ -741,7 +741,9 @@ export class DataService {
   // --- GESTIÓN DE HORARIOS API ---
   async fetchSchedules() {
     try {
-      const res = await fetch('/api/schedules');
+      const res = await fetch('/api/schedules', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
       if (res.ok) {
         const data = await res.json();
         this.classSchedules.set(data);
@@ -933,7 +935,9 @@ export class DataService {
 
   async fetchInventory() {
     try {
-      const res = await fetch('/api/inventory');
+      const res = await fetch('/api/inventory', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
       if (res.ok) {
         const data = await res.json();
         console.log("Inventario cargado desde API:", data.length, "items");
@@ -948,7 +952,9 @@ export class DataService {
 
   async fetchReservations() {
     try {
-      const res = await fetch('/api/reservations');
+      const res = await fetch('/api/reservations', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
       if (res.ok) {
         const data = await res.json();
         this.reservations.set(data);
