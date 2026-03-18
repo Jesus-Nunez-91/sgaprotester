@@ -1042,7 +1042,7 @@ app.delete('/api/schedules/lab/:lab', authMiddleware, async (req: any, res) => {
 });
 
 // --- SERVIR FRONTEND ---
-const publicPath = path.join(process.cwd(), 'dist/sga-pro/browser');
+const publicPath = path.join(process.cwd(), 'dist/sga-fin/browser');
 app.use(express.static(publicPath));
 
 // Fallback para SPA (Cualquier ruta no manejada por API va al index.html)

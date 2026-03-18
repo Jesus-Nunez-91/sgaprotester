@@ -29,7 +29,7 @@ RUN npm install --omit=dev --legacy-peer-deps
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-server ./dist-server
 
-# El backend sirve el frontend desde ./dist/sga-pro-ingenieria-uah/browser
+# El backend sirve el frontend desde ./dist/sga-fin/browser
 # Asegurarse de que el puerto sea el 3030
 EXPOSE 3030
 
