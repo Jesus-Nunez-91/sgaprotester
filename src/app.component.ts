@@ -1,5 +1,7 @@
 import { Component, inject, signal, ViewChild, ElementRef, computed } from '@angular/core';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
+import { filter } from 'rxjs';
 import { DataService } from './services/data.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +24,7 @@ import { FormsModule } from '@angular/forms';
           <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
               <a routerLink="/areas" class="flex items-center gap-3 group cursor-pointer">
                   <div class="relative">
-                      <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="h-12 w-12 rounded-full shadow-2xl relative z-10 object-contain bg-white p-1" alt="Logo UAH">
+                      <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="h-12 w-12 rounded-full shadow-2xl relative z-10 object-contain bg-white p-1" alt="Logo Universidad Alberto Hurtado">
                   </div>
                   <div class="hidden lg:flex flex-col">
                       <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">PRO</span></span>
@@ -153,8 +155,8 @@ import { FormsModule } from '@angular/forms';
               <!-- Banda Principal con Banner -->
               <div class="flex items-center justify-between px-6 lg:px-10 h-20">
                   <div class="flex items-center gap-8">
-                      <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
-                           class="h-10 lg:h-12 w-auto object-contain" alt="UAH Ingeniería">
+                       <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
+                            class="h-10 lg:h-12 w-auto object-contain" alt="Facultad de Ingeniería UAH - Sistema SGA Pro">
                   </div>
 
                   <div class="flex items-center gap-6">
@@ -228,7 +230,7 @@ import { FormsModule } from '@angular/forms';
                       <!-- Col 1: Logo & Info -->
                       <div class="space-y-8">
                           <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
-                               class="h-10 w-auto brightness-0 dark:brightness-100" alt="UAH Footer">
+                               class="h-10 w-auto brightness-0 dark:brightness-100" alt="Logo Institucional Universidad Alberto Hurtado">
                           <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 space-y-2 leading-relaxed uppercase tracking-tighter">
                               <p>Universidad Alberto Hurtado</p>
                               <p>Alameda 1825, Santiago de Chile</p>
@@ -271,7 +273,7 @@ import { FormsModule } from '@angular/forms';
 
                   <!-- Acreditación Banner -->
                   <div class="mt-20 pt-10 border-t border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-10">
-                      <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/logo_acredicacion_v2_2025_2030.png" class="h-16 w-auto grayscale dark:grayscale-0 opacity-50 hover:opacity-100 transition-opacity" alt="Acreditación CNA">
+                      <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/logo_acredicacion_v2_2025_2030.png" class="h-16 w-auto grayscale dark:grayscale-0 opacity-50 hover:opacity-100 transition-opacity" alt="Sello de Acreditación CNA 2025-2030 Universidad Alberto Hurtado">
                       <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center md:text-right">
                           © 2026 Facultad de Ingeniería - Universidad Alberto Hurtado. <br>
                           Desarrollado para la excelencia académica e investigación.
@@ -302,8 +304,37 @@ import { FormsModule } from '@angular/forms';
 export class AppComponent {
     authService = inject(DataService);
     router = inject(Router);
+    titleService = inject(Title);
+    metaService = inject(Meta);
 
     today = new Date();
+
+    constructor() {
+        // Lógica de SEO Dinámico
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe(() => {
+            this.updateSEO();
+        });
+    }
+
+    /**
+     * Actualiza el título y meta descripción según la ruta actual.
+     */
+    updateSEO() {
+        const url = this.router.url;
+        let title = 'SGA Pro - Ingeniería UAH';
+        let description = 'Sistema de Gestión de Activos - Facultad de Ingeniería UAH';
+
+        if (url.includes('dashboard')) title = 'Dashboard | SGA Pro UAH';
+        if (url.includes('inventory')) title = 'Inventario de Equipos | SGA Pro UAH';
+        if (url.includes('schedule')) title = 'Horarios y Reservas | SGA Pro UAH';
+        if (url.includes('wiki')) title = 'Manuales y Wiki | SGA Pro UAH';
+        if (url.includes('projects')) title = 'Proyectos e Innovación | SGA Pro UAH';
+
+        this.titleService.setTitle(title);
+        this.metaService.updateTag({ name: 'description', content: description });
+    }
 
     // Estados de Notificaciones
     showNotif = signal(false);

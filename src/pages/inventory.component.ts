@@ -310,7 +310,7 @@ declare const XLSX: any;
                              <div class="flex items-start gap-3">
                                 <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ease-out">
                                     @if (item.imagenUrl) {
-                                       <img [src]="item.imagenUrl" class="w-full h-full object-cover">
+                                       <img [src]="item.imagenUrl" [alt]="item.marca + ' ' + item.modelo" class="w-full h-full object-cover">
                                     } @else {
                                        <div class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-500">
                                          <i class="bi bi-image"></i>
@@ -401,7 +401,7 @@ declare const XLSX: any;
                 <div class="bg-uah-blue dark:bg-gray-900 p-6 text-white flex justify-between items-start shrink-0">
                     <div class="flex gap-6 items-center">
                         <div (click)="selectedImage.set(detailItem()?.imagenUrl || 'https://picsum.photos/seed/tech/400/400')" class="w-24 h-24 bg-white rounded-2xl p-1 shadow-lg overflow-hidden group relative cursor-zoom-in">
-                            <img [src]="detailItem()?.imagenUrl || 'https://picsum.photos/seed/tech/400/400'" class="w-full h-full object-cover rounded-xl transition-transform group-hover:scale-110">
+                            <img [src]="detailItem()?.imagenUrl || 'https://picsum.photos/seed/tech/400/400'" [alt]="detailItem()?.marca + ' ' + detailItem()?.modelo" class="w-full h-full object-cover rounded-xl transition-transform group-hover:scale-110">
                             <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                                 <i class="bi bi-search text-xl"></i>
                             </div>
