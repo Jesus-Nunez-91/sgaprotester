@@ -1048,7 +1048,7 @@ export class InventoryComponent {
             const val = getV(prefixes);
             if (!val) return def;
             const n = parseInt(val.replace(/[^\d]/g, ''), 10);
-            return isNaN(n) ? def : n;
+            return isNaN(n) ? def : Math.min(n, 2147483647);
           };
 
           const normalize = (s: string) => s.toUpperCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
