@@ -390,25 +390,38 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
       return res.status(400).json({ message: 'Datos deben ser un array' });
     }
 
-    console.log(`Intentando carga masiva de ${itemsData.length} items para ${itemsData[0]?.categoria} - ${itemsData[0]?.subCategoria}`);
+    console.log(`PROCESANDO CARGA MASIVA: ${itemsData.length} items.`);
+    
+    const created = [];
+    const errors = [];
 
-    // Guardar todos los items. save() de TypeORM maneja arrays y genera IDs si faltan.
-    const savedItems = await itemRepo.save(itemsData);
-    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_BULK', `Carga masiva: ${savedItems.length} items en ${itemsData[0]?.categoria}`);
+    for (const data of itemsData) {
+      try {
+        // Asegurar campos mínimos
+        if (!data.tipoInventario) data.tipoInventario = 'Arduinos';
+        if (!data.status) data.status = 'Disponible';
+        
+        const newItem = itemRepo.create(data);
+        const saved = await itemRepo.save(newItem);
+        created.push(saved);
+      } catch (err: any) {
+        console.error("FALLO ITEM INDIVIDUAL:", data.marca, data.modelo);
+        console.error("ERROR:", err.message);
+        errors.push({ item: `${data.marca} ${data.modelo}`, error: err.message });
+      }
+    }
+
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_BULK', `Carga masiva: ${created.length} creados, ${errors.length} fallidos`);
     
     res.status(201).json({
-      message: 'Carga masiva exitosa',
-      count: savedItems.length
+      message: 'Procesamiento masivo completado',
+      count: created.length,
+      errorCount: errors.length,
+      errors: errors.slice(0, 10) // Enviar solo los primeros 10 errores al cliente
     });
   } catch (error: any) {
     console.error("ERROR CRÍTICO EN CARGA MASIVA:", error.message);
-    if (error.detail) console.error("DETALLE DB:", error.detail);
-    if (error.parameters) console.log("PARAMETROS QUE FALLARON (truncado):", error.parameters);
-    res.status(500).json({ 
-      message: 'Error interno en carga masiva', 
-      error: error.message,
-      detail: error.detail 
-    });
+    res.status(500).json({ message: 'Error interno en carga masiva', error: error.message });
   }
 });
 

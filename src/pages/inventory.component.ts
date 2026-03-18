@@ -1054,9 +1054,9 @@ export class InventoryComponent {
           const normalize = (s: string) => s.toUpperCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
           // 1. Determinar Categoría y Ruteo Dinámico
-          let cat = this.areaName;
-          let subCat = this.labName;
-          let tipInv = this.inventoryMode();
+          let cat = this.areaName || 'GENERAL';
+          let subCat = this.labName || 'BODEGA';
+          let tipInv = this.inventoryMode() || 'Arduinos';
 
           const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA']));
           const sH = normalize(getV(['SUB-LAB_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB']));
@@ -1145,7 +1145,7 @@ export class InventoryComponent {
               cantidadLlegada: getNum(['CANTLLEGA', 'LLEGADA'], 0),
               categoria: cat,
               subCategoria: subCat,
-              tipoInventario: tipInv
+              tipoInventario: tipInv || 'Equipos'
             };
           } else {
             // Formato Insumo / Arduinos: Priorizar ITEM/DESCRIPCION sobre MARCA si esta es vacía
@@ -1172,7 +1172,7 @@ export class InventoryComponent {
               cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD', 'LLEGADA'], 0),
               categoria: cat,
               subCategoria: subCat,
-              tipoInventario: cat === 'FABLAB' && tipInv === 'Equipos' ? 'Equipos' : 'Arduinos',
+              tipoInventario: tipInv || 'Arduinos',
               sn: getV(['OBS', 'SN', 'SERIAL', 'OBSERVACION']),
               rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO', 'UBICACIÓN'])
             };
