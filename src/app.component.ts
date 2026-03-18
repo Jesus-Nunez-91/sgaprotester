@@ -43,7 +43,7 @@ import { FormsModule } from '@angular/forms';
                   </a>
               }
 
-              <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/areas" *ngIf="isFullUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Laboratorios</span>
@@ -55,13 +55,13 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Horarios</span>
               </a>
 
-              <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/requests" *ngIf="isFullUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Mis Solicitudes</span>
               </a>
 
-              <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/support" *ngIf="isFullUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
@@ -347,6 +347,11 @@ export class AppComponent {
     isAdmin = computed(() => {
         const r = this.authService.currentUser()?.rol;
         return r === 'Admin' || r === 'SuperUser';
+    });
+
+    isFullUser = computed(() => {
+        const r = this.authService.currentUser()?.rol;
+        return r !== 'Académico';
     });
 
     /**
