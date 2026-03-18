@@ -81,8 +81,8 @@ declare var Swal: any;
             </form>
 
             <div class="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-              <span>Alberto Hurtado</span>
-              <span class="text-[#f06427]">v2.1 FINAL</span>
+              <span>Universidad Alberto Hurtado</span>
+              <span class="text-[#f06427]">v2.1</span>
             </div>
           </div>
         </div>
