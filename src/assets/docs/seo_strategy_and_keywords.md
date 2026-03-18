@@ -1,4 +1,4 @@
-# Estrategia de Posicionamiento SEO (SGA Pro UAH)
+# Estrategia de Posicionamiento SEO (SGA FIN UAH)
 
 Este documento detalla el cumplimiento del Anexo 2 solicitado por la UAH.
 
@@ -8,7 +8,7 @@ Se definen entre 5 y 9 palabras clave por cada sección crítica del sitio para 
 
 | Módulo / Artículo | Palabras Clave Propuestas |
 |-------------------|--------------------------|
-| **Inicio / Dashboard** | Gestión Activos UAH, Ingeniería Alberto Hurtado, SGA Pro, Optimización Laboratorios, Dashboard Académico, Universidad Alberto Hurtado. |
+| **Inicio / Dashboard** | Gestión Activos UAH, Ingeniería Alberto Hurtado, SGA FIN, Optimización Laboratorios, Dashboard Académico, Universidad Alberto Hurtado. |
 | **Inventario (Equipos)** | Notebooks Ingeniería, Inventario Tecnológico, Préstamo Equipos UAH, Hardware Académico, Laptop Management, Gestión de Activos Fijos. |
 | **Inventario (Arduinos)** | Kit Electrónica UAH, Arduinos Ingeniería, Componentes Electrónicos, Prototipado Rápido, Insumos Laboratorio, Sensores Académicos. |
 | **Horarios / Salas** | Reserva Salas UAH, Disponibilidad Laboratorios, Horario Académico Ingeniería, Gestión Espacios UAH, Planificación Laboratorio. |
@@ -39,7 +39,7 @@ Se implementará una ruta dinámica o archivo estático que liste las URLs princ
 ## 3. Implementación de Meta Tags (Sección 3)
 
 Se utilizará el servicio `Title` y `Meta` de Angular para actualizar dinámicamente:
-- **Title Tag**: Ej: "SGA Pro - Inventario de Equipos | UAH"
+- **Title Tag**: Ej: "SGA FIN - Inventario de Equipos | UAH"
 - **Meta Description**: Ej: "Sistema de Gestión de Activos de la Facultad de Ingeniería UAH. Consulta disponibilidad y reserva equipos."
 - **Alt Text**: Todas las imágenes de inventario y manuales llevarán el atributo `alt` descriptivo basado en la marca/modelo.
 

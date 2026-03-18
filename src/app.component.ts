@@ -27,7 +27,7 @@ import { FormsModule } from '@angular/forms';
                       <img src="https://i.postimg.cc/DzBvDGMs/Logo-UAH.jpg" class="h-12 w-12 rounded-full shadow-2xl relative z-10 object-contain bg-white p-1" alt="Logo Universidad Alberto Hurtado">
                   </div>
                   <div class="hidden lg:flex flex-col">
-                      <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">PRO</span></span>
+                      <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
                       <span class="text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
                   </div>
               </a>
@@ -156,7 +156,7 @@ import { FormsModule } from '@angular/forms';
               <div class="flex items-center justify-between px-6 lg:px-10 h-20">
                   <div class="flex items-center gap-8">
                        <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
-                            class="h-10 lg:h-12 w-auto object-contain" alt="Facultad de Ingeniería UAH - Sistema SGA Pro">
+                            class="h-10 lg:h-12 w-auto object-contain" alt="Facultad de Ingeniería UAH - Sistema SGA FIN">
                   </div>
 
                   <div class="flex items-center gap-6">
@@ -252,7 +252,7 @@ import { FormsModule } from '@angular/forms';
                         <h6 class="text-[11px] font-black text-black dark:text-white uppercase tracking-[0.2em] border-l-2 border-[#f06427] pl-3">Facultad de Ingeniería</h6>
                         <div class="flex flex-col gap-3 text-xs font-bold text-gray-400">
                            <a href="https://ingenieria.uahurtado.cl" target="_blank" class="hover:text-[#f06427] transition-all">Inicio</a>
-                           <a href="#" class="hover:text-[#f06427] transition-all">Plataforma SGA PRO</a>
+                           <a href="#" class="hover:text-[#f06427] transition-all">Plataforma SGA FIN</a>
                            <a href="mailto:finuah@uahurtado.cl" class="hover:text-[#f06427] transition-all">Contacto</a>
                         </div>
                       </div>
@@ -323,14 +323,14 @@ export class AppComponent {
      */
     updateSEO() {
         const url = this.router.url;
-        let title = 'SGA Pro - Ingeniería UAH';
-        let description = 'Sistema de Gestión de Activos - Facultad de Ingeniería UAH';
+        let title = 'SGA FIN - Ingeniería UAH';
+        let description = 'Sistema de Gestión de Finanzas e Infraestructura - Facultad de Ingeniería UAH';
 
-        if (url.includes('dashboard')) title = 'Dashboard | SGA Pro UAH';
-        if (url.includes('inventory')) title = 'Inventario de Equipos | SGA Pro UAH';
-        if (url.includes('schedule')) title = 'Horarios y Reservas | SGA Pro UAH';
-        if (url.includes('wiki')) title = 'Manuales y Wiki | SGA Pro UAH';
-        if (url.includes('projects')) title = 'Proyectos e Innovación | SGA Pro UAH';
+        if (url.includes('dashboard')) title = 'Dashboard | SGA FIN UAH';
+        if (url.includes('inventory')) title = 'Inventario de Equipos | SGA FIN UAH';
+        if (url.includes('schedule')) title = 'Horarios y Reservas | SGA FIN UAH';
+        if (url.includes('wiki')) title = 'Manuales y Wiki | SGA FIN UAH';
+        if (url.includes('projects')) title = 'Proyectos e Innovación | SGA FIN UAH';
 
         this.titleService.setTitle(title);
         this.metaService.updateTag({ name: 'description', content: description });

@@ -1,4 +1,4 @@
-# ANEXO 1 - Recepción de Sistemas Técnicos (SGA Pro UAH)
+# ANEXO 1 - Recepción de Sistemas Técnicos (SGA FIN UAH)
 
 Este documento detalla el cumplimiento de los lineamientos definidos por la Dirección de Tecnología de la Información y Comunicaciones (DTIC) de la Universidad Alberto Hurtado.
 

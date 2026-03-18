@@ -35,7 +35,7 @@ declare var Swal: any;
           <div class="p-10">
             <div class="mb-8">
               <h2 class="text-2xl font-black text-black tracking-tight" style="font-family: 'Playfair Display', serif;">Gestión de Laboratorios</h2>
-              <p class="text-gray-500 text-sm font-medium mt-1">Acceso al Sistema SGA PRO</p>
+              <p class="text-gray-500 text-sm font-medium mt-1">Acceso al Sistema SGA FIN</p>
             </div>
 
             <!-- Formulario de Login -->

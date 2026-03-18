@@ -1,4 +1,4 @@
-# Plan de Pruebas y Seguridad (SGA Pro UAH)
+# Plan de Pruebas y Seguridad (SGA FIN UAH)
 
 Este documento complementa el Anexo 1 (Secciones 1.1, 1.2 y 1.3) detallando la metodología de validación.
 

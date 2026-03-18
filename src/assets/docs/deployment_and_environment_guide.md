@@ -1,4 +1,4 @@
-# Guía de Despliegue y Ambientes (SGA Pro UAH)
+# Guía de Despliegue y Ambientes (SGA FIN UAH)
 
 Este documento aborda los puntos de la Sección 2.3, 2.4 y Sección 3 del Anexo 1.
 

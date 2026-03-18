@@ -23,11 +23,21 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
+// Rate limiting for auth routes
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: { message: 'Demasiados intentos de acceso. Por favor, intente de nuevo en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '10mb' }));
@@ -75,7 +85,7 @@ const logAudit = async (nombre: string, usuario: string, rol: string, accion: st
 
 // --- ENDPOINTS DE AUTENTICACION ---
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authRateLimit, async (req, res) => {
   try {
     const { correo, password } = req.body;
     const userRepo = AppDataSource.getRepository(User);
@@ -108,7 +118,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authRateLimit, async (req, res) => {
   try {
     const { nombreCompleto, email, rut, carrera, anio, rol, pass } = req.body;
     const userRepo = AppDataSource.getRepository(User);
@@ -276,7 +286,7 @@ app.delete('/api/users/:id', authMiddleware, async (req: any, res) => {
 
 // --- ENDPOINTS DE HORARIOS ---
 
-app.get('/api/schedules', async (req, res) => {
+app.get('/api/schedules', authMiddleware, async (req, res) => {
   const schedules = await AppDataSource.getRepository(Schedule).find();
   res.json(schedules);
 });
@@ -356,7 +366,7 @@ app.delete('/api/schedules/:id', authMiddleware, async (req: any, res) => {
 
 // --- ENDPOINTS DE INVENTARIO ---
 
-app.get('/api/inventory', async (req, res) => {
+app.get('/api/inventory', authMiddleware, async (req, res) => {
   const items = await AppDataSource.getRepository(InventoryItem).find();
   res.json(items);
 });
@@ -471,7 +481,7 @@ app.delete('/api/inventory/mass/clear', authMiddleware, async (req: any, res) =>
 
 // --- ENDPOINTS DE RESERVAS ---
 
-app.get('/api/reservations', async (req, res) => {
+app.get('/api/reservations', authMiddleware, async (req, res) => {
   const reservations = await AppDataSource.getRepository(Reservation).find();
   res.json(reservations);
 });

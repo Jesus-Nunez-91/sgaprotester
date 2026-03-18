@@ -12,7 +12,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/sga-pro",
+            "outputPath": "dist/sga-fin",
             "index": "index.html",
             "browser": "src/main.ts",
             "polyfills": [],
