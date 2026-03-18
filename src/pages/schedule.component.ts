@@ -426,20 +426,21 @@ export class ScheduleComponent {
 
                     const getCol = (prefixes: string[], row: any) => {
                         const keys = Object.keys(row);
-                        const upperPrefixes = prefixes.map(p => p.toUpperCase());
+                        const normPrefixes = prefixes.map(p => p.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim());
+                        
                         const match = keys.find(k => {
-                            const nk = k.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            return upperPrefixes.some(up => nk.includes(up) || up.includes(nk));
+                            const nk = k.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                            return normPrefixes.includes(nk);
                         });
                         return match ? row[match] : undefined;
                     };
 
                     const mappedSchedules = rows.map(row => ({
-                        lab: getCol(['Laboratorio', 'Lab', 'Sala', 'Recinto'], row),
-                        day: getCol(['Día', 'Dia', 'Day'], row),
-                        block: getCol(['Bloque', 'Block', 'Horario'], row),
-                        subject: getCol(['Asignatura', 'Subject', 'Docente', 'Ramo'], row),
-                        color: getCol(['Color Hex', 'Color'], row) || '#3b82f6'
+                        lab: getCol(['LABORATORIO', 'LAB', 'SALA', 'RECINTO'], row),
+                        day: getCol(['DIA', 'DIAS', 'DAY', 'DAYS'], row),
+                        block: getCol(['BLOQUE', 'BLOCK', 'HORARIO', 'HORA'], row),
+                        subject: getCol(['ASIGNATURA', 'SUBJECT', 'DOCENTE', 'RAMO', 'ASIGNATURA / DOCENTE'], row),
+                        color: getCol(['COLOR HEX', 'COLOR'], row) || '#3b82f6'
                     })).filter(s => s.lab && s.day && s.block && s.subject);
 
                     const success = await this.data.addBulkSchedules(mappedSchedules);
