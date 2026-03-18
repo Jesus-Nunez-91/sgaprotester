@@ -98,7 +98,8 @@ export class LoginComponent {
 
   constructor() {
     if (this.auth.currentUser()) {
-      this.router.navigate(['/areas']);
+      const route = this.auth.currentUser()?.rol === 'Académico' ? '/schedule' : '/areas';
+      this.router.navigate([route]);
     }
   }
 
