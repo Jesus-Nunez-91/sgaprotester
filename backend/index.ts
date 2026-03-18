@@ -292,7 +292,7 @@ app.get('/api/schedules', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/schedules', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin' && req.user.rol !== 'Académico') {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin' && !req.user.rol?.includes('Acad')) {
     return res.status(403).json({ message: 'Acceso denegado' });
   }
   try {
@@ -317,7 +317,7 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin' && req.user.rol !== 'Académico') {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin' && !req.user.rol?.includes('Acad')) {
     return res.status(403).json({ message: 'Acceso denegado' });
   }
   try {
@@ -353,7 +353,7 @@ app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/schedules/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin' && req.user.rol !== 'Académico') {
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin' && !req.user.rol?.includes('Acad')) {
     return res.status(403).json({ message: 'Acceso denegado' });
   }
   try {

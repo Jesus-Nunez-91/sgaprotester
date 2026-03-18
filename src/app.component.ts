@@ -315,6 +315,7 @@ export class AppComponent {
             filter(event => event instanceof NavigationEnd)
         ).subscribe(() => {
             this.updateSEO();
+            this.checkPermissions();
         });
     }
 
@@ -336,11 +337,23 @@ export class AppComponent {
         this.metaService.updateTag({ name: 'description', content: description });
     }
 
+    /**
+     * Redirige al académico si intenta entrar a áreas prohibidas.
+     */
+    checkPermissions() {
+        const url = this.router.url;
+        const role = this.authService.currentUser()?.rol;
+        // Si es Académico y está en una ruta que no sea /schedule (o subrutas), lo mandamos a /schedule
+        if (role?.includes('Acad') && (url.includes('areas') || url.includes('inventory') || url.includes('dashboard'))) {
+            this.router.navigate(['/schedule']);
+        }
+    }
+
     // Estados de Notificaciones
     showNotif = signal(false);
 
     @ViewChild('chatContainer') private chatContainer!: ElementRef;
-
+    
     /**
      * Determina si el usuario actual tiene privilegios administrativos.
      */
@@ -351,7 +364,7 @@ export class AppComponent {
 
     isFullUser = computed(() => {
         const r = this.authService.currentUser()?.rol;
-        return r !== 'Académico';
+        return !r?.includes('Acad');
     });
 
     /**
