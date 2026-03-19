@@ -208,7 +208,7 @@ declare const Swal: any;
                  </div>
 
                  <!-- Input -->
-                 @if (selectedTicket()?.status === 'Open') {
+                 @if (selectedTicket()?.status !== 'Closed') {
                      <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
                         <div class="flex gap-2">
                            <input [(ngModel)]="replyText" (keyup.enter)="sendReply()" placeholder="Escribe tu mensaje..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-uah-blue focus:outline-none dark:text-white transition-all">

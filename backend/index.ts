@@ -946,7 +946,8 @@ io.on('connection', async (socket) => {
 
         io.to('admins').to(`user_${ticket.userId}`).emit('message:received', {
           ...logMsg,
-          ticketId: parseInt(ticketId as any)
+          ticketId: parseInt(ticketId as any),
+          newStatus: status
         });
       }
     } catch (error) {

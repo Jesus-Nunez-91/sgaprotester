@@ -237,7 +237,7 @@ export class DataService {
     this.socket.on('message:received', (msg) => {
       console.log("Evento message:received recibido:", msg);
       // Actualizar tickets (usando == para evitar problemas de string vs number en IDs)
-      this.supportTickets.update(v => v.map(t => t.id == msg.ticketId ? { ...t, messages: [...t.messages, msg] } : t));
+      this.supportTickets.update(v => v.map(t => t.id == msg.ticketId ? { ...t, messages: [...t.messages, msg], status: msg.newStatus || t.status } : t));
 
       const user = this.currentUser();
       if (user && msg.sender !== user.nombreCompleto) {
