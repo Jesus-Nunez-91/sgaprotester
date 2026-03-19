@@ -61,7 +61,7 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Mis Solicitudes</span>
               </a>
 
-              <a routerLink="/support" *ngIf="isFullUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/support" *ngIf="isFullUser() || isAcademico()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
@@ -343,8 +343,9 @@ export class AppComponent {
     checkPermissions() {
         const url = this.router.url;
         const role = this.authService.currentUser()?.rol;
-        // Si es Académico y está en una ruta que no sea /schedule (o subrutas), lo mandamos a /schedule
-        if (role?.includes('Acad') && (url.includes('areas') || url.includes('inventory') || url.includes('dashboard'))) {
+        // Si es Académico y está en una ruta prohibida (áreas, inventario, dashboard), lo mandamos a /schedule
+        const isForbiddenForAcademico = url.includes('areas') || url.includes('inventory') || url.includes('dashboard') || url.includes('audit') || url.includes('users');
+        if (role?.includes('Acad') && isForbiddenForAcademico) {
             this.router.navigate(['/schedule']);
         }
     }
@@ -365,6 +366,11 @@ export class AppComponent {
     isFullUser = computed(() => {
         const r = this.authService.currentUser()?.rol;
         return !r?.includes('Acad');
+    });
+
+    isAcademico = computed(() => {
+        const r = this.authService.currentUser()?.rol;
+        return r?.includes('Acad');
     });
 
     /**
