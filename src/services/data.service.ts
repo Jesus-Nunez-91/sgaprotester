@@ -188,6 +188,7 @@ export class DataService {
   darkMode = signal<boolean>(false);
   adminTasks = signal<any[]>([]);
   bitacora = signal<any[]>([]);
+  isLoading = signal<boolean>(false);
 
   hierarchy: Record<string, string[]> = {
     'FABLAB': ['BIOMATERIALES', 'TEXTIL', 'FABRICACIÓN DIGITAL'],
@@ -740,6 +741,7 @@ export class DataService {
 
   // --- GESTIÓN DE HORARIOS API ---
   async fetchSchedules() {
+    this.isLoading.set(true);
     try {
       const res = await fetch('/api/schedules', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
@@ -750,6 +752,8 @@ export class DataService {
       }
     } catch (e) {
       console.error("Error al cargar horarios", e);
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
@@ -860,7 +864,17 @@ export class DataService {
 
         if (user.rol === 'Admin' || user.rol === 'SuperUser') {
           this.fetchUsers();
+          this.fetchAuditLogs();
         }
+        
+        // Carga inmediata de datos operativos para todos los roles
+        this.fetchSchedules();
+        this.fetchInventory();
+        this.fetchProjects();
+        this.fetchWiki();
+        this.fetchBitacora();
+        this.fetchReservations();
+
         return true;
       }
     } catch (error) {
