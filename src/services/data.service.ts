@@ -20,7 +20,7 @@ export interface User {
 
 export interface InventoryItem {
   id: number;
-  tipoInventario: 'Equipos' | 'Arduinos';
+  tipoInventario: 'Equipos' | 'Materiales';
   categoria: string;
   subCategoria: string;
   rotulo_ID?: string;

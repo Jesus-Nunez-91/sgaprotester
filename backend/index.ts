@@ -408,7 +408,7 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
     for (const data of itemsData) {
       try {
         // Asegurar campos mínimos
-        if (!data.tipoInventario) data.tipoInventario = 'Arduinos';
+        if (!data.tipoInventario) data.tipoInventario = 'Materiales';
         if (!data.status) data.status = 'Disponible';
         
         const newItem = itemRepo.create(data);

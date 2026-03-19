@@ -11,7 +11,7 @@ declare const XLSX: any;
 /**
  * Componente de Inventario.
  * Permite visualizar, filtrar y gestionar los items de un laboratorio específico.
- * Soporta dos modos: 'Equipos' (Notebooks, Laptops) y 'Arduinos' (Insumos electrónicos).
+ * Soporta dos modos: 'Equipos' (Notebooks, Laptops) y 'Materiales' (Insumos, herramientas, componentes).
  * Incluye funcionalidades para administradores (CRUD) y usuarios (Reservas).
  */
 @Component({
@@ -66,8 +66,8 @@ declare const XLSX: any;
                <button (click)="setMode('Equipos')" [class]="inventoryMode() === 'Equipos' ? 'bg-white dark:bg-gray-600 text-uah-blue dark:text-blue-300 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'" class="px-3 py-1.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
                  <i class="bi bi-laptop"></i>
                </button>
-               <button (click)="setMode('Arduinos')" [class]="inventoryMode() === 'Arduinos' ? 'bg-white dark:bg-gray-600 text-teal-600 dark:text-teal-300 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'" class="px-3 py-1.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
-                 <i class="bi bi-cpu"></i>
+               <button (click)="setMode('Materiales')" [class]="inventoryMode() === 'Materiales' ? 'bg-white dark:bg-gray-600 text-teal-600 dark:text-teal-300 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'" class="px-3 py-1.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+                 <i class="bi bi-box-seam"></i>
                </button>
            </div>
 
@@ -633,7 +633,7 @@ export class InventoryComponent {
   /** Nombre del laboratorio (ej: Electrónica) */
   labName = '';
   /** Modo de inventario actual */
-  inventoryMode = signal<'Equipos' | 'Arduinos'>('Equipos');
+  inventoryMode = signal<'Equipos' | 'Materiales'>('Equipos');
   /** Término de búsqueda para filtrar items */
   searchTerm = signal('');
   /** Filtro de estado (Disponible, En Mantención, etc.) */
@@ -649,7 +649,7 @@ export class InventoryComponent {
     if (this.isAdmin()) return null;
     return this.inventoryMode() === 'Equipos'
       ? 'Las reservas de equipos (Notebooks/Hackerlab) requieren 4 horas de antelación.'
-      : 'Las reservas de insumos (Arduinos/Electrónica) requieren 48 horas de antelación.';
+      : 'Las reservas de materiales e insumos requieren 48 horas de antelación.';
   });
 
   /** Error específico si no se cumple el tiempo de antelación */
@@ -724,10 +724,10 @@ export class InventoryComponent {
   }
 
   /**
-   * Cambia el modo de inventario (Equipos o Arduinos).
+   * Cambia el modo de inventario (Equipos o Materiales).
    * @param m Nuevo modo.
    */
-  setMode(m: 'Equipos' | 'Arduinos') {
+  setMode(m: 'Equipos' | 'Materiales') {
     this.inventoryMode.set(m);
     this.selection.set([]);
   }
@@ -806,8 +806,8 @@ export class InventoryComponent {
       return "Las reservas de equipos deben realizarse con al menos 12 horas de antelación.";
     }
 
-    if (this.inventoryMode() === 'Arduinos' && diffHours < 12) {
-      return "Las reservas de insumos y arduinos deben realizarse con al menos 12 horas de antelación.";
+    if (this.inventoryMode() === 'Materiales' && diffHours < 12) {
+      return "Las reservas de materiales deben realizarse con al menos 12 horas de antelación.";
     }
 
     return null;
@@ -1084,7 +1084,7 @@ export class InventoryComponent {
           // 1. Determinar Categoría y Ruteo Dinámico
           let cat = this.areaName || 'GENERAL';
           let subCat = this.labName || 'BODEGA';
-          let tipInv = this.inventoryMode() || 'Arduinos';
+          let tipInv = this.inventoryMode() || 'Materiales';
 
           const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA']));
           const sH = normalize(getV(['SUB-LAB_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB']));
@@ -1177,7 +1177,7 @@ export class InventoryComponent {
               tipoInventario: tipInv || 'Equipos'
             };
           } else {
-            // Formato Insumo / Arduinos: Priorizar ITEM/DESCRIPCION/NOMBRE sobre MARCA
+            // Formato Insumo / Materiales: Priorizar ITEM/DESCRIPCION/NOMBRE sobre MARCA
             const itemDesc = getV(['ITEM', 'DESCRIPCION', 'PRODUCTO', 'MODELO', 'NOMBRE']);
             const marcaExpl = marca;
 
@@ -1201,7 +1201,7 @@ export class InventoryComponent {
               cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD', 'LLEGADA'], 0),
               categoria: cat,
               subCategoria: subCat,
-              tipoInventario: tipInv || 'Arduinos',
+              tipoInventario: tipInv || 'Materiales',
               sn: getV(['OBS', 'SN', 'SERIAL', 'OBSERVACION']),
               rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO', 'UBICACIÓN'])
             };

@@ -6,7 +6,7 @@ export class InventoryItem {
     id: number;
 
     @Column()
-    tipoInventario: 'Equipos' | 'Arduinos';
+    tipoInventario: 'Equipos' | 'Materiales';
 
     @Column({ nullable: true })
     rotulo_ID: string;
