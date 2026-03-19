@@ -67,6 +67,12 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
               </a>
 
+              <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                  <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
+                  <span class="hidden lg:inline text-sm">Wiki</span>
+              </a>
+
               @if (isAdmin()) {
                   <div class="my-6 border-t border-white/5"></div>
                   <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
@@ -95,11 +101,6 @@ import { FormsModule } from '@angular/forms';
                       <span class="hidden lg:inline text-sm">Proyectos</span>
                   </a>
 
-                  <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Wiki</span>
-                  </a>
 
                   <a routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
