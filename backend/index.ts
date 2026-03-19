@@ -55,6 +55,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'uah_secret_fallback';
 AppDataSource.initialize()
   .then(async () => {
     console.log("DB Conectada");
+
+    // Migrar datos antiguos de 'Arduinos' a 'Materiales' para mantener compatibilidad
+    const invRepo = AppDataSource.getRepository(InventoryItem);
+    try {
+      const result = await invRepo.update({ tipoInventario: 'Arduinos' as any }, { tipoInventario: 'Materiales' });
+      if (result.affected && result.affected > 0) {
+        console.log(`Migración exitosa: ${result.affected} items actualizados de 'Arduinos' a 'Materiales'.`);
+      }
+    } catch (e) {
+      console.error("Error durante la migración de datos de inventario:", e);
+    }
+
     // Crear admin inicial si no existe
     const userRepo = AppDataSource.getRepository(User);
     const adminExists = await userRepo.findOneBy({ correo: 'admin@uah.cl' });
