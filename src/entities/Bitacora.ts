@@ -11,9 +11,9 @@ export class Bitacora {
 
     @Column({
         type: 'enum',
-        enum: ['FABLAB', 'CIENCIAS_BASICAS', 'INFORMATICA'],
+        enum: ['FABLAB', 'LAB CIENCIAS BASICAS', 'LAB INFORMATICA'],
     })
-    lab: 'FABLAB' | 'CIENCIAS_BASICAS' | 'INFORMATICA';
+    lab: 'FABLAB' | 'LAB CIENCIAS BASICAS' | 'LAB INFORMATICA';
 
     @Column()
     section: string;
