@@ -35,25 +35,27 @@ import { FormsModule } from '@angular/forms';
 
           <!-- Enlaces de Navegación -->
           <nav class="flex-1 overflow-y-auto py-8 flex flex-col gap-1.5 px-4 scrollbar-hide">
-              @if (isLabAdmin()) {
+              @if (isSuperUser()) {
                   <a routerLink="/dashboard" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-grid-1x2-fill text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Dashboard</span>
                   </a>
+
+                  <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Laboratorios</span>
+                  </a>
               }
 
-              <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                  <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Laboratorios</span>
-              </a>
-
-              <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                  <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Horarios Academicos</span>
-              </a>
+              @if (isAcadeAdmin()) {
+                  <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Horarios Academicos</span>
+                  </a>
+              }
 
               <a routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
@@ -64,7 +66,7 @@ import { FormsModule } from '@angular/forms';
               <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Mis Solicitudes</span>
+                  <span class="hidden lg:inline text-sm">{{ isRoomAdmin() ? 'Gestión de Solicitudes' : 'Mis Solicitudes' }}</span>
               </a>
 
               <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
@@ -73,13 +75,13 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
               </a>
 
-              <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                  <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Wiki</span>
-              </a>
+              @if (isSuperUser()) {
+                   <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                       <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
+                       <span class="hidden lg:inline text-sm">Wiki</span>
+                   </a>
 
-              @if (isLabAdmin()) {
                   <div class="my-6 border-t border-white/5"></div>
                   <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
                   
@@ -100,9 +102,7 @@ import { FormsModule } from '@angular/forms';
                       <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Bitácora</span>
                   </a>
-              }
 
-              @if (isLabAdmin() || isAcadeAdmin()) {
                   <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform"></i>
@@ -362,12 +362,11 @@ export class AppComponent {
         const url = this.router.url;
         const role = this.authService.currentUser()?.rol;
         
-        // Si es un rol académico básico (Docente, Alumno), restringimos accesos administrativos.
-        const isBasicRole = role === 'Docente' || role === 'Alumno';
-        const isForbiddenForBasic = url.includes('dashboard') || url.includes('audit') || url.includes('users') || url.includes('procurement') || url.includes('maintenance') || url.includes('projects');
+        // Redirección de seguridad según roles restrictivos
+        const isForbidden = url.includes('dashboard') || url.includes('audit') || url.includes('users') || url.includes('procurement') || url.includes('maintenance') || url.includes('projects') || url.includes('areas') || url.includes('bitacora');
         
-        if (isBasicRole && isForbiddenForBasic) {
-            this.router.navigate(['/areas']);
+        if (role !== 'SuperUser' && isForbidden) {
+            this.router.navigate(['/rooms']);
         }
     }
 
@@ -393,12 +392,17 @@ export class AppComponent {
     });
 
     /**
-     * Determina si el usuario actual es Académico de Labs (Sincronizador).
+     * Determina si el usuario actual es Administrador de Salas (Gestiona Reservas).
      */
-    isAcadLabs = computed(() => {
+    isRoomAdmin = computed(() => {
         const r = this.authService.currentUser()?.rol;
-        return r === 'Acad_Labs';
+        return r === 'Admin_Labs' || r === 'SuperUser';
     });
+
+    /**
+     * Determina si el usuario actual es Académico.
+     */
+    isAcademico = computed(() => this.authService.currentUser()?.rol === 'Academico');
 
     /**
      * Determina si el usuario actual es Docente.
@@ -418,7 +422,7 @@ export class AppComponent {
     });
 
     // Helper para menús generales admin
-    isAdmin = computed(() => this.isLabAdmin() || this.isAcadeAdmin() || this.isAcadLabs());
+    isAdmin = computed(() => this.isLabAdmin() || this.isAcadeAdmin() || this.isAcademico());
 
     /**
      * Retorna la clase de CSS para el badge del rol.
@@ -429,7 +433,7 @@ export class AppComponent {
             case 'SuperUser': return 'bg-red-500/20 text-red-500 border-red-500/50';
             case 'Admin_Labs': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
             case 'Admin_Acade': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
-            case 'Acad_Labs': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
+            case 'Academico': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
             case 'Docente': return 'bg-amber-500/20 text-amber-500 border-amber-500/50';
             case 'Alumno': return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
             default: return 'bg-white/10 text-white border-white/20';

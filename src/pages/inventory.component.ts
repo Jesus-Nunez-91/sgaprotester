@@ -906,11 +906,33 @@ export class InventoryComponent {
       const diffHrs = diffMs / (1000 * 60 * 60);
 
       if (diffMs < 0) {
-        Swal.fire({ icon: 'error', title: 'Fecha no válida', text: 'No puedes reservar en tiempo pasado.', confirmButtonColor: '#003366' });
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Fecha no válida', 
+          text: 'No puedes reservar en tiempo pasado.', 
+          customClass: {
+            popup: 'uah-premium-popup',
+            title: 'uah-premium-title',
+            confirmButton: 'uah-premium-confirm'
+          },
+          buttonsStyling: false,
+          confirmButtonColor: '#003366' 
+        });
         return;
       }
       if (diffHrs < 12) {
-        Swal.fire({ icon: 'warning', title: 'Aviso de Antelación', text: 'Las reservas deben realizarse con al menos 12 horas de antelación.', confirmButtonColor: '#003366' });
+        Swal.fire({ 
+          icon: 'warning', 
+          title: 'Aviso de Antelación', 
+          text: 'Las reservas deben realizarse con al menos 12 horas de antelación.', 
+          customClass: {
+            popup: 'uah-premium-popup',
+            title: 'uah-premium-title',
+            confirmButton: 'uah-premium-confirm'
+          },
+          buttonsStyling: false,
+          confirmButtonColor: '#003366' 
+        });
         return;
       }
     }
@@ -922,12 +944,16 @@ export class InventoryComponent {
 
     Swal.fire({
       icon: 'success', 
-      title: '<h3 class="text-emerald-600 font-black uppercase">Solicitud Enviada</h3>',
+      title: 'Solicitud Enviada',
       text: 'El encargado revisará tu solicitud a la brevedad.',
-      timer: 2000, 
+      timer: 3000, 
       showConfirmButton: false,
       toast: true,
-      position: 'top-end'
+      position: 'top-end',
+      customClass: {
+        popup: 'uah-premium-popup',
+        title: 'uah-premium-title'
+      }
     });
     this.selection.set([]);
   }
@@ -998,11 +1024,28 @@ export class InventoryComponent {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'uah-premium-popup',
+        title: 'uah-premium-title',
+        confirmButton: 'uah-premium-confirm',
+        cancelButton: 'uah-premium-cancel'
+      },
+      buttonsStyling: false
     }).then((result: any) => {
       if (result.isConfirmed) {
         this.data.deleteItem(item.id);
-        Swal.fire('Eliminado', 'El item ha sido eliminado del inventario.', 'success');
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'El item ha sido removido del inventario.',
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: {
+            popup: 'uah-premium-popup',
+            title: 'uah-premium-title'
+          }
+        });
       }
     });
   }

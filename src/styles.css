@@ -146,3 +146,79 @@
     @apply bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden transition-all;
   }
 }
+
+/**
+ * SweetAlert2 Premium Customizations
+ * Estilos institucionales para diálogos SGA FIN
+ */
+ .swal2-popup.uah-premium-popup {
+  border-radius: 2.5rem !important;
+  padding: 2rem !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(0, 51, 102, 0.05) !important;
+  box-shadow: 0 40px 100px -20px rgba(0, 51, 102, 0.3) !important;
+  font-family: var(--primary-font) !important;
+}
+
+html.dark .swal2-popup.uah-premium-popup {
+  background: rgba(15, 23, 42, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8) !important;
+}
+
+.swal2-title.uah-premium-title {
+  font-family: var(--title-font) !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: -0.05em !important;
+  color: #003366 !important;
+  font-size: 1.5rem !important;
+  margin-top: 1rem !important;
+}
+
+html.dark .swal2-title.uah-premium-title {
+  color: #ffffff !important;
+}
+
+.swal2-html-container {
+  font-size: 0.95rem !important;
+  color: #64748b !important;
+  line-height: 1.6 !important;
+}
+
+html.dark .swal2-html-container {
+  color: #94a3b8 !important;
+}
+
+.swal2-confirm.uah-premium-confirm {
+  background: #003366 !important;
+  border-radius: 1.25rem !important;
+  padding: 1rem 2.5rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 0.70rem !important;
+  box-shadow: 0 10px 20px -5px rgba(0, 51, 102, 0.3) !important;
+}
+
+.swal2-cancel.uah-premium-cancel {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border-radius: 1.25rem !important;
+  padding: 1rem 2.5rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 0.70rem !important;
+}
+
+html.dark .swal2-cancel.uah-premium-cancel {
+  background: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+.swal2-icon {
+  transform: scale(1.2) !important;
+  margin-bottom: 2rem !important;
+}

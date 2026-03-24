@@ -60,14 +60,54 @@ AppDataSource.initialize()
     // REPARACIÓN MANUAL DE ESQUEMA (Garantizar que el servidor tenga los roles nuevos)
     try {
       console.log("🛠️ Ejecutando comprobación de integridad de esquema...");
+      
+      // 1. Roles Granulares
       await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Admin_Acade'");
       await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Admin_Labs'");
-      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Acad_Labs'");
+      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Academico'");
       await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'SuperUser'");
-      // Mapear usuarios antiguos Admin a SuperUser
       await AppDataSource.query("UPDATE \"user\" SET rol = 'SuperUser' WHERE rol = 'Admin'");
+      await AppDataSource.query("UPDATE \"user\" SET rol = 'Academico' WHERE rol = 'Acad_Labs'");
+
+      // 2. Tablas Faltantes (Soporte para Salas y Reservas)
+      console.log("🛠️ Verificando tablas de infraestructura...");
+      await AppDataSource.query(`
+          CREATE TABLE IF NOT EXISTS "room" (
+            "id" SERIAL PRIMARY KEY,
+            "nombre" VARCHAR NOT NULL,
+            "tipo" VARCHAR NOT NULL,
+            "capacidadMaxima" INTEGER NOT NULL,
+            "ubicacionPiso" VARCHAR NOT NULL,
+            "estadoActivo" BOOLEAN DEFAULT true
+          )
+      `);
+      await AppDataSource.query(`
+          CREATE TABLE IF NOT EXISTS "room_block" (
+            "id" SERIAL PRIMARY KEY,
+            "roomId" INTEGER NOT NULL,
+            "nombreBloque" VARCHAR NOT NULL,
+            "horaInicio" VARCHAR NOT NULL,
+            "horaFin" VARCHAR NOT NULL
+          )
+      `);
+      await AppDataSource.query(`
+          CREATE TABLE IF NOT EXISTS "room_reservation" (
+            "id" SERIAL PRIMARY KEY,
+            "roomId" INTEGER NOT NULL,
+            "roomBlockId" INTEGER NOT NULL,
+            "fechaExacta" VARCHAR NOT NULL,
+            "userId" INTEGER NOT NULL,
+            "motivo" VARCHAR NOT NULL,
+            "participantes" INTEGER,
+            "observacionOpcional" VARCHAR,
+            "estado" VARCHAR DEFAULT 'Pendiente',
+            "motivoRechazo" VARCHAR,
+            "createdAt" TIMESTAMP DEFAULT now(),
+            "updatedAt" TIMESTAMP DEFAULT now()
+          )
+      `);
     } catch(e) {
-      console.warn("⚠️ Nota: La actualización manual de tipos enum falló o ya estaba aplicada.");
+      console.warn("⚠️ Nota: Reparación manual ejecutada o innecesaria.");
     }
 
     console.log("DB Conectada");
@@ -375,9 +415,9 @@ app.get('/api/schedules', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/schedules', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Acade', 'Acad_Labs'].includes(req.user.rol);
+  const canManage = ['SuperUser', 'Admin_Acade'].includes(req.user.rol);
   if (!canManage) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol académico' });
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Acade o SuperUser' });
   }
   try {
     const { lab, day, block, subject, color } = req.body;
@@ -436,9 +476,9 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Acade', 'Acad_Labs'].includes(req.user.rol);
+  const canManage = ['SuperUser', 'Admin_Acade'].includes(req.user.rol);
   if (!canManage) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol académico' });
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Acade o SuperUser' });
   }
   try {
     const schedulesData = req.body;
@@ -500,9 +540,9 @@ app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/schedules/:id', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Acade', 'Acad_Labs'].includes(req.user.rol);
+  const canManage = ['SuperUser', 'Admin_Acade'].includes(req.user.rol);
   if (!canManage) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol académico' });
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Acade o SuperUser' });
   }
   try {
     await AppDataSource.getRepository(Schedule).delete(req.params.id);
@@ -1169,7 +1209,7 @@ app.post('/api/bitacora', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/bitacora/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') return res.status(403).json({ message: 'Acceso denegado' });
+  if (req.user.rol !== 'SuperUser') return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona la bitacora' });
   try {
     const repo = AppDataSource.getRepository(Bitacora);
     const entry = await repo.findOneBy({ id: parseInt(req.params.id) });
@@ -1234,9 +1274,9 @@ app.get('/api/rooms', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/rooms', authMiddleware, async (req: any, res) => {
-  // Acad_Labs puede crear salas al sincronizar horarios
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs' && req.user.rol !== 'Acad_Labs') {
-    return res.status(403).json({ message: 'Acceso denegado' });
+  // Solo el SuperUser crea salas físicamente
+  if (req.user.rol !== 'SuperUser') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede crear salas' });
   }
   try {
     const repo = AppDataSource.getRepository(Room);
@@ -1272,9 +1312,9 @@ app.post('/api/rooms', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/rooms/:id', authMiddleware, async (req: any, res) => {
-  // Admin_Acade puede actualizar salas
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs' && req.user.rol !== 'Admin_Acade') {
-    return res.status(403).json({ message: 'Acceso denegado' });
+  // Solo el SuperUser edita salas
+  if (req.user.rol !== 'SuperUser') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede editar salas' });
   }
   try {
     const repo = AppDataSource.getRepository(Room);
@@ -1289,9 +1329,9 @@ app.put('/api/rooms/:id', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/rooms/:id', authMiddleware, async (req: any, res) => {
-  // Borrar salas es solo para los roles de mayor jerarquía técnica
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo SuperUser y Admin_Labs pueden eliminar salas' });
+  // Borrar salas es solo para SuperUser
+  if (req.user.rol !== 'SuperUser') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede eliminar salas' });
   }
   try {
     const roomId = parseInt(req.params.id);
@@ -1396,9 +1436,9 @@ app.post('/api/room-reservations', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, res) => {
-  // Admin_Acade es quien aprueba/rechaza reservas
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Acade') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo Admin_Acade puede gestionar estados de reserva' });
+  // Admin_Labs es quien aprueba/rechaza reservas (módulo de Salas y Labs)
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo Admin_Labs o SuperUser puede gestionar estados de reserva' });
   }
     try {
         const repo = AppDataSource.getRepository(RoomReservation);

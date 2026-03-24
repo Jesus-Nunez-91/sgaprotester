@@ -23,10 +23,10 @@ export class User {
 
     @Column({
         type: 'enum',
-        enum: ['Alumno', 'Docente', 'Admin_Acade', 'Admin_Labs', 'Acad_Labs', 'SuperUser'],
+        enum: ['Alumno', 'Docente', 'Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser'],
         default: 'Alumno'
     })
-    rol: 'Alumno' | 'Docente' | 'Admin_Acade' | 'Admin_Labs' | 'Acad_Labs' | 'SuperUser';
+    rol: 'Alumno' | 'Docente' | 'Admin_Acade' | 'Admin_Labs' | 'Academico' | 'SuperUser';
 
     @Column({ nullable: true })
     carrera: string;

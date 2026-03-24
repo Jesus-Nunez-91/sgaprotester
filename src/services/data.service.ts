@@ -13,7 +13,7 @@ export interface User {
   rut: string;
   correo: string;
   password?: string;
-  rol: 'Alumno' | 'Docente' | 'Acad_Labs' | 'Admin_Acade' | 'Admin_Labs' | 'SuperUser';
+  rol: 'Alumno' | 'Docente' | 'Academico' | 'Admin_Acade' | 'Admin_Labs' | 'SuperUser';
   carrera?: string;
   anioIngreso?: number;
 }
@@ -242,7 +242,7 @@ export class DataService {
       const user = this.currentUser();
       if (user && msg.sender !== user.nombreCompleto) {
         console.log("Generando notificación para el usuario...");
-        const isAdmin = user.rol === 'Admin_Labs' || user.rol === 'Admin_Acade' || user.rol === 'SuperUser';
+        const isAdmin = user.rol === 'Admin_Labs' || user.rol === 'Admin_Acade' || user.rol === 'SuperUser' || user.rol === 'Academico';
         this.notifications.update(n => [{
           id: Date.now(),
           userId: isAdmin ? 'all' : user.id,

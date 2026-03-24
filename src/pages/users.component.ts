@@ -71,7 +71,7 @@ declare const XLSX: any;
                             <select [(ngModel)]="editUser.rol" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none appearance-none">
                                 <option value="Alumno">Alumno</option>
                                 <option value="Docente">Docente</option>
-                                <option value="Acad_Labs">Acad_Labs</option>
+                                <option value="Academico">Academico</option>
                                 <option value="Admin_Acade">Admin_Acade</option>
                                 <option value="Admin_Labs">Admin_Labs</option>
                                 <option value="SuperUser">SuperUser</option>
@@ -187,7 +187,7 @@ declare const XLSX: any;
                                               'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-100 dark:border-red-900': u.rol === 'SuperUser',
                                               'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900': u.rol === 'Admin_Labs',
                                               'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900': u.rol === 'Admin_Acade',
-                                              'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900': u.rol === 'Acad_Labs',
+                                              'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900': u.rol === 'Academico',
                                               'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-100 dark:border-amber-900': u.rol === 'Docente',
                                               'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-600': u.rol === 'Alumno'
                                             }">
@@ -196,7 +196,7 @@ declare const XLSX: any;
                                                 'bg-red-500': u.rol === 'SuperUser',
                                                 'bg-blue-500': u.rol === 'Admin_Labs',
                                                 'bg-emerald-500': u.rol === 'Admin_Acade',
-                                                'bg-purple-500': u.rol === 'Acad_Labs',
+                                                'bg-purple-500': u.rol === 'Academico',
                                                 'bg-amber-500': u.rol === 'Docente',
                                                 'bg-gray-400': u.rol === 'Alumno'
                                               }"></span>
@@ -254,7 +254,18 @@ export class UsersComponent {
 
    async save() {
       if (!this.editUser.correo || !this.editUser.nombreCompleto) {
-         Swal.fire({ icon: 'error', title: 'Faltan Datos', text: 'Complete los campos obligatorios para continuar.', confirmButtonColor: '#003366' });
+         Swal.fire({ 
+           icon: 'error', 
+           title: 'Faltan Datos', 
+           text: 'Complete los campos obligatorios para continuar.', 
+           customClass: {
+             popup: 'uah-premium-popup',
+             title: 'uah-premium-title',
+             confirmButton: 'uah-premium-confirm'
+           },
+           buttonsStyling: false,
+           confirmButtonColor: '#003366' 
+         });
          return;
       }
 
@@ -266,29 +277,50 @@ export class UsersComponent {
       this.reset();
       Swal.fire({
          icon: 'success',
-         title: '<h3 class="text-uah-blue font-black uppercase">Usuario Guardado</h3>',
+         title: 'Usuario Guardado',
          text: 'El registro se ha actualizado correctamente.',
          toast: true,
          position: 'top-end',
          showConfirmButton: false,
-         timer: 2000
+         timer: 2000,
+         customClass: {
+           popup: 'uah-premium-popup',
+           title: 'uah-premium-title'
+         }
       });
    }
 
    async del(u: User) {
       Swal.fire({
-         title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Usuario?</h3>',
+         title: '¿Eliminar Usuario?',
          text: `Se revocará permanentemente el acceso a ${u.nombreCompleto}.`,
          icon: 'warning',
          showCancelButton: true,
          confirmButtonColor: '#d33',
          cancelButtonColor: '#003366',
          confirmButtonText: 'Sí, eliminar',
-         cancelButtonText: 'Cancelar'
+         cancelButtonText: 'Cancelar',
+         customClass: {
+           popup: 'uah-premium-popup',
+           title: 'uah-premium-title',
+           confirmButton: 'uah-premium-confirm',
+           cancelButton: 'uah-premium-cancel'
+         },
+         buttonsStyling: false
       }).then(async (result: any) => {
          if (result.isConfirmed) {
             await this.data.deleteUser(u.id);
-            Swal.fire({ icon: 'success', title: 'Eliminado', text: 'El usuario ha sido removido del sistema.', timer: 1500, showConfirmButton: false });
+            Swal.fire({ 
+              icon: 'success', 
+              title: 'Eliminado', 
+              text: 'El usuario ha sido removido del sistema.', 
+              timer: 1500, 
+              showConfirmButton: false,
+              customClass: {
+                popup: 'uah-premium-popup',
+                title: 'uah-premium-title'
+              }
+            });
          }
       });
    }
@@ -343,13 +375,28 @@ export class UsersComponent {
                await this.data.addBulkUsers(usersToUpload);
                Swal.fire({
                   icon: 'success',
-                  title: '<h3 class="text-uah-blue font-black uppercase">Carga Masiva Exitosa</h3>',
+                  title: 'Carga Masiva Exitosa',
                   text: `Se han procesado ${usersToUpload.length} usuarios nuevos.`,
                   timer: 3000,
-                  showConfirmButton: false
+                  showConfirmButton: false,
+                  customClass: {
+                    popup: 'uah-premium-popup',
+                    title: 'uah-premium-title'
+                  }
                });
             } else {
-               Swal.fire({ icon: 'warning', title: 'Sin Registros', text: 'No se encontraron datos válidos en el archivo.', confirmButtonColor: '#003366' });
+               Swal.fire({ 
+                 icon: 'warning', 
+                 title: 'Sin Registros', 
+                 text: 'No se encontraron datos válidos en el archivo.', 
+                 confirmButtonColor: '#003366',
+                 customClass: {
+                   popup: 'uah-premium-popup',
+                   title: 'uah-premium-title',
+                   confirmButton: 'uah-premium-confirm'
+                 },
+                 buttonsStyling: false
+               });
             }
          } catch (err) {
             Swal.fire('Error', 'No se pudo procesar el archivo Excel.', 'error');

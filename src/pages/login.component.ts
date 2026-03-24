@@ -99,8 +99,8 @@ export class LoginComponent {
   constructor() {
     if (this.auth.currentUser()) {
       const role = this.auth.currentUser()?.rol;
-      const isAcad = role === 'Acad_Labs' || role === 'Docente' || role === 'Alumno';
-      this.router.navigate([isAcad ? '/schedule' : '/areas']);
+      const isAcad = role === 'Academico' || role === 'Docente' || role === 'Alumno';
+      this.router.navigate([isAcad ? '/schedule' : '/rooms']);
     }
   }
 

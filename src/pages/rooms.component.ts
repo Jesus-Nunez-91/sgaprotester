@@ -118,10 +118,24 @@ declare const Swal: any;
 
                      <button *ngIf="getBlockStatus(block) === 'Disponible'" (click)="openReserveModal(block)" 
                              class="w-full bg-uah-blue hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-xs transition shadow-md">
-                       RESERVAR AHORA
+                       Solicitar Reserva
                      </button>
+
+                     <div *ngIf="canApprove() && getBlockStatus(block) === 'Pendiente'" class="space-y-2 mt-2">
+                        @let res = getReservationForBlock(block);
+                        @if (res) {
+                           <button (click)="updateStatus(res.id, 'Aprobada')" 
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-[10px] transition uppercase shadow-lg shadow-emerald-500/20">
+                             Aceptar Reserva
+                           </button>
+                           <button (click)="updateStatus(res.id, 'Rechazada')" 
+                                   class="w-full bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 rounded-xl text-[10px] transition uppercase">
+                             Rechazar
+                           </button>
+                        }
+                     </div>
                      
-                     <div *ngIf="canApprove()" class="mt-3 flex gap-2">
+                     <div *ngIf="isSuperUser()" class="mt-3 flex gap-2">
                          <button (click)="editBlock(block)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-1.5 rounded-lg text-[10px] transition uppercase">EDITAR</button>
                          <button (click)="deleteBlock(block.id)" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition" title="Borrar Bloque"><i class="bi bi-trash"></i></button>
                      </div>
@@ -345,12 +359,16 @@ export class RoomsComponent implements OnInit {
 
   isAdmin = computed(() => {
     const rol = this.data.currentUser()?.rol || '';
-    return rol === 'Admin_Acade' || rol === 'Admin_Labs' || rol === 'Acad_Labs' || rol === 'SuperUser';
+    return rol === 'Admin_Labs' || rol === 'SuperUser';
+  });
+
+  isSuperUser = computed(() => {
+    return this.data.currentUser()?.rol === 'SuperUser';
   });
 
   canApprove = computed(() => {
     const rol = this.data.currentUser()?.rol || '';
-    return rol === 'Admin_Acade' || rol === 'Admin_Labs' || rol === 'SuperUser';
+    return rol === 'Admin_Labs' || rol === 'SuperUser';
   });
 
   filteredRooms = computed(() => {
@@ -371,7 +389,7 @@ export class RoomsComponent implements OnInit {
 
   ngOnInit() {
     this.loadRooms();
-    if (this.isAdmin()) this.loadAllReservations();
+    if (this.canApprove()) this.loadAllReservations();
   }
 
   getHeaders() {
@@ -462,11 +480,19 @@ export class RoomsComponent implements OnInit {
      if (isClass) return 'Ocupado (Clase)';
 
      // 2. Verificar Solicitudes de Reserva
-     const reserve = this.dailyReservations().find(r => r.roomBlockId === block.id);
-     if (!reserve) return 'Disponible';
-     if (reserve.estado === 'Aprobada') return 'Aprobado';
-     if (reserve.estado === 'Pendiente') return 'Pendiente';
+     const activeRes = this.dailyReservations().find(r => 
+        r.roomBlockId === block.id && (r.estado === 'Aprobada' || r.estado === 'Pendiente')
+     );
+     
+     if (activeRes) {
+        return activeRes.estado === 'Aprobada' ? 'Aprobado' : 'Pendiente';
+     }
+     
      return 'Disponible';
+  }
+
+  getReservationForBlock(block: any) {
+    return this.dailyReservations().find(r => r.roomBlockId === block.id);
   }
 
   getBlockClass(block: any) {
@@ -513,16 +539,27 @@ export class RoomsComponent implements OnInit {
               body: JSON.stringify(payload)
           });
           if (res.ok) {
-              alert('Solicitud enviada exitosamente.');
+              Swal.fire({
+                 icon: 'success',
+                 title: 'Solicitud Enviada',
+                 text: 'Su reserva ha sido registrada y está pendiente de aprobación.',
+                 customClass: {
+                   popup: 'uah-premium-popup',
+                   title: 'uah-premium-title',
+                   confirmButton: 'uah-premium-confirm'
+                 },
+                 buttonsStyling: false,
+                 confirmButtonColor: '#003366'
+              });
               this.showReserveModal = false;
-              this.loadBlocksAndReservations(); // refrescar grilla
-              if (this.isAdmin) this.loadAllReservations();
+              this.loadBlocksAndReservations(); 
+              if (this.canApprove()) this.loadAllReservations();
           } else {
-              const e = await res.json();
-              alert('Error: ' + e.message);
+              const e = await res.json().catch(() => ({ message: 'Error de red' }));
+              Swal.fire('Error', 'No pudo enviarse: ' + e.message, 'error');
           }
       } catch (error) {
-          alert('Hubo un error de conexión.');
+          Swal.fire('Error', 'Problema de conexión al procesar.', 'error');
       }
   }
 
@@ -541,21 +578,51 @@ export class RoomsComponent implements OnInit {
           });
           if (res.ok) {
               const saved = await res.json();
-              alert(`Sala "${saved.nombre}" creada con éxito.`);
+              Swal.fire({
+                 icon: 'success',
+                 title: 'Sala Creada',
+                 text: `La sala "${saved.nombre}" ha sido configurada correctamente.`,
+                 customClass: {
+                   popup: 'uah-premium-popup',
+                   title: 'uah-premium-title',
+                   confirmButton: 'uah-premium-confirm'
+                 },
+                 buttonsStyling: false,
+                 confirmButtonColor: '#003366'
+              });
               this.showCreateModal = false;
               await this.loadRooms();
           } else {
               const e = await res.json().catch(() => ({ message: 'Error de red' }));
-              alert('Error al crear sala: ' + e.message);
+              Swal.fire('Error', 'No se pudo crear: ' + e.message, 'error');
           }
       } catch (e) {
-          console.error(e);
-          alert('Hubo un error de conexión al crear la sala.');
+          Swal.fire('Error', 'Hubo un problema de conexión al procesar la sala.', 'error');
       }
   }
 
   async updateStatus(resId: number, estado: string) {
-      if (!confirm(`¿Estás seguro de marcar esta reserva como ${estado}?`)) return;
+      const isApprove = estado === 'Aprobada';
+      const confirm = await Swal.fire({
+         title: isApprove ? '¿Aprobar Reserva?' : '¿Rechazar Reserva?',
+         text: isApprove ? 'Se notificará al usuario de la confirmación.' : 'Esta acción no se puede deshacer.',
+         icon: isApprove ? 'question' : 'warning',
+         showCancelButton: true,
+         confirmButtonText: isApprove ? 'SÍ, APROBAR' : 'SÍ, RECHAZAR',
+         cancelButtonText: 'CANCELAR',
+         confirmButtonColor: isApprove ? '#10b981' : '#ef4444',
+         cancelButtonColor: '#6b7280',
+         customClass: {
+           popup: 'uah-premium-popup',
+           title: 'uah-premium-title',
+           confirmButton: 'uah-premium-confirm',
+           cancelButton: 'uah-premium-cancel'
+         },
+         buttonsStyling: false
+      });
+
+      if (!confirm.isConfirmed) return;
+
       try {
           const res = await fetch(`/api/room-reservations/${resId}/status`, {
               method: 'PUT',
@@ -563,6 +630,18 @@ export class RoomsComponent implements OnInit {
               body: JSON.stringify({ estado })
           });
           if (res.ok) {
+              Swal.fire({
+                 icon: 'success',
+                 title: isApprove ? 'Reserva Aprobada' : 'Reserva Rechazada',
+                 toast: true,
+                 position: 'top-end',
+                 showConfirmButton: false,
+                 timer: 2000,
+                 customClass: {
+                   popup: 'uah-premium-popup',
+                   title: 'uah-premium-title'
+                 }
+              });
               this.loadAllReservations();
               if (this.selectedRoom()) this.loadBlocksAndReservations();
           }
@@ -588,7 +667,7 @@ export class RoomsComponent implements OnInit {
                   this.selectedRoom.set(await res.json());
               }
           }
-      } catch(e) { alert('Error al actualizar sala'); }
+      } catch(e) { Swal.fire('Error', 'No pudo actualizarse la sala.', 'error'); }
   }
 
   async borrarSalaDefinitivamente(id: number) {
@@ -602,7 +681,14 @@ export class RoomsComponent implements OnInit {
           confirmButtonText: 'Sí, eliminar sala',
           cancelButtonText: 'Cancelar',
           confirmButtonColor: '#ef4444',
-          cancelButtonColor: '#003366'
+          cancelButtonColor: '#003366',
+          customClass: {
+            popup: 'uah-premium-popup',
+            title: 'uah-premium-title',
+            confirmButton: 'uah-premium-confirm',
+            cancelButton: 'uah-premium-cancel'
+          },
+          buttonsStyling: false
       });
 
       if (!result.isConfirmed) return;
@@ -643,18 +729,34 @@ export class RoomsComponent implements OnInit {
               this.showEditBlockModal = false;
               this.loadBlocksAndReservations();
           }
-      } catch(e) { alert('Error al actualizar bloque'); }
+      } catch(e) { Swal.fire('Error', 'No se pudo actualizar el bloque.', 'error'); }
   }
 
   async deleteBlock(id: number) {
-      if (!confirm('¿Seguro que desea eliminar este bloque?')) return;
+      const confirmResult = await Swal.fire({
+          title: '¿Eliminar bloque?',
+          text: '¿Seguro que desea eliminar este bloque del horario?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar',
+          customClass: {
+            popup: 'uah-premium-popup',
+            title: 'uah-premium-title',
+            confirmButton: 'uah-premium-confirm',
+            cancelButton: 'uah-premium-cancel'
+          },
+          buttonsStyling: false
+      });
+      if (!confirmResult.isConfirmed) return;
+
       try {
           const res = await fetch(`/api/room-blocks/${id}`, {
               method: 'DELETE',
               headers: this.getHeaders()
           });
           if (res.ok) this.loadBlocksAndReservations();
-      } catch(e) { alert('Error al eliminar bloque'); }
+      } catch(e) { Swal.fire('Error', 'No se pudo eliminar el bloque.', 'error'); }
   }
 
   getRoomName(roomId: number) {

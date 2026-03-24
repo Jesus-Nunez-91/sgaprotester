@@ -207,7 +207,7 @@ export class ScheduleComponent {
 
     canEditSchedules = computed(() => {
         const role = this.data.currentUser()?.rol;
-        return role === 'Admin_Labs' || role === 'Admin_Acade' || role === 'Acad_Labs' || role === 'SuperUser';
+        return role === 'Admin_Labs' || role === 'Admin_Acade' || role === 'SuperUser';
     });
 
     getIcon(lab: string): string {
