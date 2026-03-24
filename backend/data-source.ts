@@ -14,6 +14,9 @@ import { Project } from "../src/entities/Project";
 import { ProjectTask } from "../src/entities/ProjectTask";
 import { WikiDoc } from "../src/entities/WikiDoc";
 import { Bitacora } from "../src/entities/Bitacora";
+import { Room } from "../src/entities/Room";
+import { RoomBlock } from "../src/entities/RoomBlock";
+import { RoomReservation } from "../src/entities/RoomReservation";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -25,9 +28,9 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USERNAME || "postgres",
     password: process.env.DB_PASSWORD || "postgres_pass",
     database: process.env.DB_NAME || "sga_db",
-    synchronize: true,
+    synchronize: false,
     logging: false,
-    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora],
+    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora, Room, RoomBlock, RoomReservation],
     migrations: [],
     subscribers: [],
 });

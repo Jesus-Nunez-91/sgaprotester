@@ -15,7 +15,7 @@ import { ProjectsComponent } from './pages/projects.component';
 import { WikiComponent } from './pages/wiki.component';
 import { BitacoraComponent } from './pages/bitacora.component';
 import { NotFoundComponent } from './pages/not-found.component';
-
+import { RoomsComponent } from './pages/rooms.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,11 +29,11 @@ export const routes: Routes = [
   { path: 'support', component: SupportComponent },
   { path: 'maintenance', component: MaintenanceComponent },
   { path: 'schedule', component: ScheduleComponent },
+  { path: 'rooms', component: RoomsComponent },
   { path: 'procurement', component: ProcurementComponent },
   { path: 'projects', component: ProjectsComponent },
   { path: 'wiki', component: WikiComponent },
   { path: 'bitacora', component: BitacoraComponent },
   { path: '404', component: NotFoundComponent },
   { path: '**', redirectTo: '404' }
-
 ];

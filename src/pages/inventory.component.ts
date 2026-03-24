@@ -619,7 +619,10 @@ export class InventoryComponent {
   router = inject(Router);
   data = inject(DataService);
 
-  isAdmin = computed(() => ['Admin', 'SuperUser'].includes(this.data.currentUser()?.rol || ''));
+  isAdmin = computed(() => {
+    const rol = this.data.currentUser()?.rol || '';
+    return rol === 'Admin_Labs' || rol === 'SuperUser';
+  });
 
   /** Selección administrativa para acciones masivas (Administradores) */
   selectedAdminIds = signal<Set<number>>(new Set());
@@ -677,9 +680,14 @@ export class InventoryComponent {
   /** Items filtrados por área, laboratorio, modo, estado y término de búsqueda */
   filteredItems = computed(() => {
     const all = this.data.inventory();
+    console.log('--- DIAGNÓSTICO INVENTARIO ---');
+    console.log('Total items in DB:', all.length);
+    console.log('Area:', this.areaName, 'Lab:', this.labName, 'Mode:', this.inventoryMode());
+    
     const contextItems = all.filter(i => {
       const isCorrectArea = i.categoria?.toUpperCase() === this.areaName?.toUpperCase();
-      const isCorrectType = i.tipoInventario === this.inventoryMode();
+      // Hacer el tipo de inventario insensible a mayúsculas para evitar errores ('Materiales' vs 'materiales')
+      const isCorrectType = i.tipoInventario?.toUpperCase() === this.inventoryMode()?.toUpperCase();
       
       // Lógica de compartido para FABLAB Notebooks
       if (this.areaName?.toUpperCase() === 'FABLAB' && 
@@ -688,9 +696,13 @@ export class InventoryComponent {
                (i.subCategoria?.toUpperCase() === this.labName?.toUpperCase() || i.subCategoria?.toUpperCase() === 'NOTEBOOK');
       }
 
-      return isCorrectArea && isCorrectType && i.subCategoria?.toUpperCase() === this.labName?.toUpperCase();
+      const isSubcatMatch = i.subCategoria?.toUpperCase() === this.labName?.toUpperCase();
+      return isCorrectArea && isCorrectType && isSubcatMatch;
     });
-    console.log(`Items encontrados para este contexto: ${contextItems.length}`);
+    console.log('Items matching context:', contextItems.length);
+    if (contextItems.length === 0 && all.length > 0) {
+        console.log('Sample item types in DB:', [...new Set(all.map(x => x.tipoInventario))]);
+    }
     let filtered = this.statusFilter() === 'Todos' ? contextItems : contextItems.filter(i => i.status === this.statusFilter());
 
     // Visibilidad: Alumnos/Docentes solo ven lo "Disponible"

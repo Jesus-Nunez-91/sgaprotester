@@ -80,18 +80,21 @@ declare const Swal: any;
           }
           
           @if (canEditSchedules()) {
-              <div class="flex gap-2 ml-4">
-                  <button (click)="addNewLab()"
-                          class="px-5 py-3 rounded-2xl font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all duration-300 flex items-center gap-2">
-                      <i class="bi bi-plus-lg text-lg"></i> Sala
-                  </button>
-                  @if (!['FABLAB', 'HACKERLAB', 'DESARROLLO TECNOLOGICO'].includes(selectedLab())) {
-                    <button (click)="deleteCurrentLab()"
-                            class="px-5 py-3 rounded-2xl font-black text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all duration-300 flex items-center gap-2"
-                            [title]="'Eliminar sala ' + selectedLab()">
-                        <i class="bi bi-dash-lg text-lg"></i>
-                    </button>
-                  }
+              <div class="flex flex-col gap-2 ml-4">
+                  <p class="text-[9px] font-black text-uah-blue uppercase opacity-50">Gestionar Categorías</p>
+                  <div class="flex gap-2">
+                     <button (click)="addNewLab()"
+                             class="px-4 py-2 rounded-xl font-bold text-white bg-emerald-500 hover:bg-emerald-600 shadow-md transition-all flex items-center gap-2 text-xs">
+                         <i class="bi bi-tag-fill"></i>+ Categoría
+                     </button>
+                     @if (!['FABLAB', 'HACKERLAB', 'DESARROLLO TECNOLOGICO'].includes(selectedLab())) {
+                       <button (click)="deleteCurrentLab()"
+                               class="px-5 py-3 rounded-2xl font-black text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all duration-300 flex items-center gap-2"
+                               [title]="'Eliminar sala ' + selectedLab()">
+                           <i class="bi bi-dash-lg text-lg"></i>
+                       </button>
+                     }
+                  </div>
               </div>
           }
       </div>
@@ -204,7 +207,7 @@ export class ScheduleComponent {
 
     canEditSchedules = computed(() => {
         const role = this.data.currentUser()?.rol;
-        return role === 'Admin' || role === 'SuperUser' || role?.includes('Acad');
+        return role === 'Admin_Labs' || role === 'Admin_Acade' || role === 'Acad_Labs' || role === 'SuperUser';
     });
 
     getIcon(lab: string): string {

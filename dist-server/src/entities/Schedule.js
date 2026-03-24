@@ -37,6 +37,10 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Schedule.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Schedule.prototype, "color", void 0);
 exports.Schedule = Schedule = __decorate([
     (0, typeorm_1.Entity)()
 ], Schedule);

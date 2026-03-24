@@ -461,13 +461,13 @@ export class DashboardComponent implements OnInit {
     */
    getItem(id: number) { return this.data.inventory().find(i => i.id === id); }
 
-   ngOnInit() {
-      // Control de acceso: Solo Admins o SuperUsers pueden ver el Dashboard
-      const role = this.data.currentUser()?.rol;
-      if (role !== 'Admin' && role !== 'SuperUser') {
-         this.router.navigate(['/areas']);
-         return;
-      }
+    ngOnInit() {
+       // Control de acceso: Solo Admin_Labs o SuperUsers pueden ver el Dashboard
+       const role = this.data.currentUser()?.rol;
+       if (role !== 'Admin_Labs' && role !== 'SuperUser') {
+          this.router.navigate(['/areas']);
+          return;
+       }
 
       // Inicialización de gráficos con un pequeño retraso para asegurar que el DOM esté listo
       setTimeout(() => this.initCharts(), 500);

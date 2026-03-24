@@ -261,7 +261,10 @@ export class SupportComponent {
     data = inject(DataService);
 
     currentUser = computed(() => this.data.currentUser());
-    isAdmin = computed(() => ['Admin', 'SuperUser'].includes(this.data.currentUser()?.rol || ''));
+    isAdmin = computed(() => {
+        const rol = this.data.currentUser()?.rol || '';
+        return rol === 'Admin_Labs' || rol === 'Admin_Acade' || rol === 'SuperUser';
+    });
 
     myTickets = computed(() => {
         const user = this.data.currentUser();

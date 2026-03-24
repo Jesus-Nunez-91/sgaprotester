@@ -3,12 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "ng build --watch & node --watch server.ts",
+    "dev": "ng build --watch & npx ts-node --project tsconfig.server.json backend/index.ts",
     "build": "ng build",
     "build-server": "tsc -p tsconfig.server.json",
     "lint": "ng lint",
-    "start": "node server.ts",
-    "preview": "ng build && node server.ts"
+    "start": "npx ts-node --project tsconfig.server.json backend/index.ts",
+    "preview": "ng build && npx ts-node --project tsconfig.server.json backend/index.ts"
   },
   "dependencies": {
     "@angular/build": "^21.1.0",

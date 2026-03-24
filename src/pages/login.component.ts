@@ -98,8 +98,9 @@ export class LoginComponent {
 
   constructor() {
     if (this.auth.currentUser()) {
-      const route = this.auth.currentUser()?.rol === 'Académico' ? '/schedule' : '/areas';
-      this.router.navigate([route]);
+      const role = this.auth.currentUser()?.rol;
+      const isAcad = role === 'Acad_Labs' || role === 'Docente' || role === 'Alumno';
+      this.router.navigate([isAcad ? '/schedule' : '/areas']);
     }
   }
 
@@ -146,7 +147,6 @@ export class LoginComponent {
             <select id="rec-role" class="swal2-input !m-0 !w-full !rounded-xl !text-sm !border-2 !border-gray-50 !bg-gray-50 focus:!border-[#f06427] !h-12">
                 <option value="Alumno">Soy Alumno</option>
                 <option value="Docente">Soy Docente</option>
-                <option value="Académico">Soy Académico</option>
             </select>
           </div>
 

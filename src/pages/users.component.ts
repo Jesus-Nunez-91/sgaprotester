@@ -71,8 +71,9 @@ declare const XLSX: any;
                             <select [(ngModel)]="editUser.rol" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none appearance-none">
                                 <option value="Alumno">Alumno</option>
                                 <option value="Docente">Docente</option>
-                                <option value="Académico">Académico</option>
-                                <option value="Admin">Admin</option>
+                                <option value="Acad_Labs">Acad_Labs</option>
+                                <option value="Admin_Acade">Admin_Acade</option>
+                                <option value="Admin_Labs">Admin_Labs</option>
                                 <option value="SuperUser">SuperUser</option>
                             </select>
                             <i class="bi bi-chevron-down absolute right-4 top-4 text-xs text-gray-400 pointer-events-none"></i>
@@ -184,17 +185,19 @@ declare const XLSX: any;
                                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase border" 
                                            [ngClass]="{
                                               'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-100 dark:border-red-900': u.rol === 'SuperUser',
-                                              'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-100 dark:border-amber-900': u.rol === 'Admin',
-                                              'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900': u.rol === 'Académico',
-                                              'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900': u.rol === 'Docente',
+                                              'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900': u.rol === 'Admin_Labs',
+                                              'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900': u.rol === 'Admin_Acade',
+                                              'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900': u.rol === 'Acad_Labs',
+                                              'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-100 dark:border-amber-900': u.rol === 'Docente',
                                               'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-600': u.rol === 'Alumno'
-                                           }">
+                                            }">
                                         <span class="w-1.5 h-1.5 rounded-full" 
                                               [ngClass]="{
                                                 'bg-red-500': u.rol === 'SuperUser',
-                                                'bg-amber-500': u.rol === 'Admin',
-                                                'bg-emerald-500': u.rol === 'Académico',
-                                                'bg-blue-500': u.rol === 'Docente',
+                                                'bg-blue-500': u.rol === 'Admin_Labs',
+                                                'bg-emerald-500': u.rol === 'Admin_Acade',
+                                                'bg-purple-500': u.rol === 'Acad_Labs',
+                                                'bg-amber-500': u.rol === 'Docente',
                                                 'bg-gray-400': u.rol === 'Alumno'
                                               }"></span>
                                         {{ u.rol }}
@@ -307,7 +310,7 @@ export class UsersComponent {
             'Correo': 'mgarcia@uahurtado.cl',
             'Carrera': 'Derecho',
             'Año': 2023,
-            'Rol': 'Admin'
+            'Rol': 'Admin_Labs'
          }
       ];
       this.data.downloadExcel(template, 'Plantilla_Usuarios');

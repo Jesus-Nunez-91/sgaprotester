@@ -120,7 +120,10 @@ export class ProjectsComponent {
   data = inject(DataService);
 
   projects = computed(() => this.data.projects());
-  isAdmin = computed(() => ['Admin', 'SuperUser'].includes(this.data.currentUser()?.rol || ''));
+  isAdmin = computed(() => {
+    const rol = this.data.currentUser()?.rol || '';
+    return rol === 'Admin_Labs' || rol === 'Admin_Acade' || rol === 'SuperUser';
+  });
 
   getStatusClass(status: string) {
     switch (status) {

@@ -1,8 +1,8 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 
 /**
  * Componente de Auditoría (Caja Negra).
@@ -119,11 +119,19 @@ import { RouterLink } from '@angular/router';
     </div>
   `
 })
-export class AuditComponent {
+export class AuditComponent implements OnInit {
   data = inject(DataService);
+  router = inject(Router);
   
   // Señal para el término de búsqueda
   searchTerm = signal('');
+
+  ngOnInit() {
+    const role = this.data.currentUser()?.rol;
+    if (role !== 'SuperUser') {
+      this.router.navigate(['/areas']);
+    }
+  }
 
   /**
    * Filtra los logs de auditoría basándose en el término de búsqueda.

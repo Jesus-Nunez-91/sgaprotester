@@ -35,7 +35,7 @@ import { FormsModule } from '@angular/forms';
 
           <!-- Enlaces de Navegación -->
           <nav class="flex-1 overflow-y-auto py-8 flex flex-col gap-1.5 px-4 scrollbar-hide">
-              @if (isAdmin()) {
+              @if (isLabAdmin()) {
                   <a routerLink="/dashboard" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-grid-1x2-fill text-xl group-hover:scale-110 transition-transform"></i>
@@ -43,7 +43,7 @@ import { FormsModule } from '@angular/forms';
                   </a>
               }
 
-              <a routerLink="/areas" *ngIf="isFullUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Laboratorios</span>
@@ -52,16 +52,22 @@ import { FormsModule } from '@angular/forms';
               <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Horarios</span>
+                  <span class="hidden lg:inline text-sm">Horarios Academicos</span>
               </a>
 
-              <a routerLink="/requests" *ngIf="isFullUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                  <i class="bi bi-door-open-fill text-xl group-hover:scale-110 transition-transform"></i>
+                  <span class="hidden lg:inline text-sm">Salas y Labs</span>
+              </a>
+
+              <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Mis Solicitudes</span>
               </a>
 
-              <a routerLink="/support" *ngIf="isFullUser() || isAcademico()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                   <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
@@ -73,7 +79,7 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Wiki</span>
               </a>
 
-              @if (isAdmin()) {
+              @if (isLabAdmin()) {
                   <div class="my-6 border-t border-white/5"></div>
                   <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
                   
@@ -89,26 +95,32 @@ import { FormsModule } from '@angular/forms';
                       <span class="hidden lg:inline text-sm">Mantención</span>
                   </a>
 
-                  <a routerLink="/users" *ngIf="isSuperUser()" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Usuarios</span>
-                  </a>
-
-                  <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-kanban text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Proyectos</span>
-                  </a>
-
-
                   <a routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Bitácora</span>
                   </a>
+              }
 
-                  <a routerLink="/audit" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+              @if (isLabAdmin() || isAcadeAdmin()) {
+                  <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Proyectos</span>
+                  </a>
+              }
+
+              @if (isSuperUser()) {
+                  <div class="my-6 border-t border-white/5"></div>
+                  <span class="hidden lg:block px-5 text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-4">Seguridad</span>
+                  
+                  <a routerLink="/users" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="hidden lg:inline text-sm">Usuarios</span>
+                  </a>
+
+                  <a routerLink="/audit" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-shield-lock-fill text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Auditoría</span>
@@ -163,9 +175,14 @@ import { FormsModule } from '@angular/forms';
                   <div class="flex items-center gap-6">
                        <!-- Bienvenida -->
                       <div class="hidden md:flex flex-col text-right">
-                          <h1 class="text-sm font-black text-white tracking-tight uppercase">
-                              Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span>
-                          </h1>
+                          <div class="flex items-center justify-end gap-2">
+                             <span [ngClass]="getRoleBadgeClass()" class="text-[9px] font-black px-2 py-0.5 rounded-md border uppercase tracking-wider">
+                                 {{ authService.currentUser()?.rol }}
+                             </span>
+                             <h1 class="text-sm font-black text-white tracking-tight uppercase">
+                                 Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span>
+                             </h1>
+                          </div>
                           <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
                               {{ today | date:'fullDate' }}
                           </p>
@@ -344,10 +361,13 @@ export class AppComponent {
     checkPermissions() {
         const url = this.router.url;
         const role = this.authService.currentUser()?.rol;
-        // Si es Académico y está en una ruta prohibida (áreas, inventario, dashboard), lo mandamos a /schedule
-        const isForbiddenForAcademico = url.includes('areas') || url.includes('inventory') || url.includes('dashboard') || url.includes('audit') || url.includes('users');
-        if (role?.includes('Acad') && isForbiddenForAcademico) {
-            this.router.navigate(['/schedule']);
+        
+        // Si es un rol académico básico (Docente, Alumno), restringimos accesos administrativos.
+        const isBasicRole = role === 'Docente' || role === 'Alumno';
+        const isForbiddenForBasic = url.includes('dashboard') || url.includes('audit') || url.includes('users') || url.includes('procurement') || url.includes('maintenance') || url.includes('projects');
+        
+        if (isBasicRole && isForbiddenForBasic) {
+            this.router.navigate(['/areas']);
         }
     }
 
@@ -357,29 +377,64 @@ export class AppComponent {
     @ViewChild('chatContainer') private chatContainer!: ElementRef;
     
     /**
-     * Determina si el usuario actual tiene privilegios administrativos.
+     * Determina si el usuario actual tiene privilegios administrativos técnicos (Laboratorios).
      */
-    isAdmin = computed(() => {
+    isLabAdmin = computed(() => {
         const r = this.authService.currentUser()?.rol;
-        return r === 'Admin' || r === 'SuperUser';
-    });
-
-    isFullUser = computed(() => {
-        const r = this.authService.currentUser()?.rol;
-        return !r?.includes('Acad');
-    });
-
-    isAcademico = computed(() => {
-        const r = this.authService.currentUser()?.rol;
-        return r?.includes('Acad');
+        return r === 'Admin_Labs' || r === 'SuperUser';
     });
 
     /**
-     * Determina si el usuario actual es SuperUser.
+     * Determina si el usuario actual tiene privilegios administrativos académicos (Salas/Horarios).
+     */
+    isAcadeAdmin = computed(() => {
+        const r = this.authService.currentUser()?.rol;
+        return r === 'Admin_Acade' || r === 'SuperUser';
+    });
+
+    /**
+     * Determina si el usuario actual es Académico de Labs (Sincronizador).
+     */
+    isAcadLabs = computed(() => {
+        const r = this.authService.currentUser()?.rol;
+        return r === 'Acad_Labs';
+    });
+
+    /**
+     * Determina si el usuario actual es Docente.
+     */
+    isDocente = computed(() => this.authService.currentUser()?.rol === 'Docente');
+
+    /**
+     * Determina si el usuario actual es Alumno.
+     */
+    isAlumno = computed(() => this.authService.currentUser()?.rol === 'Alumno');
+
+    /**
+     * Determina si el usuario actual es SuperUser (Caja Negra).
      */
     isSuperUser = computed(() => {
         return this.authService.currentUser()?.rol === 'SuperUser';
     });
+
+    // Helper para menús generales admin
+    isAdmin = computed(() => this.isLabAdmin() || this.isAcadeAdmin() || this.isAcadLabs());
+
+    /**
+     * Retorna la clase de CSS para el badge del rol.
+     */
+    getRoleBadgeClass() {
+        const rol = this.authService.currentUser()?.rol;
+        switch (rol) {
+            case 'SuperUser': return 'bg-red-500/20 text-red-500 border-red-500/50';
+            case 'Admin_Labs': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
+            case 'Admin_Acade': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
+            case 'Acad_Labs': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
+            case 'Docente': return 'bg-amber-500/20 text-amber-500 border-amber-500/50';
+            case 'Alumno': return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+            default: return 'bg-white/10 text-white border-white/20';
+        }
+    }
 
     /**
      * Filtra las notificaciones pertinentes al usuario actual.

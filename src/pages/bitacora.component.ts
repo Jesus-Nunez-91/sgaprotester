@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -111,10 +112,16 @@ declare var Swal: any;
 })
 export class BitacoraComponent implements OnInit {
   data = inject(DataService);
+  router = inject(Router);
   selectedIds = signal<Set<number>>(new Set());
   isAllSelected = computed(() => this.data.bitacora().length > 0 && this.selectedIds().size === this.data.bitacora().length);
 
   ngOnInit() {
+    const role = this.data.currentUser()?.rol;
+    if (role !== 'Admin_Labs' && role !== 'SuperUser') {
+      this.router.navigate(['/areas']);
+      return;
+    }
     this.data.fetchBitacora();
   }
 

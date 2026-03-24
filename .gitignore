@@ -1,5 +1,10 @@
 node_modules/
 .env
 dist/
+dist-server/
+.angular/
 postgres_data/
-# backup_sga_db.sql # SOLO subir si el repositorio es PRIVADO
+*.log
+tmp_*.ts
+debug_*.ts
+backup_sga_db.sql

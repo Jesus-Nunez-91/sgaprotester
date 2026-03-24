@@ -121,7 +121,7 @@ export class WikiComponent {
     const docs = this.data.wikiDocs();
     const cat = this.selectedCat();
     const userRole = this.data.currentUser()?.rol;
-    const isPrivileged = ['Admin', 'SuperUser'].includes(userRole || '');
+    const isPrivileged = userRole === 'Admin_Labs' || userRole === 'Admin_Acade' || userRole === 'SuperUser';
     
     let filtered = docs;
     // Si no es admin, solo ver públicos
@@ -133,7 +133,10 @@ export class WikiComponent {
     return filtered.filter(d => d.category === cat);
   });
 
-  isAdmin = computed(() => ['Admin', 'SuperUser'].includes(this.data.currentUser()?.rol || ''));
+  isAdmin = computed(() => {
+    const rol = this.data.currentUser()?.rol || '';
+    return rol === 'Admin_Labs' || rol === 'Admin_Acade' || rol === 'SuperUser';
+  });
 
   filterCategory(cat: string) {
     this.selectedCat.set(cat);

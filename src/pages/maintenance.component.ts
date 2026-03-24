@@ -1,6 +1,7 @@
 import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DataService, MaintenanceTask } from '../services/data.service';
 
 
@@ -262,7 +263,16 @@ export class MaintenanceComponent implements OnInit {
     /** Costo total acumulado de todas las tareas */
     totalCost = computed(() => this.data.maintenanceTasks().reduce((sum, t) => sum + (Number(t.cost) || 0), 0));
 
+    router = inject(Router);
+
     ngOnInit() {
+        // Control de acceso: Solo Admin_Labs o SuperUsers pueden ver Mantención
+        const role = this.data.currentUser()?.rol;
+        if (role !== 'Admin_Labs' && role !== 'SuperUser') {
+            this.router.navigate(['/areas']);
+            return;
+        }
+
         // Inicializar el gráfico después de un breve retraso para asegurar que el DOM esté listo
         setTimeout(() => this.initChart(), 500);
     }
