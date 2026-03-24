@@ -57,6 +57,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'uah_secret_fallback';
 // Inicializar DB y Admin
 AppDataSource.initialize()
   .then(async () => {
+    // REPARACIÓN MANUAL DE ESQUEMA (Garantizar que el servidor tenga los roles nuevos)
+    try {
+      console.log("🛠️ Ejecutando comprobación de integridad de esquema...");
+      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Admin_Acade'");
+      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Admin_Labs'");
+      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Acad_Labs'");
+      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'SuperUser'");
+      // Mapear usuarios antiguos Admin a SuperUser
+      await AppDataSource.query("UPDATE \"user\" SET rol = 'SuperUser' WHERE rol = 'Admin'");
+    } catch(e) {
+      console.warn("⚠️ Nota: La actualización manual de tipos enum falló o ya estaba aplicada.");
+    }
+
     console.log("DB Conectada");
     
     console.log("Comprobando migración de inventario...");
