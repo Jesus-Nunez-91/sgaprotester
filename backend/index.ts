@@ -140,7 +140,7 @@ AppDataSource.initialize()
         `);
     } catch(e) { console.error("⚠️ [DB] Error en tablas de bloques de salas:", e); }
 
-    // 5. Soporte y Auditoría (EVITAR CRASHES POR TABLAS FALTANTES)
+    // 5. Soporte, Wiki y Auditoría
     try {
         await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "audit_log" ("id" SERIAL PRIMARY KEY, "fecha" TIMESTAMP DEFAULT now(), "nombre" VARCHAR NOT NULL, "usuario" VARCHAR NOT NULL, "rol" VARCHAR NOT NULL, "accion" VARCHAR NOT NULL, "detalle" TEXT)`);
         await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "wiki_doc" ("id" SERIAL PRIMARY KEY, "title" VARCHAR NOT NULL, "content" TEXT NOT NULL, "author" VARCHAR, "isPublic" BOOLEAN DEFAULT true, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now())`);
@@ -148,7 +148,17 @@ AppDataSource.initialize()
         await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "message" ("id" SERIAL PRIMARY KEY, "ticketId" BIGINT NOT NULL, "sender" VARCHAR NOT NULL, "text" TEXT NOT NULL, "timestamp" VARCHAR NOT NULL, "senderRole" VARCHAR NOT NULL, "createdAt" TIMESTAMP DEFAULT now())`);
     } catch(e) { console.error("⚠️ [DB] Error en tablas de soporte/auditoría:", e); }
 
-    // 6. Migraciones adicionales de columnas
+    // 6. Resto de módulos (Inventario, Mantenimiento, Proyectos, Compras, Horarios)
+    try {
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "inventory_item" ("id" SERIAL PRIMARY KEY, "nombre" VARCHAR NOT NULL, "categoria" VARCHAR, "cantidad" INTEGER DEFAULT 0, "ubicacion" VARCHAR, "estado" VARCHAR DEFAULT 'Disponible', "codigo" VARCHAR UNIQUE)`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "maintenance_task" ("id" SERIAL PRIMARY KEY, "tipo" VARCHAR NOT NULL, "descripcion" TEXT, "fechaProgramada" VARCHAR, "responsable" VARCHAR, "estado" VARCHAR DEFAULT 'Pendiente')`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "purchase_order" ("id" SERIAL PRIMARY KEY, "proveedor" VARCHAR, "monto" FLOAT, "fechaPedido" VARCHAR, "estado" VARCHAR DEFAULT 'Enviada', "detalles" TEXT)`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "project" ("id" SERIAL PRIMARY KEY, "nombre" VARCHAR NOT NULL, "descripcion" TEXT, "fechaInicio" VARCHAR, "progreso" INTEGER DEFAULT 0, "estado" VARCHAR DEFAULT 'Activo')`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "schedule" ("id" SERIAL PRIMARY KEY, "dia" VARCHAR NOT NULL, "hora" VARCHAR NOT NULL, "actividad" VARCHAR, "responsable" VARCHAR)`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "admin_task" ("id" SERIAL PRIMARY KEY, "titulo" VARCHAR NOT NULL, "vence" VARCHAR, "prioridad" VARCHAR DEFAULT 'Media', "completada" BOOLEAN DEFAULT false)`);
+    } catch(e) { console.error("⚠️ [DB] Error en tablas de módulos adicionales:", e); }
+
+    // 7. Migraciones adicionales de columnas
     const dbType = AppDataSource.options.type;
     const addColumn = async (table: string, col: string, type: string, def?: string) => {
         try {
