@@ -82,19 +82,32 @@ AppDataSource.initialize()
           )
       `);
 
-      // Migrar columnas nuevas con comprobación de sistema para compatibilidad máxima
+      // Migrar columnas con compatibilidad Multi-DB (Postgres/SQLite)
+      const dbType = AppDataSource.options.type;
       const addColumn = async (table: string, col: string, type: string, def?: string) => {
          try {
-            // Buscamos ignorando mayúsculas/minúsculas para evitar problemas de quoted identifiers
-            const exists = await AppDataSource.query(`
-               SELECT column_name FROM information_schema.columns 
-               WHERE lower(table_name) = lower('${table}') AND lower(column_name) = lower('${col}')
-            `);
-            if (exists.length === 0) {
-               console.log(`🛠️ [DB] Agregando columna ${col} a ${table}...`);
-               await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${type} ${def ? 'DEFAULT ' + def : ''}`);
+            let exists = false;
+            if (dbType === 'postgres') {
+               const res = await AppDataSource.query(`
+                  SELECT column_name FROM information_schema.columns 
+                  WHERE lower(table_name) = lower('${table}') AND lower(column_name) = lower('${col}')
+               `);
+               exists = res.length > 0;
+            } else { // sqlite
+               const res = await AppDataSource.query(`PRAGMA table_info("${table}")`);
+               exists = res.some((c: any) => c.name.toLowerCase() === col.toLowerCase());
             }
-         } catch(e) { console.warn(`⚠️ [DB] Error al intentar agregar columna ${col}:`, e); }
+
+            if (!exists) {
+               console.log(`🛠️ [DB-${dbType}] Agregando columna ${col} a ${table}...`);
+               if (dbType === 'postgres') {
+                  await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${type} ${def ? 'DEFAULT ' + def : ''}`);
+               } else {
+                  const sqliteType = type.toLowerCase() === 'boolean' ? 'BOOLEAN' : type;
+                  await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${sqliteType} ${def ? 'DEFAULT ' + def : ''}`);
+               }
+            }
+         } catch(e) { console.error(`❌ [DB-${dbType}] Error fatal agregando columna ${col} a ${table}:`, e); }
       };
 
       await addColumn('room', 'metrosCuadrados', 'FLOAT');
@@ -140,7 +153,7 @@ AppDataSource.initialize()
           )
       `);
     } catch(e) {
-      console.warn("⚠️ Nota: Reparación manual ejecutada o innecesaria.");
+      console.error("⚠️ [CRITICAL] Error en reparación manual de la DB:", e);
     }
 
     console.log("DB Conectada");
@@ -1300,9 +1313,9 @@ app.get('/api/rooms', authMiddleware, async (req: any, res) => {
     const rooms = await repo.find({ order: { nombre: 'ASC' } });
     console.log(`[GET /api/rooms] Retornando ${rooms.length} salas`);
     res.json(rooms);
-  } catch(e) {
+  } catch(e: any) {
     console.error('[GET /api/rooms] Error:', e);
-    res.status(500).json({ message: 'Error al obtener salas' });
+    res.status(500).json({ message: 'Error al obtener salas', error: e.message });
   }
 });
 
@@ -1436,9 +1449,9 @@ app.get('/api/room-reservations', authMiddleware, async (req: any, res) => {
         
         const reservations = await repo.find({ where: filters });
         res.json(reservations);
-    } catch(e) {
+    } catch(e: any) {
         console.error('[GET /api/room-reservations] Error:', e);
-        res.status(500).json({ message: 'Error al obtener reservas' });
+        res.status(500).json({ message: 'Error al obtener reservas', error: e.message });
     }
 });
 
@@ -1502,14 +1515,27 @@ app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, re
 // --- ENDPOINTS DE DIAGNOSTICO ---
 app.get('/api/diag/schema', async (req, res) => {
     try {
-        const rooms = await AppDataSource.query(`SELECT column_name FROM information_schema.columns WHERE lower(table_name) = 'room'`);
-        const resvs = await AppDataSource.query(`SELECT column_name FROM information_schema.columns WHERE lower(table_name) = 'room_reservation'`);
+        const dbType = AppDataSource.options.type;
+        let rooms: any[] = [];
+        let resvs: any[] = [];
+        
+        if (dbType === 'postgres') {
+            rooms = await AppDataSource.query(`SELECT column_name as name FROM information_schema.columns WHERE lower(table_name) = 'room'`);
+            resvs = await AppDataSource.query(`SELECT column_name as name FROM information_schema.columns WHERE lower(table_name) = 'room_reservation'`);
+        } else {
+            const r = await AppDataSource.query(`PRAGMA table_info("room")`);
+            const v = await AppDataSource.query(`PRAGMA table_info("room_reservation")`);
+            rooms = r.map((c: any) => ({ name: c.name }));
+            resvs = v.map((c: any) => ({ name: c.name }));
+        }
+
         res.json({
-            rooms: rooms.map((c: any) => c.column_name),
-            reservations: resvs.map((c: any) => c.column_name)
+            dbType,
+            rooms: rooms.map((c: any) => c.name),
+            reservations: resvs.map((c: any) => c.name)
         });
-    } catch(e) {
-        res.status(500).json({ error: 'Fallo al obtener esquema' });
+    } catch(e: any) {
+        res.status(500).json({ error: 'Fallo al obtener esquema', details: e.message });
     }
 });
 
