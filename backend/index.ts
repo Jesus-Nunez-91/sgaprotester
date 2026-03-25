@@ -81,6 +81,29 @@ AppDataSource.initialize()
             "estadoActivo" BOOLEAN DEFAULT true
           )
       `);
+
+      // Migrar columnas nuevas si no existen
+      try {
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "metrosCuadrados" FLOAT`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "valorHora" INTEGER DEFAULT 0`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneAireAcondicionado" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneProyector" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneTelevisor" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tienePizarra" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneAudio" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneComputadores" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneMicrofono" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneNotebooks" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tienePizarraInteligente" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneLavadero" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneDucha" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneBano" BOOLEAN DEFAULT false`);
+        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "otrosEquipos" TEXT`);
+        await AppDataSource.query(`ALTER TABLE "room_reservation" ADD COLUMN IF NOT EXISTS "color" VARCHAR DEFAULT '#3b82f6'`);
+      } catch(migError) {
+        console.warn("⚠️ Error en migración de columnas Room (probablemente ya existen):", migError);
+      }
+
       await AppDataSource.query(`
           CREATE TABLE IF NOT EXISTS "room_block" (
             "id" SERIAL PRIMARY KEY,
@@ -560,8 +583,8 @@ app.get('/api/inventory', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/inventory', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
@@ -577,8 +600,8 @@ app.post('/api/inventory', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
@@ -624,8 +647,8 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
@@ -641,8 +664,8 @@ app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/inventory/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     await AppDataSource.getRepository(InventoryItem).delete(req.params.id);
@@ -654,8 +677,8 @@ app.delete('/api/inventory/:id', authMiddleware, async (req: any, res) => {
 
 // Endpoint para vaciar TODO el inventario
 app.delete('/api/inventory/mass/clear', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
@@ -687,8 +710,8 @@ app.post('/api/reservations', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/reservations/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser para gestionar reservas' });
   }
   try {
     const resRepo = AppDataSource.getRepository(Reservation);
@@ -752,8 +775,8 @@ app.get('/api/procurement', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/procurement', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const orderRepo = AppDataSource.getRepository(PurchaseOrder);
@@ -766,8 +789,8 @@ app.post('/api/procurement', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/procurement/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const orderRepo = AppDataSource.getRepository(PurchaseOrder);
@@ -782,8 +805,8 @@ app.put('/api/procurement/:id', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/procurement/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     await AppDataSource.getRepository(PurchaseOrder).delete(req.params.id);
@@ -796,16 +819,16 @@ app.delete('/api/procurement/:id', authMiddleware, async (req: any, res) => {
 // --- ENDPOINTS DE TAREAS ADMIN (TO-DO) ---
 
 app.get('/api/admin-tasks', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   const tasks = await AppDataSource.getRepository(AdminTask).find({ order: { createdAt: 'DESC' } });
   res.json(tasks);
 });
 
 app.post('/api/admin-tasks', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const taskRepo = AppDataSource.getRepository(AdminTask);
@@ -818,8 +841,8 @@ app.post('/api/admin-tasks', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const taskRepo = AppDataSource.getRepository(AdminTask);
@@ -834,8 +857,8 @@ app.put('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     await AppDataSource.getRepository(AdminTask).delete(req.params.id);
@@ -853,8 +876,8 @@ app.get('/api/maintenance', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/maintenance', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const maintRepo = AppDataSource.getRepository(MaintenanceTask);
@@ -867,8 +890,8 @@ app.post('/api/maintenance', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     const maintRepo = AppDataSource.getRepository(MaintenanceTask);
@@ -883,8 +906,8 @@ app.put('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
   }
   try {
     await AppDataSource.getRepository(MaintenanceTask).delete(req.params.id);
@@ -1274,9 +1297,9 @@ app.get('/api/rooms', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/rooms', authMiddleware, async (req: any, res) => {
-  // Solo el SuperUser crea salas físicamente
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede crear salas' });
+  // Admin_Labs y SuperUser pueden crear salas
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser o Admin_Labs puede crear salas' });
   }
   try {
     const repo = AppDataSource.getRepository(Room);
@@ -1312,9 +1335,9 @@ app.post('/api/rooms', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/rooms/:id', authMiddleware, async (req: any, res) => {
-  // Solo el SuperUser edita salas
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede editar salas' });
+  // SuperUser y Admin_Labs pueden editar salas
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser o Admin_Labs puede editar salas' });
   }
   try {
     const repo = AppDataSource.getRepository(Room);
@@ -1329,9 +1352,9 @@ app.put('/api/rooms/:id', authMiddleware, async (req: any, res) => {
 });
 
 app.delete('/api/rooms/:id', authMiddleware, async (req: any, res) => {
-  // Borrar salas es solo para SuperUser
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede eliminar salas' });
+  // SuperUser y Admin_Labs pueden eliminar salas
+  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') {
+    return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser o Admin_Labs puede eliminar salas' });
   }
   try {
     const roomId = parseInt(req.params.id);
@@ -1405,6 +1428,10 @@ app.get('/api/room-reservations', authMiddleware, async (req: any, res) => {
 });
 
 app.post('/api/room-reservations', authMiddleware, async (req: any, res) => {
+    // Los Alumnos no pueden reservar salas
+    if (req.user.rol === 'Alumno') {
+        return res.status(403).json({ message: 'Acceso denegado: Los alumnos no tienen permitido reservar salas.' });
+    }
     try {
         const repo = AppDataSource.getRepository(RoomReservation);
         const { roomId, roomBlockId, fechaExacta } = req.body;

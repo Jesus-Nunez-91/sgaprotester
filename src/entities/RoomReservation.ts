@@ -29,6 +29,9 @@ export class RoomReservation {
     @Column({ default: 'Pendiente' })
     estado: string; // 'Pendiente', 'Aprobada', 'Rechazada'
 
+    @Column({ default: '#3b82f6', nullable: true })
+    color: string;
+
     @Column({ nullable: true })
     motivoRechazo: string;
 

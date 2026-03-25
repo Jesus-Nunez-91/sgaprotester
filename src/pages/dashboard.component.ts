@@ -1,7 +1,7 @@
-import { Component, inject, computed, OnInit } from '@angular/core';
+import { Component, inject, computed, OnInit, signal } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import Chart from 'chart.js/auto';
 declare var Swal: any;
@@ -14,7 +14,7 @@ declare var Swal: any;
  */
 @Component({
    selector: 'app-dashboard',
-   imports: [CommonModule],
+   imports: [CommonModule, RouterLink],
    template: `
     <div class="animate-fadeIn pb-20 space-y-12">
       
@@ -178,7 +178,7 @@ declare var Swal: any;
                          <div class="w-10 h-10 rounded-xl bg-[#f06427] text-white flex items-center justify-center">
                              <i class="bi bi-activity text-xl"></i>
                          </div>
-                         <h3 class="text-sm font-black uppercase tracking-widest">Actividad Live</h3>
+                                                   <h3 class="text-sm font-black uppercase tracking-widest text-white">Actividad Live</h3>
                       </div>
                       <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
                           <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
@@ -222,6 +222,95 @@ declare var Swal: any;
                       }
                   </div>
                </div>
+
+                             <!-- Premium Real-time Room Status Widget -->
+                <div class="bg-black text-white rounded-[3rem] shadow-2xl overflow-hidden border border-white/10 group">
+                   <div class="p-10 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-br from-white/5 to-transparent">
+                       <div class="flex items-center gap-5">
+                          <div class="w-14 h-14 rounded-2xl bg-[#f06427] text-white flex items-center justify-center shadow-2xl shadow-orange-500/20 group-hover:scale-110 transition-transform duration-500">
+                              <i class="bi bi-broadcast-pin text-3xl"></i>
+                          </div>
+                          <div>
+                             <h3 class="text-xl font-black uppercase tracking-tighter leading-none mb-2 text-white">Monitor Live: Salas & Labs</h3>
+                             <div class="flex items-center gap-4">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                                   <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sistema en tiempo real activo
+                                </p>
+                                <div class="px-3 py-1 bg-white/10 rounded-lg border border-white/10">
+                                   <span class="text-[12px] font-black font-mono text-uah-orange tracking-widest">{{ currentTimeDisplay() }}</span>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                       <div class="flex items-center gap-3">
+                           <div class="px-6 py-3 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center">
+                              <span class="text-[9px] font-black text-gray-500 uppercase mb-1">Libres</span>
+                              <span class="text-xl font-black text-emerald-400">{{ allRooms().length - occupiedRooms().length }}</span>
+                           </div>
+                           <div class="px-6 py-3 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center">
+                              <span class="text-[9px] font-black text-gray-500 uppercase mb-1">En Uso</span>
+                              <span class="text-xl font-black text-orange-400">{{ occupiedRooms().length }}</span>
+                           </div>
+                       </div>
+                   </div>
+                   
+                   <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        @for (room of allRooms(); track room.id) {
+                           @let activity = getRoomActivity(room);
+                           @let progress = getBlockProgress();
+                           <div class="relative p-8 rounded-[2rem] border transition-all duration-500 group/room overflow-hidden"
+                                [class]="activity.status === 'Sin Actividad' ? 'bg-white/2 dark:bg-white/[0.02] border-white/5' : 'bg-[#f06427]/5 border-[#f06427]/20 shadow-2xl'">
+                               
+                               <!-- Background accent for active rooms -->
+                               @if (activity.status !== 'Sin Actividad') {
+                                  <div class="absolute top-0 right-0 w-32 h-32 bg-[#f06427] blur-[80px] opacity-10 -mr-16 -mt-16"></div>
+                               }
+
+                               <div class="relative z-10 flex flex-col h-full">
+                                  <div class="flex justify-between items-start mb-6">
+                                      <div>
+                                         <h5 class="text-lg font-black uppercase tracking-tighter text-white" [style.color]="activity.status !== 'Sin Actividad' ? '#f06427' : ''">{{ room.nombre }}</h5>
+                                         <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest">{{ room.ubicacionPiso }}</span>
+                                      </div>
+                                      <div class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest" 
+                                           [class]="activity.status === 'Sin Actividad' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500 text-white animate-pulse'">
+                                         {{ activity.status === 'Sin Actividad' ? 'Disponible' : 'En Uso' }}
+                                      </div>
+                                  </div>
+
+                                  @if (activity.status !== 'Sin Actividad') {
+                                     <div class="mb-4">
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Actividad Actual</div>
+                                        <div class="text-sm font-black text-white leading-tight uppercase mb-6">{{ activity.detail }}</div>
+                                        
+                                        <!-- Progress Bar for block -->
+                                        <div class="space-y-2">
+                                           <div class="flex justify-between text-[8px] font-black uppercase tracking-tighter">
+                                               <span class="text-[#f06427]">Ocupación del Bloque</span>
+                                               <span class="text-white">{{ progress }}%</span>
+                                           </div>
+                                           <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                               <div class="h-full bg-gradient-to-r from-[#f06427] to-orange-400 rounded-full transition-all duration-[2000ms]" [style.width.%]="progress"></div>
+                                           </div>
+                                        </div>
+                                     </div>
+                                  } @else {
+                                     <div class="mt-auto pt-6 border-t border-white/5 flex items-center gap-3">
+                                         <i class="bi bi-info-circle text-gray-600"></i>
+                                         <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Sin programaciones activas</span>
+                                     </div>
+                                  }
+                               </div>
+                           </div>
+                       }
+                   </div>
+                   
+                   <div class="bg-white/[0.02] p-6 text-center border-t border-white/5">
+                       <button [routerLink]="['/rooms']" class="text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all">
+                          Ver Calendario Completo <i class="bi bi-arrow-right ml-2 text-lg align-middle"></i>
+                       </button>
+                   </div>
+                </div>
           </div>
 
           <!-- SIDEBAR WIDGETS -->
@@ -365,6 +454,91 @@ export class DashboardComponent implements OnInit {
       .reduce((acc, curr) => acc + curr.valorTotal, 0));
    totalRemaining = computed(() => this.totalBudget() - this.totalSpent());
 
+   // Reloj en tiempo real
+   currentTimeDisplay = signal<string>('00:00:00');
+
+   // --- Salas y Labs Live Dashboard ---
+   allRooms = signal<any[]>([]);
+   allRoomReservationsToday = signal<any[]>([]);
+   occupiedRooms = computed(() => this.allRooms().filter(r => this.getRoomActivity(r).status !== 'Sin Actividad'));
+
+   async loadRooms() {
+      try {
+         const r = await fetch('/api/rooms', { headers: { 'Authorization': `Bearer ${this.data.token()}` } });
+         if (r.ok) this.allRooms.set(await r.json());
+      } catch(e) {}
+   }
+
+   async loadRoomReservationsToday() {
+      const today = new Date().toISOString().split('T')[0];
+      try {
+         const r = await fetch(`/api/room-reservations?fecha=${today}`, { headers: { 'Authorization': `Bearer ${this.data.token()}` } });
+         if (r.ok) this.allRoomReservationsToday.set(await r.json());
+      } catch(e) {}
+   }
+
+   getRoomActivity(room: any): { status: string, detail: string } {
+      const now = new Date();
+      const HH = now.getHours().toString().padStart(2, '0');
+      const mm = now.getMinutes().toString().padStart(2, '0');
+      const currentTime = `${HH}:${mm}`;
+      
+      const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const currentDay = dayNames[now.getDay()].toUpperCase();
+      const norm = (s: string) => s?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+      const roomName = norm(room.nombre);
+
+      // 1. Clases
+      const currentClass = this.data.classSchedules().find(s => {
+          if (norm(s.lab) !== roomName || norm(s.day) !== norm(currentDay)) return false;
+          if (s.block.includes('-')) {
+             const [start, end] = s.block.split('-').map(t => t.trim());
+             return currentTime >= start && currentTime <= end;
+          }
+          const blocks: any = { 'BLOQUE 1': ['08:30','09:50'], 'BLOQUE 2': ['10:00','11:20'], 'BLOQUE 3': ['11:30','12:50'], 'BLOQUE 4': ['13:00','14:20'], 'BLOQUE 5': ['14:30','15:50'], 'BLOQUE 6': ['16:00','17:20'], 'BLOQUE 7': ['17:30','18:50'] };
+          const range = blocks[s.block.toUpperCase()];
+          if (range) return currentTime >= range[0] && currentTime <= range[1];
+          return false;
+      });
+      if (currentClass) return { status: 'Ocupado', detail: currentClass.subject };
+
+      // 2. Reservas
+      const reservation = this.allRoomReservationsToday().find(r => {
+          if (r.roomId !== room.id || r.estado !== 'Aprobada') return false;
+          const blocks: any = { 1: ['08:30','09:50'], 2: ['10:00','11:20'], 3: ['11:30','12:50'], 4: ['13:00','14:20'], 5: ['14:30','15:50'], 6: ['16:00','17:20'], 7: ['17:30','18:50'] };
+          const range = blocks[r.roomBlockId % 7 || 7]; 
+          return range && currentTime >= range[0] && currentTime <= range[1];
+      });
+      if (reservation) return { status: 'Ocupado', detail: reservation.motivo };
+
+      return { status: 'Sin Actividad', detail: '' };
+   }
+
+   /** Calcula el progreso del bloque de tiempo actual (basado en bloques de 1.5 horas aprox) */
+   getBlockProgress(): number {
+      const now = new Date();
+      const HH = now.getHours();
+      const mm = now.getMinutes();
+      const currentTime = HH * 60 + mm;
+
+      const blocks = [
+         { s: 8*60+30, e: 9*60+50 },
+         { s: 10*60+0, e: 11*60+20 },
+         { s: 11*60+30, e: 12*60+50 },
+         { s: 13*60+0, e: 14*60+20 },
+         { s: 14*60+30, e: 15*60+50 },
+         { s: 16*60+0, e: 17*60+20 },
+         { s: 17*60+30, e: 18*60+50 }
+      ];
+
+      const currentBlock = blocks.find(b => currentTime >= b.s && currentTime <= b.e);
+      if (!currentBlock) return 0;
+
+      const total = currentBlock.e - currentBlock.s;
+      const elapsed = currentTime - currentBlock.s;
+      return Math.min(100, Math.round((elapsed / total) * 100));
+   }
+
    async addAdminTask(input: HTMLInputElement) {
       if (!input.value.trim()) return;
       await this.data.addAdminTask({
@@ -469,8 +643,30 @@ export class DashboardComponent implements OnInit {
           return;
        }
 
-      // Inicialización de gráficos con un pequeño retraso para asegurar que el DOM esté listo
-      setTimeout(() => this.initCharts(), 500);
+     // Carga de datos de salas para dashboard live
+     this.loadRooms();
+     this.loadRoomReservationsToday();
+
+     // Auto-actualización de datos cada 1 minuto
+     setInterval(() => {
+        this.loadRooms();
+        this.loadRoomReservationsToday();
+     }, 60000);
+
+     // Iniciar Reloj
+     this.updateClock();
+     setInterval(() => this.updateClock(), 1000);
+
+     // Inicialización de gráficos con un pequeño retraso para asegurar que el DOM esté listo
+     setTimeout(() => this.initCharts(), 500);
+   }
+
+   updateClock() {
+      const now = new Date();
+      const HH = now.getHours().toString().padStart(2, '0');
+      const mm = now.getMinutes().toString().padStart(2, '0');
+      const ss = now.getSeconds().toString().padStart(2, '0');
+      this.currentTimeDisplay.set(`${HH}:${mm}:${ss}`);
    }
 
    /**

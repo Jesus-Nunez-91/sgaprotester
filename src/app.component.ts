@@ -41,7 +41,9 @@ import { FormsModule } from '@angular/forms';
                       <i class="bi bi-grid-1x2-fill text-xl group-hover:scale-110 transition-transform"></i>
                       <span class="hidden lg:inline text-sm">Dashboard</span>
                   </a>
+              }
 
+              @if (isLabAdmin()) {
                   <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
@@ -75,13 +77,15 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
               </a>
 
-              @if (isSuperUser()) {
+              @if (isLabAdmin() || isAcadeAdmin()) {
                    <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                        <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
                        <span class="hidden lg:inline text-sm">Wiki</span>
                    </a>
+              }
 
+              @if (isLabAdmin()) {
                   <div class="my-6 border-t border-white/5"></div>
                   <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
                   
@@ -362,11 +366,33 @@ export class AppComponent {
         const url = this.router.url;
         const role = this.authService.currentUser()?.rol;
         
-        // Redirección de seguridad según roles restrictivos
-        const isForbidden = url.includes('dashboard') || url.includes('audit') || url.includes('users') || url.includes('procurement') || url.includes('maintenance') || url.includes('projects') || url.includes('areas') || url.includes('bitacora');
+        // --- PROTECCIÓN DE RUTAS SEGÚN ROL ---
         
-        if (role !== 'SuperUser' && isForbidden) {
+        // 1. Zonas exclusivas de SuperUser
+        const superOnly = url.includes('dashboard') || url.includes('audit') || url.includes('users');
+        if (superOnly && role !== 'SuperUser') {
             this.router.navigate(['/rooms']);
+            return;
+        }
+
+        // 2. Zonas de Administración de Laboratorios (Admin_Labs + SuperUser)
+        const labAdminZones = url.includes('procurement') || url.includes('maintenance') || url.includes('projects') || url.includes('areas') || url.includes('bitacora');
+        if (labAdminZones && !this.isLabAdmin()) {
+            this.router.navigate(['/rooms']);
+            return;
+        }
+
+        // 3. Zonas de Administración Académica (Admin_Acade + SuperUser)
+        const acadeAdminZones = url.includes('schedule');
+        if (acadeAdminZones && !this.isAcadeAdmin()) {
+            this.router.navigate(['/rooms']);
+            return;
+        }
+        
+        // 4. Zonas Compartidas (Wiki)
+        if (url.includes('wiki') && !this.isLabAdmin() && !this.isAcadeAdmin()) {
+             this.router.navigate(['/rooms']);
+             return;
         }
     }
 
