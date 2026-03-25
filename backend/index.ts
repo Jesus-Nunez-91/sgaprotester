@@ -57,201 +57,166 @@ const JWT_SECRET = process.env.JWT_SECRET || 'uah_secret_fallback';
 // Inicializar DB y Admin
 AppDataSource.initialize()
   .then(async () => {
-    // REPARACIÓN MANUAL DE ESQUEMA (Garantizar que el servidor tenga los roles nuevos)
+    // REPARACIÓN MANUAL DE ESQUEMA (Garantizar que el servidor tenga los roles nuevos y el esquema perfecto)
+    console.log("🛠️ Iniciando secuencia de reparación e integridad de base de datos...");
+    
+    // 1. Roles Granulares (Postgres Only)
     try {
-      console.log("🛠️ Ejecutando comprobación de integridad de esquema...");
-      
-      // 1. Roles Granulares
-      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Admin_Acade'");
-      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Admin_Labs'");
-      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'Academico'");
-      await AppDataSource.query("ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS 'SuperUser'");
-      await AppDataSource.query("UPDATE \"user\" SET rol = 'SuperUser' WHERE rol = 'Admin'");
-      await AppDataSource.query("UPDATE \"user\" SET rol = 'Academico' WHERE rol = 'Acad_Labs'");
+        if (AppDataSource.options.type === 'postgres') {
+            try {
+                await AppDataSource.query("CREATE TYPE user_rol_enum AS ENUM ('Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser', 'Admin', 'Acad_Labs')");
+            } catch(e) { /* Ya existe */ }
+            
+            const roles = ['Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser', 'Admin', 'Acad_Labs'];
+            for (const rol of roles) {
+                try {
+                    await AppDataSource.query(`ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS '${rol}'`);
+                } catch(e) { /* Ya existe */ }
+            }
+        }
+    } catch(e) { console.warn("⚠️ [DB] No se pudo actualizar los tipos ENUM."); }
 
-      // 2. Tablas Faltantes (Soporte para Salas y Reservas)
-      console.log("🛠️ Verificando tablas de infraestructura...");
-      await AppDataSource.query(`
-          CREATE TABLE IF NOT EXISTS "room" (
-            "id" SERIAL PRIMARY KEY,
-            "nombre" VARCHAR NOT NULL,
-            "tipo" VARCHAR NOT NULL,
-            "capacidadMaxima" INTEGER NOT NULL,
-            "ubicacionPiso" VARCHAR,
-            "metrosCuadrados" FLOAT DEFAULT 0,
-            "valorHora" INTEGER DEFAULT 0,
-            "tieneAireAcondicionado" BOOLEAN DEFAULT false,
-            "tieneProyector" BOOLEAN DEFAULT false,
-            "tieneTelevisor" BOOLEAN DEFAULT false,
-            "tienePizarra" BOOLEAN DEFAULT false,
-            "tieneAudio" BOOLEAN DEFAULT false,
-            "tieneComputadores" BOOLEAN DEFAULT false,
-            "tieneMicrofono" BOOLEAN DEFAULT false,
-            "tieneNotebooks" BOOLEAN DEFAULT false,
-            "tienePizarraInteligente" BOOLEAN DEFAULT false,
-            "tieneLavadero" BOOLEAN DEFAULT false,
-            "tieneDucha" BOOLEAN DEFAULT false,
-            "tieneBano" BOOLEAN DEFAULT false,
-            "otrosEquipos" TEXT,
-            "estadoActivo" BOOLEAN DEFAULT true
-          )
-      `);
+    // 2. Tabla de Usuarios
+    try {
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "user" (
+                "id" SERIAL PRIMARY KEY,
+                "nombreCompleto" VARCHAR NOT NULL DEFAULT 'Usuario',
+                "rut" VARCHAR UNIQUE NOT NULL DEFAULT '0-0',
+                "correo" VARCHAR UNIQUE NOT NULL,
+                "password" VARCHAR NOT NULL,
+                "cargo" VARCHAR,
+                "rol" user_rol_enum DEFAULT 'Academico',
+                "estado" BOOLEAN DEFAULT true
+            )
+        `);
+    } catch(e) { console.error("⚠️ [DB] Error en tabla User:", e); }
 
-      // Migrar columnas con compatibilidad Multi-DB (Postgres/SQLite)
-      const dbType = AppDataSource.options.type;
-      const addColumn = async (table: string, col: string, type: string, def?: string) => {
-         try {
+    // 3. Tabla de Salas
+    try {
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "room" (
+                "id" SERIAL PRIMARY KEY,
+                "nombre" VARCHAR NOT NULL,
+                "tipo" VARCHAR NOT NULL,
+                "capacidadMaxima" INTEGER NOT NULL,
+                "ubicacionPiso" VARCHAR,
+                "metrosCuadrados" FLOAT DEFAULT 0,
+                "valorHora" INTEGER DEFAULT 0,
+                "tieneAireAcondicionado" BOOLEAN DEFAULT false,
+                "tieneProyector" BOOLEAN DEFAULT false,
+                "tieneTelevisor" BOOLEAN DEFAULT false,
+                "tienePizarra" BOOLEAN DEFAULT false,
+                "tieneAudio" BOOLEAN DEFAULT false,
+                "tieneComputadores" BOOLEAN DEFAULT false,
+                "tieneMicrofono" BOOLEAN DEFAULT false,
+                "tieneNotebooks" BOOLEAN DEFAULT false,
+                "tienePizarraInteligente" BOOLEAN DEFAULT false,
+                "tieneLavadero" BOOLEAN DEFAULT false,
+                "tieneDucha" BOOLEAN DEFAULT false,
+                "tieneBano" BOOLEAN DEFAULT false,
+                "otrosEquipos" TEXT,
+                "estadoActivo" BOOLEAN DEFAULT true
+            )
+        `);
+    } catch(e) { console.error("⚠️ [DB] Error en tabla Room:", e); }
+
+    // 4. Tablas de Bloques y Reservas
+    try {
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "room_block" ("id" SERIAL PRIMARY KEY, "roomId" INTEGER NOT NULL, "nombreBloque" VARCHAR NOT NULL, "horaInicio" VARCHAR NOT NULL, "horaFin" VARCHAR NOT NULL)`);
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "room_reservation" (
+                "id" SERIAL PRIMARY KEY, 
+                "roomId" INTEGER NOT NULL, 
+                "roomBlockId" INTEGER NOT NULL, 
+                "fechaExacta" VARCHAR NOT NULL, 
+                "nombreCurso" VARCHAR NOT NULL, 
+                "nombreDocente" VARCHAR, 
+                "estado" VARCHAR DEFAULT 'ACTIVA', 
+                "color" VARCHAR DEFAULT '#3b82f6'
+            )
+        `);
+    } catch(e) { console.error("⚠️ [DB] Error en tablas de bloques de salas:", e); }
+
+    // 5. Migraciones adicionales de columnas
+    const dbType = AppDataSource.options.type;
+    const addColumn = async (table: string, col: string, type: string, def?: string) => {
+        try {
             let exists = false;
             if (dbType === 'postgres') {
-               const res = await AppDataSource.query(`
-                  SELECT column_name FROM information_schema.columns 
-                  WHERE lower(table_name) = lower('${table}') AND lower(column_name) = lower('${col}')
-               `);
-               exists = res.length > 0;
-            } else { // sqlite
-               const res = await AppDataSource.query(`PRAGMA table_info("${table}")`);
-               exists = res.some((c: any) => c.name.toLowerCase() === col.toLowerCase());
+                const res = await AppDataSource.query(`SELECT column_name FROM information_schema.columns WHERE lower(table_name) = lower('${table}') AND lower(column_name) = lower('${col}')`);
+                exists = res.length > 0;
+            } else {
+                const res = await AppDataSource.query(`PRAGMA table_info("${table}")`);
+                exists = res.some((c: any) => c.name.toLowerCase() === col.toLowerCase());
             }
 
             if (!exists) {
-               console.log(`🛠️ [DB-${dbType}] Agregando columna ${col} a ${table}...`);
-               if (dbType === 'postgres') {
-                  await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${type} ${def ? 'DEFAULT ' + def : ''}`);
-               } else {
-                  const sqliteType = type.toLowerCase() === 'boolean' ? 'BOOLEAN' : type;
-                  await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${sqliteType} ${def ? 'DEFAULT ' + def : ''}`);
-               }
+                console.log(`🛠️ [DB] Agregando columna ${col} a ${table}...`);
+                await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${type} ${def ? 'DEFAULT ' + def : ''}`);
             }
-         } catch(e) { console.error(`❌ [DB-${dbType}] Error fatal agregando columna ${col} a ${table}:`, e); }
-      };
-
-      await addColumn('room', 'metrosCuadrados', 'FLOAT');
-      await addColumn('room', 'valorHora', 'INTEGER', '0');
-      await addColumn('room', 'tieneAireAcondicionado', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneProyector', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneTelevisor', 'BOOLEAN', 'false');
-      await addColumn('room', 'tienePizarra', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneAudio', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneComputadores', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneMicrofono', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneNotebooks', 'BOOLEAN', 'false');
-      await addColumn('room', 'tienePizarraInteligente', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneLavadero', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneDucha', 'BOOLEAN', 'false');
-      await addColumn('room', 'tieneBano', 'BOOLEAN', 'false');
-      await addColumn('room', 'otrosEquipos', 'TEXT');
-      await addColumn('room_reservation', 'color', 'VARCHAR', "'#3b82f6'");
-
-      await AppDataSource.query(`
-          CREATE TABLE IF NOT EXISTS "room_block" (
-            "id" SERIAL PRIMARY KEY,
-            "roomId" INTEGER NOT NULL,
-            "nombreBloque" VARCHAR NOT NULL,
-            "horaInicio" VARCHAR NOT NULL,
-            "horaFin" VARCHAR NOT NULL
-          )
-      `);
-      await AppDataSource.query(`
-          CREATE TABLE IF NOT EXISTS "room_reservation" (
-            "id" SERIAL PRIMARY KEY,
-            "roomId" INTEGER NOT NULL,
-            "roomBlockId" INTEGER NOT NULL,
-            "fechaExacta" VARCHAR NOT NULL,
-            "userId" INTEGER NOT NULL,
-            "motivo" VARCHAR NOT NULL,
-            "participantes" INTEGER,
-            "observacionOpcional" VARCHAR,
-            "estado" VARCHAR DEFAULT 'Pendiente',
-            "motivoRechazo" VARCHAR,
-            "createdAt" TIMESTAMP DEFAULT now(),
-            "updatedAt" TIMESTAMP DEFAULT now()
-          )
-      `);
-    } catch(e) {
-      console.error("⚠️ [CRITICAL] Error en reparación manual de la DB:", e);
-    }
-
-    console.log("DB Conectada");
+        } catch(e) { console.error(`❌ [DB] Error migrando ${col}:`, e); }
+    };
     
-    console.log("Comprobando migración de inventario...");
-    const invRepo = AppDataSource.getRepository(InventoryItem);
-    try {
-      const result = await invRepo.update({ tipoInventario: 'Arduinos' as any }, { tipoInventario: 'Materiales' });
-      if (result.affected && result.affected > 0) {
-        console.log(`Migración exitosa: ${result.affected} items actualizados de 'Arduinos' a 'Materiales'.`);
-      }
-    } catch (e) {
-      console.error("Error durante la migración de datos de inventario:", e);
-    }
+    await addColumn('room', 'tienePizarraInteligente', 'BOOLEAN', 'false');
+    await addColumn('room_reservation', 'color', 'VARCHAR', "'#3b82f6'");
 
-    console.log("Comprobando admin inicial...");
+    console.log("✅ Integridad de DB verificada.");
+
+    // Semilla Admin
     const userRepo = AppDataSource.getRepository(User);
     const adminExists = await userRepo.findOneBy({ correo: 'admin@uah.cl' });
     if (!adminExists) {
-      console.log("Creando admin inicial...");
-      const hashedPassword = await bcrypt.hash('admin123', 10);
-      const admin = userRepo.create({
-        nombreCompleto: 'Administrador Sistema',
-        rut: '1-9',
-        correo: 'admin@uah.cl',
-        password: hashedPassword,
-        rol: 'SuperUser'
-      });
-      await userRepo.save(admin);
-      console.log("Admin inicial creado");
+        console.log("🌱 Creando administrador root...");
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await userRepo.save(userRepo.create({
+            nombreCompleto: 'Administrador Sistema',
+            rut: '1-9',
+            correo: 'admin@uah.cl',
+            password: hashedPassword,
+            rol: 'SuperUser'
+        }));
     }
 
-    console.log("Comprobando seed de salas...");
-    try {
-        const roomRepo = AppDataSource.getRepository(Room);
-        const count = await roomRepo.count();
-        if (count !== 4) { 
-           console.log('🌱 Sembrando salas iniciales (Labs)... Limpiando previas.');
-           try {
-               await AppDataSource.getRepository(RoomReservation).clear();
-               await AppDataSource.getRepository(RoomBlock).clear();
-               await roomRepo.clear();
-           } catch (e) {
-               console.warn("No se pudieron limpiar las tablas de salas:", e);
-           }
+    // Semilla Salas (Si están vacías)
+    const roomRepo = AppDataSource.getRepository(Room);
+    const count = await roomRepo.count();
+    if (count === 0) {
+        console.log("🌱 Sembrando laboratorios iniciales...");
+        const defaultRooms = [
+            { nombre: 'DESARROLLO TECNOLÓGICO', tipo: 'Laboratorio', capacidadMaxima: 20, ubicacionPiso: '3er Piso' },
+            { nombre: 'FABLAB', tipo: 'Laboratorio', capacidadMaxima: 20, ubicacionPiso: '1er Piso' },
+            { nombre: 'HACKERLAB', tipo: 'Laboratorio', capacidadMaxima: 25, ubicacionPiso: '3er Piso' },
+            { nombre: 'SALA DE REUNIONES', tipo: 'Sala de Reuniones', capacidadMaxima: 8, ubicacionPiso: '1er Piso' }
+        ];
 
-           const defaultRooms = [
-               { nombre: 'DESARROLLO TECNOLÓGICO', tipo: 'Laboratorio', capacidadMaxima: 20, ubicacionPiso: '3er Piso' },
-               { nombre: 'FABLAB', tipo: 'Laboratorio', capacidadMaxima: 20, ubicacionPiso: '1er Piso' },
-               { nombre: 'HACKERLAB', tipo: 'Laboratorio', capacidadMaxima: 25, ubicacionPiso: '3er Piso' },
-               { nombre: 'SALA DE REUNIONES', tipo: 'Sala de Reuniones', capacidadMaxima: 8, ubicacionPiso: '1er Piso' }
-           ];
-   
-           const blockRepo = AppDataSource.getRepository(RoomBlock);
-           const defaultBlocks = [
-               { inicio: '08:30', fin: '09:50', nombre: 'Bloque 1' },
-               { inicio: '10:00', fin: '11:20', nombre: 'Bloque 2' },
-               { inicio: '11:30', fin: '12:50', nombre: 'Bloque 3' },
-               { inicio: '13:00', fin: '14:20', nombre: 'Bloque 4' },
-               { inicio: '14:30', fin: '15:50', nombre: 'Bloque 5' },
-               { inicio: '16:00', fin: '17:20', nombre: 'Bloque 6' },
-               { inicio: '17:30', fin: '18:50', nombre: 'Bloque 7' }
-           ];
-   
-           for (const dr of defaultRooms) {
-               const savedRoom: any = await roomRepo.save(roomRepo.create(dr));
-               for (const b of defaultBlocks) {
-                   await blockRepo.save(blockRepo.create({
-                       roomId: savedRoom.id,
-                       nombreBloque: b.nombre,
-                       horaInicio: b.inicio,
-                       horaFin: b.fin
-                   }));
-               }
-           }
-           console.log('✅ Sembrado de salas completado.');
+        const blockRepo = AppDataSource.getRepository(RoomBlock);
+        const defaultBlocks = [
+            { inicio: '08:30', fin: '09:50', nombre: 'Bloque 1' },
+            { inicio: '10:00', fin: '11:20', nombre: 'Bloque 2' },
+            { inicio: '11:30', fin: '12:50', nombre: 'Bloque 3' },
+            { inicio: '13:00', fin: '14:20', nombre: 'Bloque 4' },
+            { inicio: '14:30', fin: '15:50', nombre: 'Bloque 5' },
+            { inicio: '16:00', fin: '17:20', nombre: 'Bloque 6' },
+            { inicio: '17:30', fin: '18:50', nombre: 'Bloque 7' }
+        ];
+
+        for (const dr of defaultRooms) {
+            const savedRoom: any = await roomRepo.save(roomRepo.create(dr));
+            for (const b of defaultBlocks) {
+                await blockRepo.save(blockRepo.create({
+                    roomId: savedRoom.id,
+                    nombreBloque: b.nombre,
+                    horaInicio: b.inicio,
+                    horaFin: b.fin
+                }));
+            }
         }
-    } catch(e) { console.error('Error seeding rooms:', e); }
-
-    console.log("Configuración inicial DB finalizada");
+        console.log("✅ Salas sembradas exitosamente.");
+    }
   })
   .catch((err) => {
-    console.error("Error FATAL de DB en inicialización:", err);
+    console.error("❌ Error FATAL inicializando base de datos:", err);
     process.exit(1);
   });
 
