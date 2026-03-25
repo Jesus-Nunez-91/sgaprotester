@@ -82,27 +82,36 @@ AppDataSource.initialize()
           )
       `);
 
-      // Migrar columnas nuevas si no existen
-      try {
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "metrosCuadrados" FLOAT`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "valorHora" INTEGER DEFAULT 0`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneAireAcondicionado" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneProyector" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneTelevisor" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tienePizarra" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneAudio" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneComputadores" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneMicrofono" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneNotebooks" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tienePizarraInteligente" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneLavadero" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneDucha" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "tieneBano" BOOLEAN DEFAULT false`);
-        await AppDataSource.query(`ALTER TABLE "room" ADD COLUMN IF NOT EXISTS "otrosEquipos" TEXT`);
-        await AppDataSource.query(`ALTER TABLE "room_reservation" ADD COLUMN IF NOT EXISTS "color" VARCHAR DEFAULT '#3b82f6'`);
-      } catch(migError) {
-        console.warn("⚠️ Error en migración de columnas Room (probablemente ya existen):", migError);
-      }
+      // Migrar columnas nuevas con comprobación de sistema para compatibilidad máxima
+      const addColumn = async (table: string, col: string, type: string, def?: string) => {
+         try {
+            const exists = await AppDataSource.query(`
+               SELECT column_name FROM information_schema.columns 
+               WHERE table_name = '${table}' AND column_name = '${col}'
+            `);
+            if (exists.length === 0) {
+               console.log(`🛠️ Agregando columna ${col} a ${table}...`);
+               await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${type} ${def ? 'DEFAULT ' + def : ''}`);
+            }
+         } catch(e) { console.warn(`⚠️ Error al intentar agregar columna ${col}:`, e); }
+      };
+
+      await addColumn('room', 'metrosCuadrados', 'FLOAT');
+      await addColumn('room', 'valorHora', 'INTEGER', '0');
+      await addColumn('room', 'tieneAireAcondicionado', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneProyector', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneTelevisor', 'BOOLEAN', 'false');
+      await addColumn('room', 'tienePizarra', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneAudio', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneComputadores', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneMicrofono', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneNotebooks', 'BOOLEAN', 'false');
+      await addColumn('room', 'tienePizarraInteligente', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneLavadero', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneDucha', 'BOOLEAN', 'false');
+      await addColumn('room', 'tieneBano', 'BOOLEAN', 'false');
+      await addColumn('room', 'otrosEquipos', 'TEXT');
+      await addColumn('room_reservation', 'color', 'VARCHAR', "'#3b82f6'");
 
       await AppDataSource.query(`
           CREATE TABLE IF NOT EXISTS "room_block" (
@@ -1418,13 +1427,18 @@ app.put('/api/room-blocks/:id', authMiddleware, async (req: any, res) => {
 
 // Reservas de salas
 app.get('/api/room-reservations', authMiddleware, async (req: any, res) => {
-    const repo = AppDataSource.getRepository(RoomReservation);
-    const filters: any = {};
-    if (req.query.roomId) filters.roomId = parseInt(req.query.roomId as string);
-    if (req.query.fecha) filters.fechaExacta = req.query.fecha as string;
-    
-    const reservations = await repo.find({ where: filters });
-    res.json(reservations);
+    try {
+        const repo = AppDataSource.getRepository(RoomReservation);
+        const filters: any = {};
+        if (req.query.roomId) filters.roomId = parseInt(req.query.roomId as string);
+        if (req.query.fecha) filters.fechaExacta = req.query.fecha as string;
+        
+        const reservations = await repo.find({ where: filters });
+        res.json(reservations);
+    } catch(e) {
+        console.error('[GET /api/room-reservations] Error:', e);
+        res.status(500).json({ message: 'Error al obtener reservas' });
+    }
 });
 
 app.post('/api/room-reservations', authMiddleware, async (req: any, res) => {
