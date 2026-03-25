@@ -1563,6 +1563,20 @@ app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, re
 });
 
 // --- ENDPOINTS DE DIAGNOSTICO ---
+app.get('/api/diag/clean', async (req, res) => {
+    try {
+        console.warn('💣 [DIAG] Petición de limpieza de Base de Datos recibida.');
+        // Importante: Eliminar en orden para evitar problemas de FK si existieran
+        await AppDataSource.query(`DROP TABLE IF EXISTS "room_reservation" CASCADE`);
+        await AppDataSource.query(`DROP TABLE IF EXISTS "room_block" CASCADE`);
+        await AppDataSource.query(`DROP TABLE IF EXISTS "room" CASCADE`);
+        
+        res.send('<h1>💣 Limpieza completada con éxito.</h1><p>Las tablas de Salas, Reservas y Bloques han sido eliminadas. Ahora <b>REINICIA el servidor</b> (docker-compose restart) para que el sistema las cree de nuevo con el esquema perfecto.</p>');
+    } catch(e: any) {
+        res.status(500).json({ error: 'Fallo al limpiar', details: e.message });
+    }
+});
+
 app.get('/api/diag/schema', async (req, res) => {
     try {
         const dbType = AppDataSource.options.type;
