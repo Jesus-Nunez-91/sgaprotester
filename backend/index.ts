@@ -85,15 +85,16 @@ AppDataSource.initialize()
       // Migrar columnas nuevas con comprobación de sistema para compatibilidad máxima
       const addColumn = async (table: string, col: string, type: string, def?: string) => {
          try {
+            // Buscamos ignorando mayúsculas/minúsculas para evitar problemas de quoted identifiers
             const exists = await AppDataSource.query(`
                SELECT column_name FROM information_schema.columns 
-               WHERE table_name = '${table}' AND column_name = '${col}'
+               WHERE lower(table_name) = lower('${table}') AND lower(column_name) = lower('${col}')
             `);
             if (exists.length === 0) {
-               console.log(`🛠️ Agregando columna ${col} a ${table}...`);
+               console.log(`🛠️ [DB] Agregando columna ${col} a ${table}...`);
                await AppDataSource.query(`ALTER TABLE "${table}" ADD COLUMN "${col}" ${type} ${def ? 'DEFAULT ' + def : ''}`);
             }
-         } catch(e) { console.warn(`⚠️ Error al intentar agregar columna ${col}:`, e); }
+         } catch(e) { console.warn(`⚠️ [DB] Error al intentar agregar columna ${col}:`, e); }
       };
 
       await addColumn('room', 'metrosCuadrados', 'FLOAT');
@@ -1495,6 +1496,20 @@ app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, re
         res.json(reserve);
     } catch(e) {
         res.status(400).json({ message: 'Error al actualizar estado de reserva' });
+    }
+});
+
+// --- ENDPOINTS DE DIAGNOSTICO ---
+app.get('/api/diag/schema', async (req, res) => {
+    try {
+        const rooms = await AppDataSource.query(`SELECT column_name FROM information_schema.columns WHERE lower(table_name) = 'room'`);
+        const resvs = await AppDataSource.query(`SELECT column_name FROM information_schema.columns WHERE lower(table_name) = 'room_reservation'`);
+        res.json({
+            rooms: rooms.map((c: any) => c.column_name),
+            reservations: resvs.map((c: any) => c.column_name)
+        });
+    } catch(e) {
+        res.status(500).json({ error: 'Fallo al obtener esquema' });
     }
 });
 
