@@ -140,7 +140,15 @@ AppDataSource.initialize()
         `);
     } catch(e) { console.error("⚠️ [DB] Error en tablas de bloques de salas:", e); }
 
-    // 5. Migraciones adicionales de columnas
+    // 5. Soporte y Auditoría (EVITAR CRASHES POR TABLAS FALTANTES)
+    try {
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "audit_log" ("id" SERIAL PRIMARY KEY, "fecha" TIMESTAMP DEFAULT now(), "nombre" VARCHAR NOT NULL, "usuario" VARCHAR NOT NULL, "rol" VARCHAR NOT NULL, "accion" VARCHAR NOT NULL, "detalle" TEXT)`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "wiki_doc" ("id" SERIAL PRIMARY KEY, "title" VARCHAR NOT NULL, "content" TEXT NOT NULL, "author" VARCHAR, "isPublic" BOOLEAN DEFAULT true, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now())`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "ticket" ("id" BIGINT PRIMARY KEY, "userId" INTEGER NOT NULL, "userName" VARCHAR NOT NULL, "userEmail" VARCHAR NOT NULL, "subject" VARCHAR NOT NULL, "lastMessage" VARCHAR, "lastUpdate" VARCHAR, "status" VARCHAR DEFAULT 'Open', "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now())`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "message" ("id" SERIAL PRIMARY KEY, "ticketId" BIGINT NOT NULL, "sender" VARCHAR NOT NULL, "text" TEXT NOT NULL, "timestamp" VARCHAR NOT NULL, "senderRole" VARCHAR NOT NULL, "createdAt" TIMESTAMP DEFAULT now())`);
+    } catch(e) { console.error("⚠️ [DB] Error en tablas de soporte/auditoría:", e); }
+
+    // 6. Migraciones adicionales de columnas
     const dbType = AppDataSource.options.type;
     const addColumn = async (table: string, col: string, type: string, def?: string) => {
         try {
@@ -170,7 +178,9 @@ AppDataSource.initialize()
     await addColumn('room', 'tienePizarraInteligente', 'BOOLEAN', 'false');
     await addColumn('room_reservation', 'color', 'VARCHAR', "'#3b82f6'");
 
-    console.log("✅ Integridad de DB verificada.");
+    // 7. Lanzar el Servidor SOLO cuando todo sea estable
+    console.log("✅ Integridad de DB verificada. Lanzando servidor...");
+    startServer();
 
     // Semilla Admin
     const userRepo = AppDataSource.getRepository(User);
@@ -1614,6 +1624,9 @@ app.get('*', (req, res) => {
 });
 
 
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Servidor listo en puerto ${PORT}`);
-});
+// --- INICIALIZAR SERVIDOR ---
+const startServer = () => {
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 Servidor listo y ESCUCHANDO en puerto ${PORT}`);
+  });
+};
