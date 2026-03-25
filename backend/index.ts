@@ -143,19 +143,81 @@ AppDataSource.initialize()
     // 5. Soporte, Wiki y Auditoría
     try {
         await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "audit_log" ("id" SERIAL PRIMARY KEY, "fecha" TIMESTAMP DEFAULT now(), "nombre" VARCHAR NOT NULL, "usuario" VARCHAR NOT NULL, "rol" VARCHAR NOT NULL, "accion" VARCHAR NOT NULL, "detalle" TEXT)`);
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "wiki_doc" ("id" SERIAL PRIMARY KEY, "title" VARCHAR NOT NULL, "content" TEXT NOT NULL, "author" VARCHAR, "isPublic" BOOLEAN DEFAULT true, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now())`);
+        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "wiki_doc" ("id" SERIAL PRIMARY KEY, "title" VARCHAR NOT NULL, "category" VARCHAR DEFAULT 'Guia', "content" TEXT NOT NULL, "fileUrl" VARCHAR, "isPublic" BOOLEAN DEFAULT true, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now())`);
         await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "ticket" ("id" BIGINT PRIMARY KEY, "userId" INTEGER NOT NULL, "userName" VARCHAR NOT NULL, "userEmail" VARCHAR NOT NULL, "subject" VARCHAR NOT NULL, "lastMessage" VARCHAR, "lastUpdate" VARCHAR, "status" VARCHAR DEFAULT 'Open', "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now())`);
         await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "message" ("id" SERIAL PRIMARY KEY, "ticketId" BIGINT NOT NULL, "sender" VARCHAR NOT NULL, "text" TEXT NOT NULL, "timestamp" VARCHAR NOT NULL, "senderRole" VARCHAR NOT NULL, "createdAt" TIMESTAMP DEFAULT now())`);
     } catch(e) { console.error("⚠️ [DB] Error en tablas de soporte/auditoría:", e); }
 
     // 6. Resto de módulos (Inventario, Mantenimiento, Proyectos, Compras, Horarios)
     try {
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "inventory_item" ("id" SERIAL PRIMARY KEY, "nombre" VARCHAR NOT NULL, "categoria" VARCHAR, "cantidad" INTEGER DEFAULT 0, "ubicacion" VARCHAR, "estado" VARCHAR DEFAULT 'Disponible', "codigo" VARCHAR UNIQUE)`);
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "maintenance_task" ("id" SERIAL PRIMARY KEY, "tipo" VARCHAR NOT NULL, "descripcion" TEXT, "fechaProgramada" VARCHAR, "responsable" VARCHAR, "estado" VARCHAR DEFAULT 'Pendiente')`);
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "purchase_order" ("id" SERIAL PRIMARY KEY, "proveedor" VARCHAR, "monto" FLOAT, "fechaPedido" VARCHAR, "estado" VARCHAR DEFAULT 'Enviada', "detalles" TEXT)`);
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "project" ("id" SERIAL PRIMARY KEY, "nombre" VARCHAR NOT NULL, "descripcion" TEXT, "fechaInicio" VARCHAR, "progreso" INTEGER DEFAULT 0, "estado" VARCHAR DEFAULT 'Activo')`);
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "schedule" ("id" SERIAL PRIMARY KEY, "dia" VARCHAR NOT NULL, "hora" VARCHAR NOT NULL, "actividad" VARCHAR, "responsable" VARCHAR)`);
-        await AppDataSource.query(`CREATE TABLE IF NOT EXISTS "admin_task" ("id" SERIAL PRIMARY KEY, "titulo" VARCHAR NOT NULL, "vence" VARCHAR, "prioridad" VARCHAR DEFAULT 'Media', "completada" BOOLEAN DEFAULT false)`);
+        // Inventario con nombres de columna correctos (Spanish matching Entity)
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "inventory_item" (
+                "id" SERIAL PRIMARY KEY, 
+                "tipoInventario" VARCHAR NOT NULL, 
+                "rotulo_ID" VARCHAR, 
+                "categoria" VARCHAR NOT NULL, 
+                "subCategoria" VARCHAR NOT NULL, 
+                "marca" VARCHAR NOT NULL, "modelo" VARCHAR NOT NULL, "sn" VARCHAR, 
+                "status" VARCHAR NOT NULL, "so" VARCHAR, "procesador" VARCHAR, "ram" VARCHAR, "rom" VARCHAR, 
+                "softwareInstalado" TEXT, "stockActual" INTEGER DEFAULT 0, "stockMinimo" INTEGER DEFAULT 0, 
+                "stockDefectuoso" INTEGER DEFAULT 0, "esFungible" BOOLEAN DEFAULT false, 
+                "imagenUrl" VARCHAR, "numeroFactura" VARCHAR, "fechaLlegada" VARCHAR, 
+                "cantidadLlegada" INTEGER DEFAULT 0, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now()
+            )
+        `);
+        
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "maintenance_task" (
+                "id" SERIAL PRIMARY KEY, "itemId" INTEGER NOT NULL, "itemName" VARCHAR NOT NULL, 
+                "type" VARCHAR NOT NULL, "priority" VARCHAR NOT NULL, "status" VARCHAR DEFAULT 'Pendiente', 
+                "technician" VARCHAR NOT NULL, "cost" FLOAT DEFAULT 0, "description" TEXT NOT NULL, 
+                "dateScheduled" VARCHAR NOT NULL, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now()
+            )
+        `);
+        
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "purchase_order" (
+                "id" SERIAL PRIMARY KEY, "lab" VARCHAR NOT NULL, "item" VARCHAR NOT NULL, 
+                "cantidad" INTEGER NOT NULL, "valorUnitario" FLOAT NOT NULL, "valorTotal" FLOAT NOT NULL, 
+                "fechaSolicitud" VARCHAR NOT NULL, "stage" VARCHAR DEFAULT 'Solicitud', 
+                "observaciones" TEXT, "idNum" VARCHAR, "linkReferencia" VARCHAR, "proveedor" VARCHAR, 
+                "rutProveedor" VARCHAR, "productoAdjudicado" VARCHAR, "precioAdjudicado" FLOAT, 
+                "cantidadAdjudicada" INTEGER, "numeroOC" VARCHAR, "numeroCotizacion" VARCHAR, 
+                "numeroFactura" VARCHAR, "fechaFactura" VARCHAR, "fechaEntrega" VARCHAR, "createdAt" TIMESTAMP DEFAULT now()
+            )
+        `);
+
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "project" (
+                "id" SERIAL PRIMARY KEY, "name" VARCHAR NOT NULL, "description" TEXT NOT NULL, 
+                "startDate" VARCHAR NOT NULL, "endDate" VARCHAR NOT NULL, "status" VARCHAR DEFAULT 'Planeacion', 
+                "color" VARCHAR NOT NULL, "managerId" INTEGER NOT NULL, "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now()
+            )
+        `);
+
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "project_task" (
+                "id" SERIAL PRIMARY KEY, "name" VARCHAR NOT NULL, "description" TEXT, 
+                "startDate" VARCHAR NOT NULL, "endDate" VARCHAR NOT NULL, "progress" INTEGER DEFAULT 0, 
+                "status" VARCHAR DEFAULT 'En espera', "projectId" INTEGER NOT NULL, "assigneeId" INTEGER
+            )
+        `);
+
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "schedule" (
+                "id" SERIAL PRIMARY KEY, "lab" VARCHAR NOT NULL, "day" VARCHAR NOT NULL, 
+                "block" VARCHAR NOT NULL, "subject" VARCHAR NOT NULL, "color" VARCHAR DEFAULT '#3b82f6'
+            )
+        `);
+
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "admin_task" (
+                "id" SERIAL PRIMARY KEY, "description" VARCHAR NOT NULL, 
+                "status" VARCHAR DEFAULT 'pending', "priority" VARCHAR DEFAULT 'Media', 
+                "dueDate" VARCHAR, "createdAt" TIMESTAMP DEFAULT now()
+            )
+        `);
     } catch(e) { console.error("⚠️ [DB] Error en tablas de módulos adicionales:", e); }
 
     // 7. Migraciones adicionales de columnas
@@ -1561,9 +1623,10 @@ app.get('/api/diag/clean', async (req, res) => {
     try {
         console.warn('💣 [DIAG] INICIANDO LIMPIEZA TOTAL (NUKE) - SOLICITADO POR USUARIO');
         
-        // Tablas a eliminar para un reinicio limpio (excepto Inventario)
+        // Tablas a eliminar para un reinicio limpio
         const tablesToDrop = [
             '"room_reservation"', '"room_block"', '"room"', // Salas
+            '"inventory_item"', // Inventario
             '"audit_log"', '"bitacora"', '"wiki_doc"', // Documentación/Logs
             '"project_task"', '"project"', // Proyectos
             '"purchase_order"', '"maintenance_task"', '"admin_task"', // Tareas/Compras
@@ -1585,7 +1648,7 @@ app.get('/api/diag/clean', async (req, res) => {
         res.send(`
             <div style="font-family: sans-serif; padding: 50px; text-align: center; background: #fff1f2; color: #991b1b; border: 5px solid #ef4444; border-radius: 20px;">
                 <h1 style="font-size: 3rem;">🔥 LIMPIEZA TOTAL COMPLETADA 🔥</h1>
-                <p style="font-size: 1.2rem; margin: 20px 0;">Has reseteado las bases de datos (excepto el Inventario).</p>
+                <p style="font-size: 1.2rem; margin: 20px 0;">Has reseteado TODAS las bases de datos (incluyendo Inventario).</p>
                 <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block;">
                     <p style="font-weight: bold; color: black; margin-bottom: 0;">PASO FINAL OBLIGATORIO:</p>
                     <code style="font-size: 1.5rem; background: #fef2f2; padding: 10px; display: block; margin-top: 10px;">docker-compose restart</code>
