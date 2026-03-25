@@ -1565,13 +1565,40 @@ app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, re
 // --- ENDPOINTS DE DIAGNOSTICO ---
 app.get('/api/diag/clean', async (req, res) => {
     try {
-        console.warn('💣 [DIAG] Petición de limpieza de Base de Datos recibida.');
-        // Importante: Eliminar en orden para evitar problemas de FK si existieran
-        await AppDataSource.query(`DROP TABLE IF EXISTS "room_reservation" CASCADE`);
-        await AppDataSource.query(`DROP TABLE IF EXISTS "room_block" CASCADE`);
-        await AppDataSource.query(`DROP TABLE IF EXISTS "room" CASCADE`);
+        console.warn('💣 [DIAG] INICIANDO LIMPIEZA TOTAL (NUKE) - SOLICITADO POR USUARIO');
         
-        res.send('<h1>💣 Limpieza completada con éxito.</h1><p>Las tablas de Salas, Reservas y Bloques han sido eliminadas. Ahora <b>REINICIA el servidor</b> (docker-compose restart) para que el sistema las cree de nuevo con el esquema perfecto.</p>');
+        // Tablas a eliminar para un reinicio limpio (excepto Inventario)
+        const tablesToDrop = [
+            '"room_reservation"', '"room_block"', '"room"', // Salas
+            '"audit_log"', '"bitacora"', '"wiki_doc"', // Documentación/Logs
+            '"project_task"', '"project"', // Proyectos
+            '"purchase_order"', '"maintenance_task"', '"admin_task"', // Tareas/Compras
+            '"reservation"', '"schedule"', // Horarios y Préstamos
+            '"message"', '"ticket"', // Soporte
+            '"user"' // Usuarios (será regenerado el admin)
+        ];
+
+        for (const table of tablesToDrop) {
+            console.log(`🧹 Eliminando tabla: ${table}`);
+            await AppDataSource.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
+        }
+        
+        // IMPORTANTE: También limpiar el tipo ENUM de roles para que se recree bien
+        try {
+            await AppDataSource.query(`DROP TYPE IF EXISTS "user_rol_enum" CASCADE`);
+        } catch(e) { console.warn('No se pudo borrar el ENUM, probablemente no sea Postgres o no exista.'); }
+
+        res.send(`
+            <div style="font-family: sans-serif; padding: 50px; text-align: center; background: #fff1f2; color: #991b1b; border: 5px solid #ef4444; border-radius: 20px;">
+                <h1 style="font-size: 3rem;">🔥 LIMPIEZA TOTAL COMPLETADA 🔥</h1>
+                <p style="font-size: 1.2rem; margin: 20px 0;">Has reseteado las bases de datos (excepto el Inventario).</p>
+                <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block;">
+                    <p style="font-weight: bold; color: black; margin-bottom: 0;">PASO FINAL OBLIGATORIO:</p>
+                    <code style="font-size: 1.5rem; background: #fef2f2; padding: 10px; display: block; margin-top: 10px;">docker-compose restart</code>
+                </div>
+                <p style="margin-top: 30px;">Al reiniciar, se crearán las tablas vacías pero PERFECTAS y se regenerará el usuario administrador.</p>
+            </div>
+        `);
     } catch(e: any) {
         res.status(500).json({ error: 'Fallo al limpiar', details: e.message });
     }
