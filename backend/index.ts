@@ -64,10 +64,10 @@ AppDataSource.initialize()
     try {
         if (AppDataSource.options.type === 'postgres') {
             try {
-                await AppDataSource.query("CREATE TYPE user_rol_enum AS ENUM ('Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser', 'Admin', 'Acad_Labs')");
+                await AppDataSource.query("CREATE TYPE user_rol_enum AS ENUM ('Alumno', 'Docente', 'Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser', 'Admin', 'Acad_Labs')");
             } catch(e) { /* Ya existe */ }
             
-            const roles = ['Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser', 'Admin', 'Acad_Labs'];
+            const roles = ['Alumno', 'Docente', 'Admin_Acade', 'Admin_Labs', 'Academico', 'SuperUser', 'Admin', 'Acad_Labs'];
             for (const rol of roles) {
                 try {
                     await AppDataSource.query(`ALTER TYPE user_rol_enum ADD VALUE IF NOT EXISTS '${rol}'`);
@@ -85,9 +85,11 @@ AppDataSource.initialize()
                 "rut" VARCHAR UNIQUE NOT NULL DEFAULT '0-0',
                 "correo" VARCHAR UNIQUE NOT NULL,
                 "password" VARCHAR NOT NULL,
-                "cargo" VARCHAR,
                 "rol" user_rol_enum DEFAULT 'Academico',
-                "estado" BOOLEAN DEFAULT true
+                "carrera" VARCHAR,
+                "anioIngreso" INTEGER,
+                "createdAt" TIMESTAMP DEFAULT now(),
+                "updatedAt" TIMESTAMP DEFAULT now()
             )
         `);
     } catch(e) { console.error("⚠️ [DB] Error en tabla User:", e); }
@@ -158,6 +160,13 @@ AppDataSource.initialize()
         } catch(e) { console.error(`❌ [DB] Error migrando ${col}:`, e); }
     };
     
+    // Sincronizar campos faltantes en User (por si ya existía la tabla)
+    await addColumn('user', 'carrera', 'VARCHAR');
+    await addColumn('user', 'anioIngreso', 'INTEGER');
+    await addColumn('user', 'createdAt', 'TIMESTAMP', 'now()');
+    await addColumn('user', 'updatedAt', 'TIMESTAMP', 'now()');
+
+    // Sincronizar campos faltantes en Room y Reservas
     await addColumn('room', 'tienePizarraInteligente', 'BOOLEAN', 'false');
     await addColumn('room_reservation', 'color', 'VARCHAR', "'#3b82f6'");
 
