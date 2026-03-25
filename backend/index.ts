@@ -77,7 +77,22 @@ AppDataSource.initialize()
             "nombre" VARCHAR NOT NULL,
             "tipo" VARCHAR NOT NULL,
             "capacidadMaxima" INTEGER NOT NULL,
-            "ubicacionPiso" VARCHAR NOT NULL,
+            "ubicacionPiso" VARCHAR,
+            "metrosCuadrados" FLOAT DEFAULT 0,
+            "valorHora" INTEGER DEFAULT 0,
+            "tieneAireAcondicionado" BOOLEAN DEFAULT false,
+            "tieneProyector" BOOLEAN DEFAULT false,
+            "tieneTelevisor" BOOLEAN DEFAULT false,
+            "tienePizarra" BOOLEAN DEFAULT false,
+            "tieneAudio" BOOLEAN DEFAULT false,
+            "tieneComputadores" BOOLEAN DEFAULT false,
+            "tieneMicrofono" BOOLEAN DEFAULT false,
+            "tieneNotebooks" BOOLEAN DEFAULT false,
+            "tienePizarraInteligente" BOOLEAN DEFAULT false,
+            "tieneLavadero" BOOLEAN DEFAULT false,
+            "tieneDucha" BOOLEAN DEFAULT false,
+            "tieneBano" BOOLEAN DEFAULT false,
+            "otrosEquipos" TEXT,
             "estadoActivo" BOOLEAN DEFAULT true
           )
       `);
