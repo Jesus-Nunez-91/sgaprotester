@@ -1314,8 +1314,33 @@ app.get('/api/rooms', authMiddleware, async (req: any, res) => {
     console.log(`[GET /api/rooms] Retornando ${rooms.length} salas`);
     res.json(rooms);
   } catch(e: any) {
-    console.error('[GET /api/rooms] Error:', e);
-    res.status(500).json({ message: 'Error al obtener salas', error: e.message });
+    console.error('[GET /api/rooms] Fallback Raw Query Activado:', e.message);
+    try {
+        // FALLBACK: Mismo esquema que Reservas, cargamos Raw y normalizamos para el frontend
+        const rooms = await AppDataSource.query('SELECT * FROM "room" ORDER BY "nombre" ASC');
+        const normalizedRooms = rooms.map((r: any) => ({
+            ...r,
+            metrosCuadrados: r.metrosCuadrados || 0,
+            valorHora: r.valorHora || 0,
+            tieneAireAcondicionado: !!r.tieneAireAcondicionado,
+            tieneProyector: !!r.tieneProyector,
+            tieneTelevisor: !!r.tieneTelevisor,
+            tienePizarra: !!r.tienePizarra,
+            tieneAudio: !!r.tieneAudio,
+            tieneComputadores: !!r.tieneComputadores,
+            tieneMicrofono: !!r.tieneMicrofono,
+            tieneNotebooks: !!r.tieneNotebooks,
+            tienePizarraInteligente: !!r.tienePizarraInteligente,
+            tieneLavadero: !!r.tieneLavadero,
+            tieneDucha: !!r.tieneDucha,
+            tieneBano: !!r.tieneBano,
+            otrosEquipos: r.otrosEquipos || '',
+            estadoActivo: r.estadoActivo !== false // true por defecto
+        }));
+        res.json(normalizedRooms);
+    } catch(fallbackErr: any) {
+        res.status(500).json({ message: 'Error total en salas', error: fallbackErr.message });
+    }
   }
 });
 
@@ -1450,8 +1475,18 @@ app.get('/api/room-reservations', authMiddleware, async (req: any, res) => {
         const reservations = await repo.find({ where: filters });
         res.json(reservations);
     } catch(e: any) {
-        console.error('[GET /api/room-reservations] Error:', e);
-        res.status(500).json({ message: 'Error al obtener reservas', error: e.message });
+        console.error('[GET /api/room-reservations] Fallback Raw Query Activado:', e.message);
+        try {
+            // FALLBACK: Si no podemos cargar vía Entity (schema mismatch), cargamos raw y mapeamos manualmente
+            const query = `SELECT * FROM "room_reservation" ${req.query.fecha ? `WHERE "fechaExacta" = '${req.query.fecha}'` : ''}`;
+            const reservations = await AppDataSource.query(query);
+            res.json(reservations.map((r: any) => ({
+                ...r,
+                color: r.color || '#3b82f6' // Default si falta la columna
+            })));
+        } catch(fallbackErr: any) {
+            res.status(500).json({ message: 'Error total en reservas', error: fallbackErr.message });
+        }
     }
 });
 
