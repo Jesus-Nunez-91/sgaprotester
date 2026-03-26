@@ -218,6 +218,25 @@ AppDataSource.initialize()
                 "dueDate" VARCHAR, "createdAt" TIMESTAMP DEFAULT now()
             )
         `);
+
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "reservation" (
+                "id" SERIAL PRIMARY KEY, "equipoId" INTEGER NOT NULL, "fecha" VARCHAR NOT NULL, 
+                "bloque" VARCHAR NOT NULL, "cantidad" INTEGER NOT NULL, "nombreSolicitante" VARCHAR NOT NULL, 
+                "rutSolicitante" VARCHAR NOT NULL, "emailSolicitante" VARCHAR NOT NULL, "tipoUsuario" VARCHAR NOT NULL, 
+                "userId" INTEGER, "aprobada" BOOLEAN DEFAULT false, "rechazada" BOOLEAN DEFAULT false, 
+                "motivoRechazo" VARCHAR, "devuelto" INTEGER, "clockIn" TIMESTAMP, "clockOut" TIMESTAMP, 
+                "createdAt" TIMESTAMP DEFAULT now(), "updatedAt" TIMESTAMP DEFAULT now()
+            )
+        `);
+
+        await AppDataSource.query(`
+            CREATE TABLE IF NOT EXISTS "bitacora" (
+                "id" SERIAL PRIMARY KEY, "date" TIMESTAMP DEFAULT now(), "lab" VARCHAR NOT NULL, 
+                "section" VARCHAR NOT NULL, "type" VARCHAR DEFAULT 'Incidencia', "description" TEXT NOT NULL, 
+                "adminName" VARCHAR NOT NULL, "adminId" INTEGER
+            )
+        `);
     } catch(e) { console.error("⚠️ [DB] Error en tablas de módulos adicionales:", e); }
 
     // 7. Migraciones adicionales de columnas
