@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -73,8 +73,16 @@ declare var Swal: any;
                 </button>
               </div>
 
+              <!-- Verificación OWASP (reCAPTCHA) -->
+              @if (siteKey()) {
+                <div class="flex justify-center my-4">
+                  <div id="recaptcha-container"></div>
+                </div>
+              }
+
               <button type="submit" 
-                class="w-full bg-black hover:bg-[#f06427] text-white font-bold py-5 rounded-xl shadow-lg hover:shadow-[#f06427]/20 transition-all flex items-center justify-center gap-3 group mt-4">
+                [disabled]="siteKey() && !recaptchaToken()"
+                class="w-full bg-black hover:bg-[#f06427] text-white font-bold py-5 rounded-xl shadow-lg hover:shadow-[#f06427]/20 transition-all flex items-center justify-center gap-3 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
                 INGRESAR AL PORTAL
                 <i class="bi bi-chevron-right text-sm group-hover:translate-x-1 transition-transform"></i>
               </button>
@@ -90,11 +98,15 @@ declare var Swal: any;
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   auth = inject(DataService);
   router = inject(Router);
 
   isPassVisible = signal(false);
+  
+  // Variables de Seguridad reCAPTCHA
+  siteKey = signal('');
+  recaptchaToken = signal('');
 
   constructor() {
     if (this.auth.currentUser()) {
@@ -107,6 +119,40 @@ export class LoginComponent {
   // Señales para el enlace de datos bidireccional del formulario
   email = signal('');
   pass = signal('');
+
+  async ngOnInit() {
+    try {
+      const res = await fetch('/api/config/recaptcha-site-key');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.siteKey) {
+          this.siteKey.set(data.siteKey);
+          // Dar un ciclo de refresco a Angular para que pinte el @if
+          setTimeout(() => this.renderCaptcha(), 100);
+        }
+      }
+    } catch (e) {
+      console.warn("Advertencia: No se pudo obtener configuración de reCAPTCHA.");
+    }
+  }
+
+  renderCaptcha() {
+    const container = document.getElementById('recaptcha-container');
+    if (typeof (window as any).grecaptcha !== 'undefined' && container) {
+      try {
+        (window as any).grecaptcha.render('recaptcha-container', {
+          'sitekey': this.siteKey(),
+          'callback': (token: string) => this.recaptchaToken.set(token),
+          'expired-callback': () => this.recaptchaToken.set('')
+        });
+      } catch (e) { 
+        console.warn("reCAPTCHA ya renderizado o error menor:", e);
+      }
+    } else {
+      // Reintentar en 300ms hasta que el div esté en el DOM y la librería cargue
+      setTimeout(() => this.renderCaptcha(), 300);
+    }
+  }
 
   async openRecoveryModal() {
     const { value: formValues } = await Swal.fire({
@@ -223,7 +269,7 @@ export class LoginComponent {
    */
   async onLogin(e: Event) {
     e.preventDefault();
-    const success = await this.auth.login(this.email(), this.pass());
+    const success = await this.auth.login(this.email(), this.pass(), this.recaptchaToken());
     if (success) {
       // Notificación de éxito
       Swal.fire({

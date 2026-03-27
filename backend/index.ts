@@ -1,6 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import "reflect-metadata";
@@ -43,11 +44,12 @@ const authRateLimit = rateLimit({
 });
 
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: '10mb' }));
+app.use(cors({ origin: "*" })); // Habilitar CORS para aplicaciones móviles y web
+app.use(express.json({ limit: '20mb' }));
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' ? false : "*"
+    origin: "*" // Permitir handshake desde cualquier origen (móvil/web)
   }
 });
 
@@ -340,11 +342,33 @@ const logAudit = async (nombre: string, usuario: string, rol: string, accion: st
   }
 };
 
+// --- ENDPOINTS DE CONFIGURACION PUBLICA ---
+app.get('/api/config/recaptcha-site-key', (req, res) => {
+    res.json({ siteKey: process.env.RECAPTCHA_SITE_KEY || '' });
+});
+
 // --- ENDPOINTS DE AUTENTICACION ---
 
 app.post('/api/auth/login', authRateLimit, async (req, res) => {
   try {
-    const { correo, password } = req.body;
+    const { correo, password, recaptchaToken } = req.body;
+
+    // Validación OWASP reCAPTCHA (si la llave secreta está configurada)
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (secretKey) {
+        if (!recaptchaToken) {
+            return res.status(401).json({ message: 'Validación de seguridad requerida (CAPTCHA)' });
+        }
+        const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
+        const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
+        const recaptchaData = await recaptchaRes.json();
+        
+        if (!recaptchaData.success) {
+            await logAudit('Sistema', correo || 'N/A', 'N/A', 'LOGIN_FAIL', 'Intento bloqueado: reCAPTCHA fallido o expirado');
+            return res.status(401).json({ message: 'Comprobación anti-robot fallida' });
+        }
+    }
+
     const userRepo = AppDataSource.getRepository(User);
     const user = await userRepo.findOneBy({ correo });
 

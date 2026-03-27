@@ -847,12 +847,12 @@ export class DataService {
     }
   }
 
-  async login(correo: string, pass: string): Promise<boolean> {
+  async login(correo: string, pass: string, recaptchaToken?: string): Promise<boolean> {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, password: pass })
+        body: JSON.stringify({ correo, password: pass, recaptchaToken })
       });
 
       if (res.ok) {

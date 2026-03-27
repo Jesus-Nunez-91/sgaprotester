@@ -1,10 +1,10 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
     container_name: sgapro_db
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_pass}
@@ -12,7 +12,9 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data
+    networks:
+      - sga_net
 
   app:
     build:
@@ -24,16 +26,17 @@ services:
       - "3030:3030"
     depends_on:
       - db
+    env_file:
+      - .env
     environment:
-      # Sobrescribimos el host para que apunte al contenedor de la base de datos
       - DB_HOST=db
       - DB_PORT=5432
       - NODE_ENV=production
-      # Reutilizamos las otras variables de .env si están disponibles
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres_pass}
-      - DB_NAME=${DB_NAME:-sga_db}
-      - PORT=${PORT:-3030}
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+    networks:
+      - sga_net
 
-volumes:
-  pgdata:
+networks:
+  sga_net:
+    driver: bridge
