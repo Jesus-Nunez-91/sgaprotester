@@ -190,10 +190,10 @@ export class DataService {
   bitacora = signal<any[]>([]);
   isLoading = signal<boolean>(false);
 
-  // Configuración de conexión para móviles (detectar puerto 3040)
-  private baseUrl = (window.location.protocol.startsWith('http') && window.location.hostname === 'localhost' && !window.hasOwnProperty('Capacitor')) 
-    ? '' 
-    : 'http://10.0.2.2:3040';
+  // Configuración de conexión dinámica (Navegador vs Móvil)
+  private baseUrl = (window.hasOwnProperty('Capacitor'))
+    ? 'http://10.10.0.20:3040' // Para dispositivos móviles reales
+    : '';                        // Para el navegador (usa la misma URL del sitio)
 
   hierarchy: Record<string, string[]> = {
     'FABLAB': ['BIOMATERIALES', 'TEXTIL', 'FABRICACIÓN DIGITAL'],
