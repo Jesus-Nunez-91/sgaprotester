@@ -190,6 +190,11 @@ export class DataService {
   bitacora = signal<any[]>([]);
   isLoading = signal<boolean>(false);
 
+  // Configuración de conexión para móviles (detectar puerto 3040)
+  private baseUrl = (window.location.protocol.startsWith('http') && window.location.hostname === 'localhost' && !window.hasOwnProperty('Capacitor')) 
+    ? '' 
+    : 'http://10.0.2.2:3040';
+
   hierarchy: Record<string, string[]> = {
     'FABLAB': ['BIOMATERIALES', 'TEXTIL', 'FABRICACIÓN DIGITAL'],
     'LAB CIENCIAS BASICAS': ['QUIMICA', 'FISICA'],
@@ -198,7 +203,7 @@ export class DataService {
 
   constructor() {
     this.loadFromStorage();
-    this.socket = io();
+    this.socket = io(this.baseUrl);
     this.setupSocket();
     this.fetchSchedules();
     this.fetchInventory();
@@ -289,7 +294,7 @@ export class DataService {
   async addItem(item: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/inventory', {
+      const res = await fetch(this.baseUrl + '/api/inventory', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -305,7 +310,7 @@ export class DataService {
 
   async checkIn(id: number) {
     try {
-      const res = await fetch(`/api/reservations/${id}/check-in`, {
+      const res = await fetch(this.baseUrl + `/api/reservations/${id}/check-in`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -320,7 +325,7 @@ export class DataService {
 
   async checkOut(id: number) {
     try {
-      const res = await fetch(`/api/reservations/${id}/check-out`, {
+      const res = await fetch(this.baseUrl + `/api/reservations/${id}/check-out`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -336,7 +341,7 @@ export class DataService {
   async updateItem(id: number, item: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/inventory/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/inventory/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -353,7 +358,7 @@ export class DataService {
   async deleteItem(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/inventory/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/inventory/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -366,7 +371,7 @@ export class DataService {
   async addBulkItems(items: any[]) {
     if (!this.token()) return false;
     try {
-      const res = await fetch('/api/inventory/bulk', {
+      const res = await fetch(this.baseUrl + '/api/inventory/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -396,7 +401,7 @@ export class DataService {
   async clearAllInventory() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/inventory/mass/clear', {
+      const res = await fetch(this.baseUrl + '/api/inventory/mass/clear', {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -422,7 +427,7 @@ export class DataService {
       rechazada: false
     };
     try {
-      const res = await fetch('/api/reservations', {
+      const res = await fetch(this.baseUrl + '/api/reservations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -447,7 +452,7 @@ export class DataService {
     // Backend persistance
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/reservations/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/reservations/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -471,7 +476,7 @@ export class DataService {
   async fetchAuditLogs() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/audit', {
+      const res = await fetch(this.baseUrl + '/api/audit', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -487,7 +492,7 @@ export class DataService {
   async fetchMaintenanceTasks() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/maintenance', {
+      const res = await fetch(this.baseUrl + '/api/maintenance', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.maintenanceTasks.set(await res.json());
@@ -497,7 +502,7 @@ export class DataService {
   async addMaintenanceTask(task: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/maintenance', {
+      const res = await fetch(this.baseUrl + '/api/maintenance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -512,7 +517,7 @@ export class DataService {
   async updateMaintenanceTask(id: number, task: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/maintenance/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/maintenance/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -527,7 +532,7 @@ export class DataService {
   async deleteMaintenanceTask(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/maintenance/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/maintenance/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -539,7 +544,7 @@ export class DataService {
   async fetchPurchaseOrders() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/procurement', {
+      const res = await fetch(this.baseUrl + '/api/procurement', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.purchaseOrders.set(await res.json());
@@ -549,7 +554,7 @@ export class DataService {
   async addPurchaseOrder(order: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/procurement', {
+      const res = await fetch(this.baseUrl + '/api/procurement', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -565,7 +570,7 @@ export class DataService {
     if (!this.token()) return;
     const payload = stage ? { ...data, stage } : data;
     try {
-      const res = await fetch(`/api/procurement/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/procurement/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -580,7 +585,7 @@ export class DataService {
   async deletePurchaseOrder(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/procurement/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/procurement/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -592,7 +597,7 @@ export class DataService {
   async fetchAdminTasks() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/admin-tasks', {
+      const res = await fetch(this.baseUrl + '/api/admin-tasks', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.adminTasks.set(await res.json());
@@ -602,7 +607,7 @@ export class DataService {
   async addAdminTask(task: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/admin-tasks', {
+      const res = await fetch(this.baseUrl + '/api/admin-tasks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -617,7 +622,7 @@ export class DataService {
   async updateAdminTask(id: number, data: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/admin-tasks/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/admin-tasks/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -632,7 +637,7 @@ export class DataService {
   async deleteAdminTask(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/admin-tasks/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/admin-tasks/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -674,7 +679,7 @@ export class DataService {
   async fetchUsers() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/users', {
+      const res = await fetch(this.baseUrl + '/api/users', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -689,7 +694,7 @@ export class DataService {
   async addUser(user: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/users', {
+      const res = await fetch(this.baseUrl + '/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -708,7 +713,7 @@ export class DataService {
   async updateUser(id: number, user: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/users/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -727,7 +732,7 @@ export class DataService {
   async deleteUser(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -743,7 +748,7 @@ export class DataService {
   async fetchSchedules() {
     this.isLoading.set(true);
     try {
-      const res = await fetch('/api/schedules', {
+      const res = await fetch(this.baseUrl + '/api/schedules', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -760,7 +765,7 @@ export class DataService {
   async updateSchedule(schedule: Partial<ClassSchedule>) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/schedules', {
+      const res = await fetch(this.baseUrl + '/api/schedules', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -779,7 +784,7 @@ export class DataService {
   async addBulkSchedules(schedules: any[]) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/schedules/bulk', {
+      const res = await fetch(this.baseUrl + '/api/schedules/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -798,7 +803,7 @@ export class DataService {
   async deleteSchedule(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/schedules/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/schedules/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -813,7 +818,7 @@ export class DataService {
   async addBulkUsers(users: any[]) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/users/bulk', {
+      const res = await fetch(this.baseUrl + '/api/users/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -849,7 +854,7 @@ export class DataService {
 
   async login(correo: string, pass: string, recaptchaToken?: string): Promise<boolean> {
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(this.baseUrl + '/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, password: pass, recaptchaToken })
@@ -949,7 +954,7 @@ export class DataService {
 
   async fetchInventory() {
     try {
-      const res = await fetch('/api/inventory', {
+      const res = await fetch(this.baseUrl + '/api/inventory', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -966,7 +971,7 @@ export class DataService {
 
   async fetchReservations() {
     try {
-      const res = await fetch('/api/reservations', {
+      const res = await fetch(this.baseUrl + '/api/reservations', {
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -982,7 +987,7 @@ export class DataService {
   async fetchProjects() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/projects', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      const res = await fetch(this.baseUrl + '/api/projects', { headers: { 'Authorization': `Bearer ${this.token()}` } });
       if (res.ok) this.projects.set(await res.json());
     } catch (e) { console.error("Error al cargar proyectos", e); }
   }
@@ -1004,7 +1009,7 @@ export class DataService {
   async deleteProject(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/projects/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/projects/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -1016,7 +1021,7 @@ export class DataService {
   async fetchWiki() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/wiki', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      const res = await fetch(this.baseUrl + '/api/wiki', { headers: { 'Authorization': `Bearer ${this.token()}` } });
       if (res.ok) this.wikiDocs.set(await res.json());
     } catch (e) { console.error("Error al cargar wiki", e); }
   }
@@ -1024,7 +1029,7 @@ export class DataService {
   async saveWiki(doc: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/wiki', {
+      const res = await fetch(this.baseUrl + '/api/wiki', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
         body: JSON.stringify(doc)
@@ -1036,7 +1041,7 @@ export class DataService {
   async deleteWiki(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/wiki/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/wiki/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -1047,7 +1052,7 @@ export class DataService {
   async updateWiki(id: number, doc: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/wiki/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/wiki/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
         body: JSON.stringify(doc)
@@ -1060,7 +1065,7 @@ export class DataService {
   async fetchBitacora() {
     if (!this.token()) return;
     try {
-      const res = await fetch('/api/bitacora', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      const res = await fetch(this.baseUrl + '/api/bitacora', { headers: { 'Authorization': `Bearer ${this.token()}` } });
       if (res.ok) this.bitacora.set(await res.json());
     } catch (e) { console.error("Error al cargar bitácora", e); }
   }
@@ -1082,7 +1087,7 @@ export class DataService {
   async deleteBitacora(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(`/api/bitacora/${id}`, {
+      const res = await fetch(this.baseUrl + `/api/bitacora/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
@@ -1094,7 +1099,7 @@ export class DataService {
   async deleteLabSchedules(lab: string): Promise<boolean> {
     if (!this.token()) return false;
     try {
-      const res = await fetch(`/api/schedules/lab/${lab}`, {
+      const res = await fetch(this.baseUrl + `/api/schedules/lab/${lab}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });

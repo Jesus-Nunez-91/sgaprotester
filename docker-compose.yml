@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: sgapro_db
+    container_name: sgaprotester_db
     restart: always
     env_file:
       - .env
@@ -10,20 +10,20 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_pass}
       POSTGRES_DB: ${DB_NAME:-sga_db}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT_STAGING:-5433}:5432"
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./data/db_staging:/var/lib/postgresql/data
     networks:
-      - sga_net
+      - sgaprotester_net
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sgapro_app
+    container_name: sgaprotester_app
     restart: always
     ports:
-      - "3030:3030"
+      - "3040:3040"
     depends_on:
       - db
     env_file:
@@ -35,8 +35,8 @@ services:
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
     networks:
-      - sga_net
+      - sgaprotester_net
 
 networks:
-  sga_net:
+  sgaprotester_net:
     driver: bridge

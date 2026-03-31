@@ -617,14 +617,15 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
       }
     }
 
-    // Buscar si ya existe un bloque para ese lab, día y bloque en Schedule
-    let schedule = await scheduleRepo.findOneBy({ lab, day, block });
+    // Normalizar nombre de laboratorio para consistencia
+    const canonicalLab = lab.toUpperCase();
+    let schedule = await scheduleRepo.findOneBy({ lab: canonicalLab, day, block });
 
     if (schedule) {
       schedule.subject = subject;
       schedule.color = color;
     } else {
-      schedule = scheduleRepo.create({ lab, day, block, subject, color });
+      schedule = scheduleRepo.create({ lab: canonicalLab, day, block, subject, color });
     }
 
     await scheduleRepo.save(schedule);
@@ -654,11 +655,14 @@ app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
     for (const s of schedulesData) {
       const { lab, day, block, subject, color } = s;
 
-      // [SINCRONIZACIÓN] Verificar Room
-      let room = await roomRepo.findOneBy({ nombre: lab });
+      // [SINCRONIZACIÓN] Verificar Room (Búsqueda insensible a mayúsculas para evitar duplicados)
+      let room = await roomRepo.createQueryBuilder("room")
+        .where("LOWER(room.nombre) = LOWER(:lab)", { lab })
+        .getOne();
+        
       if (!room && lab !== 'HIDDEN') {
         room = await roomRepo.save(roomRepo.create({
-          nombre: lab,
+          nombre: lab.toUpperCase(), // Normalizar a Mayúsculas para consistencia UAH
           tipo: 'Laboratorio',
           capacidadMaxima: 20,
           ubicacionPiso: 'Carga masiva'
@@ -682,12 +686,13 @@ app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
         }
       }
 
-      let schedule = await scheduleRepo.findOneBy({ lab, day, block });
+      const canonicalLab = lab.toUpperCase();
+      let schedule = await scheduleRepo.findOneBy({ lab: canonicalLab, day, block });
       if (schedule) {
         schedule.subject = subject;
         schedule.color = color;
       } else {
-        schedule = scheduleRepo.create({ lab, day, block, subject, color });
+        schedule = scheduleRepo.create({ lab: canonicalLab, day, block, subject, color });
       }
       results.push(await scheduleRepo.save(schedule));
     }
