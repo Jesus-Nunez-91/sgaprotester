@@ -911,7 +911,8 @@ app.post('/api/room-reservations', authMiddleware, checkPermission(ROLES.RESERVA
       ...req.body,
       userCorreo: req.user.correo,
       userName: req.user.nombre,
-      status: req.user.rol.includes('Admin') ? 'Aprobada' : 'Pendiente'
+      userId: req.user.id,
+      estado: req.user.rol.includes('Admin') ? 'Aprobada' : 'Pendiente'
     });
     const saved = await resRepo.save(reservation);
     
@@ -1757,40 +1758,6 @@ app.get('/api/room-reservations', authMiddleware, async (req: any, res) => {
     }
 });
 
-app.post('/api/room-reservations', authMiddleware, async (req: any, res) => {
-    // Los Alumnos no pueden reservar salas
-    if (req.user.rol === 'Alumno') {
-        return res.status(403).json({ message: 'Acceso denegado: Los alumnos no tienen permitido reservar salas.' });
-    }
-    try {
-        const repo = AppDataSource.getRepository(RoomReservation);
-        const { roomId, roomBlockId, fechaExacta } = req.body;
-        
-        // Evitar doble reserva
-        const existing = await repo.findOne({
-            where: [
-                { roomId, roomBlockId, fechaExacta, estado: 'Aprobada' },
-                { roomId, roomBlockId, fechaExacta, estado: 'Pendiente' }
-            ]
-        });
-
-        if (existing) {
-            return res.status(409).json({ message: 'Este bloque ya se encuentra reservado o en proceso de revisión.' });
-        }
-
-        const newRes = repo.create({
-            ...req.body,
-            userId: req.user.id
-        });
-        await repo.save(newRes);
-
-        await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'ROOM_RESERVE', `Solicitud Sala ${roomId} el ${fechaExacta}`);
-        
-        res.status(201).json(newRes);
-    } catch(e) {
-        res.status(400).json({ message: 'Error al crear solicitud de reserva' });
-    }
-});
 
 app.put('/api/room-reservations/:id/status', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
   // Admin_Acade y Admin_Labs pueden aprobar/rechazar reservas según su área
