@@ -1531,6 +1531,78 @@ io.on('connection', async (socket) => {
   });
 });
 
+
+// --- ENDPOINTS DE WIKI INSTITUCIONAL ---
+
+app.get('/api/wiki', authMiddleware, async (req: any, res) => {
+    try {
+        const repo = AppDataSource.getRepository(WikiDoc);
+        const userRole = req.user.rol;
+        const isPrivileged = ['SuperUser', 'Admin_Labs', 'Admin_Acade'].includes(userRole);
+        
+        let docs;
+        if (isPrivileged) {
+            // Admins ven todo (público y privado)
+            docs = await repo.find({ order: { createdAt: 'DESC' } });
+        } else {
+            // Alumnos/Docentes solo ven documentos marcados como públicos
+            docs = await repo.find({ where: { isPublic: true }, order: { createdAt: 'DESC' } });
+        }
+        res.json(docs);
+    } catch (e) {
+        res.status(500).json({ message: 'Error al cargar la Wiki' });
+    }
+});
+
+app.post('/api/wiki', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
+    try {
+        const repo = AppDataSource.getRepository(WikiDoc);
+        const newDoc = repo.create({
+            ...req.body,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+        await repo.save(newDoc);
+        const savedDoc = newDoc as any;
+        await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'WIKI_CREATE', `Documento creado: ${savedDoc.title}`);
+        res.status(201).json(savedDoc);
+    } catch (e) {
+        res.status(400).json({ message: 'Error al crear documento wiki' });
+    }
+});
+
+app.put('/api/wiki/:id', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
+    try {
+        const repo = AppDataSource.getRepository(WikiDoc);
+        const doc = await repo.findOneBy({ id: parseInt(req.params.id) });
+        if (!doc) return res.status(404).json({ message: 'Documento no encontrado' });
+        
+        Object.assign(doc, req.body);
+        doc.updatedAt = new Date();
+        await repo.save(doc);
+        
+        await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'WIKI_UPDATE', `Documento editado: ${(doc as any).title}`);
+        res.json(doc);
+    } catch (e) {
+        res.status(400).json({ message: 'Error al actualizar documento wiki' });
+    }
+});
+
+app.delete('/api/wiki/:id', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
+    try {
+        const repo = AppDataSource.getRepository(WikiDoc);
+        const doc = await repo.findOneBy({ id: parseInt(req.params.id) });
+        if (doc) {
+            const title = (doc as any).title;
+            await repo.remove(doc);
+            await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'WIKI_DELETE', `Documento eliminado: ${title}`);
+        }
+        res.status(204).send();
+    } catch (e) {
+        res.status(500).json({ message: 'Error al eliminar documento' });
+    }
+});
+
 // --- ENDPOINTS DE BITACORA ---
 
 app.get('/api/bitacora', authMiddleware, async (req: any, res) => {
