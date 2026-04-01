@@ -21,14 +21,15 @@ import { FormsModule } from '@angular/forms';
       <!-- BARRA LATERAL IZQUIERDA (Institucional Black) -->
       <aside class="w-20 lg:w-72 bg-black flex flex-col justify-between z-50 transition-all duration-300 shadow-2xl relative border-r border-[#f06427]/30">
           <!-- Área del Logo / Banner Pequeño -->
-          <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black text-center">
-              <a routerLink="/areas" class="flex flex-col items-center group cursor-pointer">
-                    <div class="relative mb-1">
-                        <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" class="h-10 w-auto shadow-xl relative z-10 object-contain rounded-lg border-2 border-[#f06427]/50" alt="Logo UAH">
+          <div class="h-32 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
+              <a routerLink="/areas" class="flex items-center gap-4 group cursor-pointer">
+                    <div class="relative">
+                        <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" class="h-16 w-16 shadow-2xl relative z-10 object-contain rounded-full border-2 border-[#f06427] hover:scale-110 transition-transform duration-300" alt="Logo UAH">
+                        <div class="absolute inset-0 rounded-full bg-[#f06427] animate-ping opacity-20 group-hover:opacity-40"></div>
                     </div>
-                  <div class="hidden lg:flex flex-col text-center">
-                      <span class="text-white font-black text-lg leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
-                      <span class="text-[8px] text-[#f06427] font-black tracking-widest uppercase">Ingeniería UAH</span>
+                  <div class="hidden lg:flex flex-col text-left">
+                      <span class="text-white font-black text-2xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
+                      <span class="text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
                   </div>
               </a>
           </div>
@@ -171,13 +172,15 @@ import { FormsModule } from '@angular/forms';
 
               <!-- Banda Principal con Banner -->
               <div class="flex items-center justify-between px-6 lg:px-10 h-24 relative">
-                  <div class="flex items-center gap-8">
-                       <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" 
-                            class="h-12 w-auto object-contain rounded-xl border-2 border-[#f06427]/30 shadow-2xl" alt="SGA FIN - Ingeniería UAH">
-                       <div class="hidden xl:flex flex-col">
+                  <div class="flex items-center gap-6">
+                       <div class="relative group">
+                           <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" 
+                                class="h-16 w-16 object-contain rounded-full border-4 border-[#f06427]/40 shadow-2xl group-hover:scale-105 transition-all duration-500" alt="SGA FIN - Ingeniería UAH">
+                           <div class="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#f06427]/20 to-transparent blur-sm -z-10 animate-pulse"></div>
+                       </div>
+                       <div class="hidden lg:flex flex-col">
                            <h1 class="text-white font-black text-2xl leading-none tracking-tighter">SISTEMA <span class="text-[#f06427]">SGA FIN</span></h1>
-                           <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-1">Gestión de Infraestructura • Facultad de Ingeniería</span>
-                           <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-1">Gestión Unificada • Ingeniería UAH</span>
+                           <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1">Facultad de Ingeniería • Universidad Alberto Hurtado</span>
                        </div>
                   </div>
 

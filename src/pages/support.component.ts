@@ -153,102 +153,148 @@ declare const Swal: any;
          </div>
 
          <!-- Chat Area -->
-         <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 flex flex-col h-[600px] overflow-hidden relative">
+         <div class="lg:col-span-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/50 dark:border-gray-700/50 flex flex-col h-[650px] overflow-hidden relative group">
+             <!-- Glossy Overlay -->
+             <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-transparent pointer-events-none"></div>
+
              @if (selectedTicket()) {
                  <!-- Chat Header -->
-                 <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-                    <div>
-                         <h3 class="font-black text-uah-blue dark:text-blue-400 uppercase tracking-tighter">{{ selectedTicket()?.subject }}</h3>
-                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Ticket #{{ selectedTicket()?.id }} • {{ selectedTicket()?.status === 'Open' ? 'Abierto' : selectedTicket()?.status === 'In Progress' ? 'En Curso' : 'Finalizado' }}</p>
+                 <div class="p-5 border-b border-gray-100 dark:border-gray-700/50 flex justify-between items-center bg-white/40 dark:bg-gray-900/40 relative z-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-uah-blue flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                            <i class="bi bi-chat-dots-fill text-xl"></i>
+                        </div>
+                        <div>
+                             <h3 class="font-black text-uah-blue dark:text-blue-400 uppercase tracking-tighter text-lg">{{ selectedTicket()?.subject }}</h3>
+                             <div class="flex items-center gap-2 mt-0.5">
+                                 <span class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">ID #{{ selectedTicket()?.id }}</span>
+                                 <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                 @if (selectedTicket()?.status === 'Open') {
+                                     <span class="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">Estado: Disponible</span>
+                                 } @else if (selectedTicket()?.status === 'In Progress') {
+                                      <span class="text-[8px] bg-uah-orange/10 text-uah-orange px-2 py-0.5 rounded-full font-black uppercase tracking-tighter animate-pulse">En Atención Directa</span>
+                                 } @else {
+                                     <span class="text-[8px] bg-gray-500/10 text-gray-500 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">Ticket Finalizado</span>
+                                 }
+                             </div>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
                         @if (isAdmin()) {
-                            <button (click)="deleteTicket()" class="text-xs text-red-500 hover:text-red-700 font-bold px-3 py-1 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center gap-1">
-                               <i class="bi bi-trash"></i> Eliminar
+                            <button (click)="deleteTicket()" class="h-10 w-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-100 flex items-center justify-center shadow-sm" title="Eliminar definitivamente">
+                               <i class="bi bi-trash3-fill"></i>
                             </button>
                         }
                         @if (selectedTicket()?.status !== 'Closed') {
                              @if (selectedTicket()?.status === 'Open' && isAdmin()) {
-                                 <button (click)="moveToInProgress(selectedTicket()!)" class="text-xs bg-uah-orange hover:bg-orange-600 text-white font-black px-3 py-1.5 rounded-lg shadow-lg shadow-orange-500/10 transition-all flex items-center gap-1 uppercase tracking-widest scale-90">
-                                     <i class="bi bi-play-fill text-lg"></i> Atender
+                                 <button (click)="moveToInProgress(selectedTicket()!)" class="h-10 px-4 bg-uah-orange hover:bg-orange-600 text-white font-black rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 uppercase text-[10px] tracking-widest">
+                                     <i class="bi bi-rocket-takeoff-fill"></i> Atender Ahora
                                  </button>
                              }
-                             <button (click)="closeTicket()" class="text-xs text-amber-500 hover:text-amber-700 font-bold px-3 py-1 border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors">
-                                Cerrar Consulta
+                             <button (click)="closeTicket()" class="h-10 px-4 bg-blue-50 dark:bg-blue-900/20 text-uah-blue dark:text-blue-300 hover:bg-uah-blue hover:text-white font-black rounded-xl border border-blue-100 dark:border-blue-800 transition-all text-[10px] uppercase tracking-widest">
+                                Cerrar Caso
                              </button>
                         }
                     </div>
                  </div>
 
-                 <!-- Messages -->
-                 <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/50" #chatContainer>
+                 <!-- Messages Container (Modern bubbles) -->
+                 <div class="flex-1 overflow-y-auto p-6 space-y-6 relative z-10 custom-scrollbar" #chatContainer>
                      @for (msg of selectedTicket()?.messages; track $index) {
                         @if (msg.sender === 'Sistema') {
-                            <!-- Log de Sistema -->
-                            <div class="flex justify-center my-2">
-                                <span class="bg-gray-200 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-[10px] font-bold px-3 py-1 rounded-full border border-gray-300 dark:border-gray-600 uppercase tracking-wider">
+                            <!-- System Event -->
+                            <div class="flex justify-center my-4">
+                                <div class="bg-gray-100/80 dark:bg-gray-700/30 backdrop-blur-sm text-gray-500 dark:text-gray-400 text-[9px] font-black px-4 py-1.5 rounded-full border border-gray-200 dark:border-gray-600/50 uppercase tracking-[0.2em] shadow-sm">
                                     {{ msg.text.replace('[SISTEMA]: ', '') }}
-                                </span>
+                                </div>
                             </div>
                         } @else {
-                            <div [class]="isMe(msg.sender) ? 'ml-auto items-end' : 'mr-auto items-start'" class="flex flex-col max-w-[80%]">
-                                <div [class]="isMe(msg.sender) ? 'bg-uah-blue text-white rounded-l-2xl rounded-tr-2xl' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-r-2xl rounded-tl-2xl'" 
-                                     class="p-3 shadow-sm text-sm relative group transition-all hover:shadow-md">
-                                     <p>{{ msg.text }}</p>
-                                     <span class="text-[9px] opacity-60 mt-1 block text-right">
-                                         {{ msg.timestamp | date:'HH:mm' }} • <span class="uppercase font-bold">{{ msg.senderRole }}</span>
-                                     </span>
+                            <div [class]="isMe(msg.sender) ? 'ml-auto items-end text-right' : 'mr-auto items-start text-left'" class="flex flex-col max-w-[75%] animate-slideUp">
+                                <div class="flex items-center gap-2 mb-1.5" [class.flex-row-reverse]="isMe(msg.sender)">
+                                    <div class="w-6 h-6 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[10px] font-black text-gray-500 dark:text-gray-400 border border-white dark:border-gray-600 shadow-sm">
+                                        {{ msg.sender.charAt(0) }}
+                                    </div>
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ isMe(msg.sender) ? 'Tú' : msg.sender }}</span>
+                                    <span class="text-[8px] text-gray-300 font-bold">• {{ msg.timestamp | date:'HH:mm' }}</span>
                                 </div>
-                                @if (!isMe(msg.sender)) {
-                                    <span class="text-[10px] text-gray-400 ml-1 mt-1 font-medium">{{ msg.sender }}</span>
-                                }
+
+                                <div [class]="isMe(msg.sender) ? 'bg-[#f06427] text-white rounded-2xl rounded-tr-none shadow-orange-500/10' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-600/50 rounded-2xl rounded-tl-none shadow-blue-500/5'" 
+                                     class="p-4 shadow-xl relative transition-all hover:scale-[1.01] duration-300">
+                                     <p class="text-sm leading-relaxed">{{ msg.text }}</p>
+                                     @if (isMe(msg.sender)) {
+                                         <div class="absolute -right-1 -bottom-1 w-4 h-4 bg-[#f06427] rotate-45 -z-10 rounded-sm"></div>
+                                     } @else {
+                                         <div class="absolute -left-1 -bottom-1 w-4 h-4 bg-white dark:bg-gray-700 rotate-45 -z-10 rounded-sm"></div>
+                                     }
+                                </div>
+                                <span class="text-[8px] font-black text-uah-blue/40 mt-1 uppercase tracking-tighter">{{ msg.senderRole }}</span>
                             </div>
                         }
                      }
                  </div>
 
-                 <!-- Input -->
+                 <!-- Input Area (Premium) -->
                  @if (selectedTicket()?.status !== 'Closed') {
-                     <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
-                        <div class="flex gap-2">
-                           <input [(ngModel)]="replyText" (keyup.enter)="sendReply()" placeholder="Escribe tu mensaje..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-uah-blue focus:outline-none dark:text-white transition-all">
-                           <button (click)="sendReply()" [disabled]="!replyText.trim()" class="bg-uah-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white w-12 rounded-xl flex items-center justify-center transition-colors">
-                              <i class="bi bi-send-fill"></i>
+                     <div class="p-5 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border-t border-gray-100 dark:border-gray-700/50 relative z-10">
+                        <div class="flex gap-3 bg-white dark:bg-gray-950 p-1.5 rounded-[1.25rem] shadow-2xl border border-gray-100 dark:border-gray-800 transition-all focus-within:ring-2 focus-within:ring-uah-blue/50">
+                           <input [(ngModel)]="replyText" (keyup.enter)="sendReply()" placeholder="Responde a la consulta aquí..." class="flex-1 bg-transparent border-none px-4 py-3 text-sm focus:outline-none dark:text-white placeholder-gray-400 font-medium">
+                           <button (click)="sendReply()" [disabled]="!replyText.trim()" class="bg-gradient-to-tr from-[#f06427] to-orange-400 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale text-white w-14 rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-orange-500/30 group">
+                              <i class="bi bi-send-fill text-lg group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
                            </button>
                         </div>
                      </div>
                  } @else {
-                     <div class="p-4 bg-gray-100 dark:bg-gray-900 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Esta consulta ha sido cerrada.
+                     <div class="p-6 bg-gray-100/50 dark:bg-gray-900/50 backdrop-blur-md text-center flex flex-col items-center justify-center gap-2 border-t border-gray-200 dark:border-gray-700 relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+                             <i class="bi bi-lock-fill"></i>
+                        </div>
+                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Esta consulta ha sido cerrada y archivada permanentemente.</p>
                      </div>
                  }
              } @else if (isCreating()) {
-                 <!-- Create New Ticket View -->
-                 <div class="p-8 flex flex-col h-full bg-white dark:bg-gray-800">
-                     <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">Nueva Consulta</h3>
-                     <div class="space-y-4 flex-1">
-                         <div>
-                            <label for="ticketSubject" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1 block">Asunto</label>
-                            <input id="ticketSubject" [(ngModel)]="newSubject" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-uah-blue focus:outline-none dark:text-white" placeholder="Ej: Problema con reserva...">
+                 <!-- Create New Ticket View (Modernized) -->
+                 <div class="p-10 flex flex-col h-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl animate-scaleUp relative z-10 overflow-y-auto custom-scrollbar">
+                     <div class="flex items-center gap-4 mb-8">
+                         <div class="w-14 h-14 rounded-[1.5rem] bg-gradient-to-tr from-uah-orange to-amber-400 flex items-center justify-center text-white shadow-xl shadow-orange-500/20">
+                             <i class="bi bi-plus-circle-fill text-2xl"></i>
                          </div>
                          <div>
-                            <label for="ticketMessage" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1 block">Mensaje</label>
-                            <textarea id="ticketMessage" [(ngModel)]="newMessage" rows="6" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-uah-blue focus:outline-none dark:text-white resize-none" placeholder="Describe tu consulta en detalle..."></textarea>
+                             <h3 class="text-2xl font-black text-gray-800 dark:text-white tracking-tighter uppercase">Nueva Consulta Directa</h3>
+                             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Genera un nuevo ticket de atención institucional</p>
                          </div>
                      </div>
-                     <div class="flex gap-3 mt-4">
-                         <button (click)="submitTicket()" class="flex-1 bg-uah-orange text-white font-black py-4 rounded-xl hover:bg-orange-600 transition-all shadow-xl shadow-orange-500/20 uppercase text-xs tracking-widest">Enviar Consulta</button>
-                         <button (click)="cancelCreate()" class="px-6 py-4 border border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors uppercase text-[10px]">Cancelar</button>
+                     
+                     <div class="space-y-6 flex-1">
+                         <div class="group">
+                            <label for="ticketSubject" class="text-[10px] font-black text-uah-blue dark:text-blue-400 uppercase mb-2 ml-1 block tracking-widest">Asunto Principal</label>
+                            <input id="ticketSubject" [(ngModel)]="newSubject" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-uah-blue/10 focus:border-uah-blue focus:outline-none dark:text-white transition-all shadow-inner" placeholder="Ej: Falla en equipo de Laboratorio 3...">
+                         </div>
+                         <div>
+                            <label for="ticketMessage" class="text-[10px] font-black text-uah-blue dark:text-blue-400 uppercase mb-2 ml-1 block tracking-widest">Detalle de la Consulta</label>
+                            <textarea id="ticketMessage" [(ngModel)]="newMessage" rows="6" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-uah-blue/10 focus:border-uah-blue focus:outline-none dark:text-white resize-none transition-all shadow-inner" placeholder="Explica tu situación con el mayor detalle posible..."></textarea>
+                         </div>
+                     </div>
+                     
+                     <div class="flex gap-4 mt-10">
+                         <button (click)="submitTicket()" class="flex-1 h-14 bg-gradient-to-tr from-[#f06427] to-orange-400 text-white font-black rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-orange-500/30 uppercase text-xs tracking-widest flex items-center justify-center gap-3">
+                             <i class="bi bi-check-circle-fill"></i> Crear Ticket de Atención
+                         </button>
+                         <button (click)="cancelCreate()" class="px-8 h-14 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-300 font-bold rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all uppercase text-[10px] tracking-widest">Descartar</button>
                      </div>
                  </div>
              } @else {
-                 <!-- Empty State -->
-                 <div class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 p-8 text-center">
-                     <div class="w-32 h-32 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-6">
-                        <i class="bi bi-chat-square-quote-fill text-6xl opacity-20"></i>
+                 <!-- Empty State (Refined) -->
+                 <div class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 p-12 text-center relative z-10 animate-fadeIn">
+                     <div class="relative mb-8">
+                         <div class="w-40 h-40 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md rounded-full flex items-center justify-center shadow-inner scale-110">
+                            <i class="bi bi-chat-right-dots text-7xl opacity-20 text-uah-blue dark:text-blue-400"></i>
+                         </div>
+                         <div class="absolute -top-2 -right-2 w-12 h-12 bg-[#f06427] rounded-full flex items-center justify-center text-white text-xl animate-bounce shadow-lg shadow-orange-500/20">
+                             <i class="bi bi-patch-question"></i>
+                         </div>
                      </div>
-                     <h4 class="text-lg font-bold text-gray-600 dark:text-gray-300 mb-2">Selecciona una consulta</h4>
-                     <p class="text-sm max-w-xs">Haz clic en una consulta de la lista para ver los detalles o crea una nueva si tienes dudas.</p>
+                     <h4 class="text-2xl font-black text-uah-blue dark:text-blue-300 mb-3 uppercase tracking-tighter">Buzón de Consultas</h4>
+                     <p class="text-xs text-gray-500 dark:text-gray-400 max-w-xs font-semibold leading-relaxed uppercase tracking-tight">Selecciona una conversación del panel izquierdo para gestionar tu atención o crea una nueva consulta para asistencia técnica inmediata.</p>
                  </div>
              }
          </div>
