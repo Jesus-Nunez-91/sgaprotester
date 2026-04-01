@@ -12,8 +12,7 @@ declare const Swal: any;
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="max-w-7xl mx-auto py-8 animate-fadeIn pb-20 px-4" style="background: red !important; min-height: 100vh; z-index: 9999;">
-      <h1 class="text-white text-4xl p-10 font-black">DIAGNÓSTICO WIKI: COMPONENTE VISIBLE</h1>
+    <div class="max-w-7xl mx-auto py-8 animate-fadeIn pb-20 px-4">
       <!-- Header -->
       <div class="flex flex-col md:flex-row items-center justify-between mb-8 bg-white/80 dark:bg-gray-800/80 p-6 rounded-3xl shadow-lg border border-white/50 dark:border-gray-700 backdrop-blur-md">
           <div>
@@ -317,11 +316,5 @@ export class WikiComponent {
     });
   }
 
-  constructor() {
-    console.log('[WIKI_TRAX]: WikiComponent montado y operando.');
-  }
-
-  ngOnDestroy() {
-    console.warn('[WIKI_TRAX_DEAD]: WikiComponent DESTRUIDO y DESMONTADO.');
-  }
+  constructor() {}
 }

@@ -78,7 +78,7 @@ import { FormsModule } from '@angular/forms';
                   <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
               </a>
 
-               <a (click)="trackClick('WIKI_SIDEBAR_CLICK')" routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+               <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                   class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                    <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
                    <span class="hidden lg:inline text-sm">Wiki</span>
@@ -335,22 +335,7 @@ export class AppComponent {
   
   today = new Date();
   
-  trackClick(msg: string) {
-    console.log(`[NAV_TRAX]: ${msg}`);
-  }
-
     constructor() {
-        const router = inject(Router);
-        router.events.subscribe(event => {
-            if (event instanceof NavigationEnd) {
-                console.log(`[ROUTE_TRAX]: Navegación Exitosa a: ${event.url}`);
-            } else if ((event as any).type === 2) { // NavigationError
-                console.error(`[ROUTE_TRAX_ERR]: Error al navegar:`, event);
-            } else if ((event as any).type === 3) { // NavigationCancel
-                console.warn(`[ROUTE_TRAX_CANCEL]: Navegación cancelada:`, event);
-            }
-        });
-        
         // Lógica de SEO Dinámico
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
@@ -408,11 +393,8 @@ export class AppComponent {
             return;
         }
         
-        // 4. Zonas Compartidas (Wiki)
-        if (url.includes('wiki') && !this.isLabAdmin() && !this.isAcadeAdmin()) {
-             this.router.navigate(['/rooms']);
-             return;
-        }
+        // 4. Zonas Compartidas (Wiki) - ACCESO UNIVERSAL HABILITADO
+        // Se permite el acceso a todos los roles autenticados.
     }
 
     // Estados de Notificaciones
