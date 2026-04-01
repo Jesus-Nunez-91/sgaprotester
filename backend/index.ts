@@ -56,6 +56,11 @@ const io = new Server(httpServer, {
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'uah_secret_fallback';
 
+// Función para normalizar texto (quitar tildes y caracteres especiales)
+const normalizeStr = (str: string) => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+};
+
 // Inicializar DB y Admin
 AppDataSource.initialize()
   .then(async () => {
@@ -582,21 +587,26 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
   try {
     const { lab, day, block, subject, color } = req.body;
     const scheduleRepo = AppDataSource.getRepository(Schedule);
-
-    // [SINCRONIZACIÓN] Asegurar que el laboratorio exista en la tabla Room
     const roomRepo = AppDataSource.getRepository(Room);
-    let room = await roomRepo.findOneBy({ nombre: lab });
+
+    // Normalizar nombres para consistencia
+    const canonicalLab = lab.toUpperCase();
+    const normalizedLab = normalizeStr(lab);
+    
+    // [SINCRONIZACIÓN] Buscar sala ignorando tildes
+    const allRooms = await roomRepo.find();
+    let room = allRooms.find((r: any) => normalizeStr(r.nombre) === normalizedLab);
+
     if (!room) {
       console.log(`[SYNC] Creando nueva sala desde Horarios: ${lab}`);
       room = roomRepo.create({
-        nombre: lab,
+        nombre: canonicalLab,
         tipo: lab.toUpperCase().includes('SALA') ? 'Sala de Reuniones' : 'Laboratorio',
         capacidadMaxima: 20,
         ubicacionPiso: 'Por definir'
       });
       const savedRoom: any = await roomRepo.save(room);
       
-      // Generar bloques por defecto para esta nueva sala
       const blocks = [
           { inicio: '08:30', fin: '09:50', nombre: 'Bloque 1' },
           { inicio: '10:00', fin: '11:20', nombre: 'Bloque 2' },
@@ -617,15 +627,13 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
       }
     }
 
-    // Normalizar nombre de laboratorio para consistencia
-    const canonicalLab = lab.toUpperCase();
-    let schedule = await scheduleRepo.findOneBy({ lab: canonicalLab, day, block });
+    let schedule = await scheduleRepo.findOneBy({ lab: room.nombre, day, block });
 
     if (schedule) {
       schedule.subject = subject;
       schedule.color = color;
     } else {
-      schedule = scheduleRepo.create({ lab: canonicalLab, day, block, subject, color });
+      schedule = scheduleRepo.create({ lab: room.nombre, day, block, subject, color });
     }
 
     await scheduleRepo.save(schedule);
@@ -655,10 +663,9 @@ app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
     for (const s of schedulesData) {
       const { lab, day, block, subject, color } = s;
 
-      // [SINCRONIZACIÓN] Verificar Room (Búsqueda insensible a mayúsculas para evitar duplicados)
-      let room = await roomRepo.createQueryBuilder("room")
-        .where("LOWER(room.nombre) = LOWER(:lab)", { lab })
-        .getOne();
+      // [SINCRONIZACIÓN] Verificar Room (Normalizando tildes para evitar duplicados)
+      const allRooms = await roomRepo.find();
+      let room = allRooms.find(r => normalizeStr(r.nombre) === normalizeStr(lab));
         
       if (!room && lab !== 'HIDDEN') {
         room = await roomRepo.save(roomRepo.create({
@@ -730,6 +737,27 @@ app.post('/api/inventory', authMiddleware, async (req: any, res) => {
   }
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
+    const { marca, modelo, rotulo_ID, sn } = req.body;
+
+    // Verificar duplicado por SN o Rótulo (si existen)
+    if (sn || rotulo_ID) {
+      const existing = await itemRepo.findOne({
+        where: [
+          ...(sn ? [{ sn }] : []),
+          ...(rotulo_ID ? [{ rotulo_ID }] : [])
+        ]
+      });
+      if (existing) {
+        return res.status(400).json({ message: `Ya existe un ítem con el SN: ${sn} o Rótulo: ${rotulo_ID}` });
+      }
+    }
+
+    // Si no tiene SN/Rótulo, verificamos por nombre+modelo exacto
+    const duplicate = await itemRepo.findOneBy({ marca, modelo });
+    if (duplicate && !sn && !rotulo_ID) {
+      return res.status(400).json({ message: `Atención: Ya existe un item '${marca} ${modelo}'. Use Carga Masiva para sumar stock o añada un Identificador único.` });
+    }
+
     const newItem = itemRepo.create(req.body);
     const savedItem = await itemRepo.save(newItem) as any;
     await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_CREATE', `Item creado: ${savedItem.marca} ${savedItem.modelo} (${savedItem.rotulo_ID || 'Sin rotulo'})`);
@@ -760,10 +788,26 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
 
     for (const data of itemsData) {
       try {
-        // Asegurar campos mínimos
         if (!data.tipoInventario) data.tipoInventario = 'Materiales';
         if (!data.status) data.status = 'Disponible';
         
+        // Evitar duplicados por SN o Identificador en carga masiva
+        if (data.sn || data.rotulo_ID) {
+            const exists = await itemRepo.findOne({
+                where: [
+                  ...(data.sn ? [{ sn: data.sn }] : []),
+                  ...(data.rotulo_ID ? [{ rotulo_ID: data.rotulo_ID }] : [])
+                ]
+            });
+            if (exists) {
+                // Si existe, actualizamos el stock en lugar de crear uno nuevo (Fundamental para cuadrar dinero/unidades)
+                exists.stockActual = (exists.stockActual || 0) + (data.stockActual || 1);
+                await itemRepo.save(exists);
+                created.push(exists);
+                continue;
+            }
+        }
+
         const newItem = itemRepo.create(data);
         const saved = await itemRepo.save(newItem);
         created.push(saved);
