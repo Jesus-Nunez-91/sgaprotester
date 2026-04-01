@@ -1216,6 +1216,39 @@ app.get('/api/procurement-requests', authMiddleware, async (req: any, res) => {
   }
 });
 
+app.delete('/api/procurement-requests/:id', authMiddleware, async (req: any, res) => {
+    if (req.user.rol !== 'SuperUser') {
+      return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser puede realizar purgas físicas.' });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const logRepo = AppDataSource.getRepository(ProcurementRequest);
+      const request = await logRepo.findOneBy({ id });
+  
+      if (!request) return res.status(404).json({ message: 'Registro no encontrado en la Caja Negra' });
+  
+      // Intento de borrado en cascada manual (si tiene recId)
+      if (request.recId) {
+          try {
+              if (request.tipoItem === 'SALA') {
+                  await AppDataSource.getRepository(RoomReservation).delete(request.recId);
+              } else {
+                  await AppDataSource.getRepository(Reservation).delete(request.recId);
+              }
+          } catch (e) {
+              console.warn(`[CLEANUP] No se pudo borrar la reserva física ${request.recId}, procediendo solo con el log.`);
+          }
+      }
+  
+      await logRepo.delete(id);
+      await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'PURGE_REQUEST', `Eliminación física de solicitud ID ${id} (${request.detalle})`);
+      
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(500).json({ error: 'Error al purgar registro', detail: error.message });
+    }
+});
+
 app.get('/api/projects', authMiddleware, async (req: any, res) => {
   if (req.user.rol !== 'SuperUser') {
     return res.status(403).json({ message: 'Acceso denegado: Solo el SuperUser gestiona usuarios' });

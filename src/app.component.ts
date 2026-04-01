@@ -137,7 +137,7 @@ import { FormsModule } from '@angular/forms';
            <div class="p-6 border-t border-white/5 bg-white/5">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 rounded-xl bg-[#f06427] flex items-center justify-center text-white font-black shadow-lg">
-                        {{ authService.currentUser()?.nombreCompleto?.charAt(0) }}
+                        {{ authService.currentUser()?.nombreCompleto ? authService.currentUser()?.nombreCompleto?.charAt(0) : 'U' }}
                     </div>
                     <div class="hidden lg:block overflow-hidden">
                         <h4 class="text-xs font-bold text-white truncate uppercase tracking-tight">{{ authService.currentUser()?.nombreCompleto }}</h4>
