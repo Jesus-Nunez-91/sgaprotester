@@ -23,9 +23,9 @@ import { FormsModule } from '@angular/forms';
           <!-- Área del Logo / Banner Pequeño -->
           <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
               <a routerLink="/areas" class="flex items-center gap-3 group cursor-pointer">
-                  <div class="relative">
-                      <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" class="h-12 w-auto shadow-2xl relative z-10 object-contain bg-white p-1 rounded-lg" alt="Logo Universidad Alberto Hurtado">
-                  </div>
+                    <div class="relative">
+                        <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" class="h-10 w-auto shadow-xl relative z-10 object-contain bg-white p-1 rounded-lg" alt="Logo UAH">
+                    </div>
                   <div class="hidden lg:flex flex-col">
                       <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
                       <span class="text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
