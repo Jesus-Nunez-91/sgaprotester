@@ -20,6 +20,9 @@ export class ProcurementRequest {
     @Column({ default: 'Pendiente' })
     status: string;
 
+    @Column({ nullable: true })
+    recId: number;
+
     @Column()
     fecha: string;
 }

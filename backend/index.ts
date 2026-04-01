@@ -937,6 +937,7 @@ async function logRequest(req: any, tipo: string, detalle: string, recId: number
             correo: req.user.correo,
             tipoItem: tipo,
             detalle: detalle,
+            recId: recId, // Vincular ID físico para aprobación
             status: req.user.rol.includes('Admin') ? 'Aprobado' : 'Pendiente',
             fecha: new Date().toISOString()
         });
@@ -1185,13 +1186,14 @@ app.get('/api/projects', authMiddleware, async (req: any, res) => {
   res.json(projects);
 });
 
-// --- GESTIÓN DE SOLICITUDES (UNIFICADO) ---
+// ENDPOINT UNIFICADO: Caja Negra / Historial de Solicitudes (Salas + Equipos + Auditoría)
 app.get('/api/procurement-requests', authMiddleware, async (req: any, res) => {
-  const logRepo = AppDataSource.getRepository(ProcurementRequest);
   try {
+    const logRepo = AppDataSource.getRepository(ProcurementRequest);
     let requests;
+    
+    // Si es Admin/Superuser ve todo (Buscador Global)
     if (ROLES.ADMIN_STUFF.includes(req.user.rol)) {
-      // Admin ve todo (Buscador Global)
       const { search } = req.query;
       if (search) {
         requests = await logRepo.createQueryBuilder("req")
@@ -1777,7 +1779,7 @@ app.put('/api/room-reservations/:id/status', authMiddleware, checkPermission(ROL
 
         // [TRAZABILIDAD] Actualizar el estado en el historial unificado también
         const histRepo = AppDataSource.getRepository(ProcurementRequest);
-        const historyEntry = await histRepo.findOne({ where: { detalle: Like(`%SALA%${reserve.id}%`) } as any });
+        const historyEntry = await histRepo.findOne({ where: { recId: reserve.id, tipoItem: 'SALA' } });
         if (historyEntry) {
             historyEntry.status = reserve.estado;
             await histRepo.save(historyEntry);

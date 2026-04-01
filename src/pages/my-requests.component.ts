@@ -33,107 +33,75 @@ import { FormsModule } from '@angular/forms';
 
       <div class="glass-panel rounded-3xl p-8 shadow-xl border border-white/40 dark:border-gray-700">
         
-        <!-- Active Requests Section -->
+        <!-- Peticiones Pendientes -->
         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i class="bi bi-clock-history"></i> {{ isRoomAdmin() ? 'Peticiones Pendientes & Activas' : 'En Curso' }}
+            <i class="bi bi-clock-history"></i> PANEL DE CONTROL: PENDIENTES
         </h3>
         <div class="space-y-4 mb-10">
            @for (req of filteredActiveRequests(); track req.id) {
-              <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col sm:flex-row justify-between items-center gap-4 transition-transform hover:scale-[1.01]">
-                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-xl text-blue-500">
-                       <i class="bi bi-box-seam"></i>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-[#f06427] flex flex-col sm:flex-row justify-between items-center gap-4 transition-all hover:shadow-md">
+                 <div class="flex items-center gap-4 flex-1">
+                    <div class="h-12 w-12 rounded-xl flex items-center justify-center text-xl shadow-inner" 
+                         [ngClass]="req.tipoItem === 'SALA' ? 'bg-orange-50 text-[#f06427]' : 'bg-blue-50 text-blue-500'">
+                       <i [class]="req.tipoItem === 'SALA' ? 'bi bi-door-open-fill' : 'bi bi-laptop-fill'"></i>
                     </div>
                     <div>
-                       @let item = getItem(req.equipoId);
-                       <h4 class="font-bold text-gray-800 dark:text-white text-lg">{{ item?.marca || 'Item Eliminado' }}</h4>
-                       <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          <span class="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">{{ req.fecha }}</span>
-                          <span>{{ req.bloque }}</span>
-                          <span class="font-bold">Cant: {{ req.cantidad }}</span>
-                          @if (isRoomAdmin()) {
-                             <span class="text-uah-blue font-bold px-2 border-l border-gray-300">{{ req.nombreSolicitante }}</span>
-                             <span class="text-[10px] bg-blue-100 text-blue-700 px-2 rounded-full font-black uppercase">{{ req.tipoUsuario }}</span>
-                          }
+                       <div class="flex items-center gap-2 mb-1">
+                          <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md" 
+                                [ngClass]="req.tipoItem === 'SALA' ? 'bg-[#f06427]/10 text-[#f06427]' : 'bg-blue-100 text-blue-700'">
+                             {{ req.tipoItem }}
+                          </span>
+                          <span class="text-xs font-bold text-gray-400">{{ req.fecha | date:'shortDate' }}</span>
                        </div>
+                       <h4 class="font-black text-gray-800 dark:text-white text-lg leading-tight">{{ req.detalle }}</h4>
+                       <p class="text-xs text-gray-500 font-bold uppercase tracking-tight mt-1">
+                          <i class="bi bi-person-fill"></i> Slicitante: <span class="text-[#f06427]">{{ req.usuario }}</span>
+                       </p>
                     </div>
                  </div>
                  
-                 <div class="flex flex-wrap gap-2">
-                    @if (isRoomAdmin()) {
-                        @if (!req.aprobada) {
-                           <button (click)="data.updateReservationStatus(req.id, 'approve')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase shadow-md transition">Aprobar</button>
-                           <button (click)="data.updateReservationStatus(req.id, 'reject')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase shadow-md transition">Rechazar</button>
-                        } @else if (!req.devuelto) {
-                           <button (click)="data.updateReservationStatus(req.id, 'approve', { devuelto: 1 })" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase shadow-md transition flex items-center gap-2" title="Marcar como entregado">
-                             <i class="bi bi-arrow-return-left"></i> Devolución
-                           </button>
-                        }
-                    }
-
-                    @if (req.aprobada) {
-                       <span class="px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 font-bold text-[10px] uppercase shadow-sm flex items-center gap-2">
-                          <i class="bi bi-person-check-fill"></i> Activa
-                       </span>
-                    } @else {
-                       <span class="px-3 py-1.5 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 font-bold text-[10px] uppercase shadow-sm flex items-center gap-2">
-                          <i class="bi bi-hourglass-split"></i> Pendiente
-                       </span>
-                    }
+                 <div class="flex gap-2">
+                    <button (click)="approve(req)" class="bg-[#f06427] hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-[#f06427]/20 transition-all flex items-center gap-2">
+                       <i class="bi bi-check-circle-fill"></i> Aprobar
+                    </button>
+                    <button (click)="reject(req)" class="bg-white dark:bg-gray-700 border border-red-200 dark:border-red-900 text-red-500 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all hover:bg-red-50">
+                       <i class="bi bi-x-circle-fill"></i> Rechazar
+                    </button>
                  </div>
               </div>
            }
            @if (filteredActiveRequests().length === 0) {
-              <div class="text-center py-8 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-sm">
-                  <i class="bi bi-inbox text-2xl block mb-1"></i>
-                  No se encontraron peticiones activas.
+              <div class="text-center py-12 bg-gray-50/50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400">
+                  <i class="bi bi-shield-check text-4xl block mb-2 opacity-20"></i>
+                  <p class="text-[10px] font-black uppercase tracking-[0.2em]">Todo al día. No hay solicitudes pendientes.</p>
               </div>
            }
         </div>
 
-        <!-- History Section -->
+        <!-- Historial Unificado -->
         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i class="bi bi-archive"></i> Historial & Devoluciones
+            <i class="bi bi-archive"></i> HISTORIAL DE ACCIONES (CAJA NEGRA)
         </h3>
         <div class="space-y-3">
            @for (req of filteredHistoryRequests(); track req.id) {
-              <div class="bg-gray-50/80 dark:bg-gray-800/80 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-white dark:hover:bg-gray-800 transition-colors">
+              <div class="bg-gray-50/80 dark:bg-gray-800/80 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-center opacity-70 hover:opacity-100 transition-opacity">
                  <div class="flex items-center gap-4">
-                    <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg text-gray-500 dark:text-gray-400">
-                       <i class="bi bi-check2"></i>
-                    </div>
+                    <i [class]="req.tipoItem === 'SALA' ? 'bi bi-door-open' : 'bi bi-box-seam'" 
+                       [ngClass]="req.status === 'Aprobada' ? 'text-green-500' : 'text-red-500'"></i>
                     <div>
-                       @let item = getItem(req.equipoId);
-                       <h4 class="font-bold text-gray-700 dark:text-gray-200 text-sm">
-                          {{ item?.marca || 'Item Eliminado' }} 
-                          @if (isRoomAdmin()) { <span class="text-uah-blue ml-2 opacity-70">({{ req.nombreSolicitante }})</span> }
-                       </h4>
-                       <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ req.fecha }} - {{ req.bloque }}</p>
+                       <h4 class="font-bold text-gray-700 dark:text-gray-200 text-xs">{{ req.detalle }}</h4>
+                       <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{{ req.usuario }} • {{ req.status }}</p>
                     </div>
                  </div>
-                 
-                 <div>
-                    @if (req.rechazada && (req.motivoRechazo === 'Finalizado' || req.devuelto)) {
-                       <span class="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 font-bold text-[10px] uppercase flex items-center gap-1">
-                          <i class="bi bi-arrow-return-left"></i> Finalizado
-                       </span>
-                    } @else {
-                       <div class="text-right">
-                          <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 font-bold text-[10px] uppercase flex items-center gap-1 justify-end">
-                             <i class="bi bi-x-circle"></i> Rechazada
-                          </span>
-                          <div class="text-[10px] text-red-500 dark:text-red-400 mt-1 italic">{{ req.motivoRechazo || 'Sin motivo' }}</div>
-                       </div>
-                    }
-                 </div>
+                 <span class="text-[9px] font-black uppercase px-3 py-1 rounded-full"
+                       [ngClass]="req.status === 'Aprobada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                    {{ req.status }}
+                 </span>
               </div>
            }
-           @if (filteredHistoryRequests().length === 0) {
-              <div class="text-center py-6 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 text-xs">Historial vacío.</div>
-           }
         </div>
-
       </div>
+div>
     </div>
   `,
   styles: [`
@@ -158,35 +126,85 @@ export class MyRequestsComponent {
   data = inject(DataService);
   searchTerm = signal('');
 
+  constructor() {
+    this.data.fetchUnifiedRequests();
+    this.data.fetchInventory(); // Para nombres de equipos
+  }
+
   isRoomAdmin = computed(() => {
      const r = this.data.currentUser()?.rol;
-     return r === 'Admin_Labs' || r === 'SuperUser';
+     return r === 'Admin_Labs' || r === 'Admin_Acade' || r === 'SuperUser';
   });
   
   allRequests = computed(() => {
-     const user = this.data.currentUser();
-     const requests = this.data.reservations();
-     
-     // Si es encargado de salas o superuser, ve todo. Sino, solo lo suyo.
-     const list = this.isRoomAdmin() 
-        ? requests.slice().reverse() 
-        : requests.filter(r => r.emailSolicitante === user?.correo).reverse();
-     
+     const list = this.data.unifiedRequests().slice();
      if (!this.searchTerm()) return list;
      
      const term = this.searchTerm().toLowerCase();
      return list.filter(r => {
-         const item = this.getItem(r.equipoId);
-         const searchStr = `${item?.marca} ${r.nombreSolicitante} ${r.bloque} ${r.fecha} ${r.motivoRechazo || ''}`.toLowerCase();
+         const searchStr = `${r.usuario} ${r.tipoItem} ${r.detalle} ${r.status}`.toLowerCase();
          return searchStr.includes(term);
      });
   });
 
-  // Active: Not rejected AND (not approved yet OR approved but not returned)
-  filteredActiveRequests = computed(() => this.allRequests().filter(r => !r.rechazada && !(r.aprobada && r.devuelto)));
+  // Pendientes: Las que están en estado 'Pendiente'
+  filteredActiveRequests = computed(() => this.allRequests().filter(r => r.status === 'Pendiente'));
   
-  // History: Rejected OR (Approved and Returned)
-  filteredHistoryRequests = computed(() => this.allRequests().filter(r => r.rechazada || (r.aprobada && r.devuelto)));
+  // Historial: Ya aprobadas o rechazadas
+  filteredHistoryRequests = computed(() => this.allRequests().filter(r => r.status !== 'Pendiente'));
 
-  getItem(id: number) { return this.data.inventory().find(i => i.id === id); }
+  async approve(req: any) {
+    const isSala = req.tipoItem === 'SALA';
+    const baseUrl = (window.hasOwnProperty('Capacitor')) ? 'http://10.10.0.20:3040' : '';
+    
+    // 1. Aprobar el registro raíz (Sala o Equipo)
+    const endpoint = isSala 
+        ? `${baseUrl}/api/room-reservations/${req.recId}/status`
+        : `${baseUrl}/api/reservations/${req.recId}`;
+    
+    try {
+        const res = await fetch(endpoint, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.data.token()}` 
+            },
+            body: JSON.stringify({ estado: 'Aprobada', aprobada: true, rechazada: false })
+        });
+
+        if (res.ok) {
+            // 2. Actualizar el LOG de la Caja Negra (opcional si backend lo hace solo)
+            // Recargar lista
+            this.data.fetchUnifiedRequests();
+            // @ts-ignore
+            Swal.fire({ icon: 'success', title: 'Aprobado!', text: 'Solicitud aprobada con éxito.' });
+        }
+    } catch (e) {
+        console.error("Error al aprobar", e);
+    }
+  }
+
+  async reject(req: any) {
+    const isSala = req.tipoItem === 'SALA';
+    const baseUrl = (window.hasOwnProperty('Capacitor')) ? 'http://10.10.0.20:3040' : '';
+    const endpoint = isSala 
+        ? `${baseUrl}/api/room-reservations/${req.recId}/status`
+        : `${baseUrl}/api/reservations/${req.recId}`;
+
+    try {
+        const res = await fetch(endpoint, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.data.token()}` 
+            },
+            body: JSON.stringify({ estado: 'Rechazada', aprobada: false, rechazada: true, motivoRechazo: 'Rechazado por Admin' })
+        });
+        if (res.ok) {
+            this.data.fetchUnifiedRequests();
+        }
+    } catch (e) {
+        console.error("Error al rechazar", e);
+    }
+  }
 }

@@ -188,6 +188,7 @@ export class DataService {
   darkMode = signal<boolean>(false);
   adminTasks = signal<any[]>([]);
   bitacora = signal<any[]>([]);
+  unifiedRequests = signal<any[]>([]); // "Caja Negra" institucional
   isLoading = signal<boolean>(false);
 
   // Configuración de conexión dinámica (Navegador vs Móvil)
@@ -798,6 +799,21 @@ export class DataService {
     } catch (e) {
       console.error("Error en carga masiva de horarios", e);
       return false;
+    }
+  }
+
+  // --- CAJA NEGRA: GESTIÓN UNIFICADA (SALAS + EQUIPOS) ---
+  async fetchUnifiedRequests() {
+    if (!this.token()) return;
+    try {
+      const res = await fetch(this.baseUrl + '/api/procurement-requests', {
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        this.unifiedRequests.set(await res.json());
+      }
+    } catch (e) {
+      console.error("Error al cargar CAJA NEGRA", e);
     }
   }
 
