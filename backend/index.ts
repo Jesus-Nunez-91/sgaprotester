@@ -47,7 +47,10 @@ const authRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({ 
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: false // Desactivado para red interna (Staging)
+}));
 app.use(cors({ origin: "*" })); // Habilitar CORS para aplicaciones móviles y web
 app.use(express.json({ limit: '20mb' }));
 
