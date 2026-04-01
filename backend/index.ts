@@ -612,6 +612,15 @@ app.delete('/api/users/:id', authMiddleware, async (req: any, res) => {
 // --- ENDPOINTS DE HORARIOS ---
 
 // --- HORARIOS (ACADÉMICOS) ---
+app.get('/api/schedules', authMiddleware, async (req, res) => {
+    try {
+        const schedules = await AppDataSource.getRepository(Schedule).find();
+        res.json(schedules);
+    } catch (e) {
+        res.status(500).json({ message: 'Error al cargar horarios' });
+    }
+});
+
 app.post('/api/schedules', authMiddleware, checkPermission(ROLES.ACADEMIC_EDIT), async (req: any, res) => {
   try {
     const { lab, day, block, subject, color } = req.body;
@@ -1110,6 +1119,11 @@ app.delete('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
 });
 
 // --- ENDPOINTS DE MANTENCIÓN ---
+app.get('/api/maintenance', authMiddleware, async (req: any, res) => {
+  const canSee = ROLES.ADMIN_STUFF.includes(req.user.rol) || req.user.rol === 'SuperUser';
+  const tasks = await AppDataSource.getRepository(MaintenanceTask).find({ order: { dateScheduled: 'DESC' } });
+  res.json(tasks);
+});
 
 // --- SEGURIDAD Y CAJA NEGRA (SOLO SUPERUSER) ---
 app.get('/api/audit-logs', authMiddleware, checkPermission(ROLES.SECURITY_ONLY), async (req: any, res) => {
@@ -1161,6 +1175,11 @@ app.delete('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
 
 
 // --- ENDPOINTS DE PROYECTOS ---
+app.get('/api/projects', authMiddleware, async (req: any, res) => {
+  const canSee = ROLES.ADMIN_STUFF.includes(req.user.rol);
+  const projects = await AppDataSource.getRepository(Project).find({ order: { id: 'DESC' } });
+  res.json(projects);
+});
 
 // --- GESTIÓN DE SOLICITUDES (UNIFICADO) ---
 app.get('/api/procurement-requests', authMiddleware, async (req: any, res) => {
