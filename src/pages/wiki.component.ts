@@ -298,6 +298,7 @@ export class WikiComponent {
     }
   }
 
+
   deleteDoc(id: number) {
      Swal.fire({
       title: '¿Eliminar Documento?',
@@ -313,5 +314,9 @@ export class WikiComponent {
           Swal.fire('Eliminado', 'El documento ha sido removido.', 'success');
       }
     });
+  }
+
+  constructor() {
+    console.log('[WIKI_TRAX]: WikiComponent montado y operando.');
   }
 }

@@ -338,6 +338,20 @@ AppDataSource.initialize()
         }
         console.log("✅ Salas sembradas exitosamente.");
     }
+
+    // Semilla Wiki (Si está vacía)
+    const wikiRepo = AppDataSource.getRepository(WikiDoc);
+    const wikiCount = await wikiRepo.count();
+    if (wikiCount === 0) {
+        console.log("🌱 Sembrando documentos wiki iniciales...");
+        await wikiRepo.save(wikiRepo.create({
+            title: 'REGLAMENTO DE SEGURIDAD LABORATORIOS UAH',
+            category: 'Protocolo',
+            content: 'Normativa institucional sobre el uso de EPP, manejo de residuos y protocolos de emergencia en las áreas tecnológicas de la Facultad de Ingeniería.',
+            isPublic: true
+        }));
+        console.log("✅ Wiki sembrada exitosamente.");
+    }
   })
   .catch((err) => {
     console.error("❌ Error FATAL inicializando base de datos:", err);
