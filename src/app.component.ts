@@ -170,63 +170,73 @@ import { FormsModule } from '@angular/forms';
               </div>
 
               <!-- Banda Principal con Banner -->
-              <div class="flex items-center justify-between px-6 lg:px-10 h-20">
+              <div class="flex items-center justify-between px-6 lg:px-10 h-24 relative">
                   <div class="flex items-center gap-8">
-                   <div class="flex items-center gap-2">
-                       @if (authService.currentUser()?.rol === 'SuperUser') {
-                           <span class="bg-red-500 text-[8px] text-white px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter shadow-sm animate-pulse">SuperUser</span>
-                       }
-                       <span class="text-[10px] font-black tracking-tight text-white/90 uppercase">Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span></span>
-                   </div>
-                   <span class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em]">{{ today | date:'EEEE, d MMMM y' }}</span>
-               </div>
-               
-               <div class="flex items-center gap-2">
-                   <!-- ÚNICA CAMPANA UNIFICADA -->
-                   <button (click)="toggleNotif()" class="relative h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group border border-white/10">
-                       <i class="bi bi-bell-fill text-xl group-hover:animate-swing"></i>
-                       @let totalAlerts = unreadCount();
-                       @if (totalAlerts > 0) {
-                           <span class="absolute -top-1 -right-1 h-6 w-6 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce shadow-lg">
-                               {{ totalAlerts }}
-                           </span>
-                       }
-                   </button>
+                       <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" 
+                            class="h-12 w-auto object-contain rounded-xl border-2 border-[#f06427]/30 shadow-2xl" alt="SGA FIN - Ingeniería UAH">
+                       <div class="hidden xl:flex flex-col">
+                           <h1 class="text-white font-black text-2xl leading-none tracking-tighter">SISTEMA <span class="text-[#f06427]">SGA FIN</span></h1>
+                           <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-1">Gestión de Infraestructura • Facultad de Ingeniería</span>
+                           <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-1">Gestión Unificada • Ingeniería UAH</span>
+                       </div>
+                  </div>
 
-                   <button (click)="toggleDark()" class="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all">
-                       <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
-                   </button>
-               </div>
-           </div>
-     </button>
-                              
-                              @if (showNotif()) {
-                                  <div class="absolute right-0 top-12 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fadeIn origin-top-right">
-                                     <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-                                          <h5 class="text-[10px] font-black text-white uppercase tracking-widest">Notificaciones</h5>
-                                          @if (unreadCount() > 0) {
-                                              <button (click)="markAllRead()" class="text-[9px] text-[#f06427] hover:underline uppercase font-bold">Marcar todo</button>
-                                          }
-                                      </div>
-                                      <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                                          @for (n of myNotifications(); track n.id) {
-                                              <div class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4" [class.bg-white/[0.02]]="!n.read">
-                                                  <div class="mt-1">
-                                                      <i class="bi bi-info-circle-fill text-[#f06427]"></i>
-                                                  </div>
-                                                  <div class="flex-1">
-                                                      <h6 class="text-xs font-bold text-white">{{ n.title }}</h6>
-                                                      <p class="text-[10px] text-gray-500 leading-tight mt-1">{{ n.message }}</p>
-                                                  </div>
-                                              </div>
-                                          }
-                                          @if (myNotifications().length === 0) {
-                                              <div class="p-8 text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">Sin notificaciones</div>
-                                          }
-                                      </div>
-                                  </div>
+                  <!-- ÁREA DE IDENTITY & NOTIFICATIONS -->
+                  <div class="flex items-center gap-6">
+                      <div class="hidden md:flex flex-col items-end">
+                          <div class="flex items-center gap-2">
+                              @if (authService.currentUser()?.rol === 'SuperUser') {
+                                  <span class="bg-red-500 text-[8px] text-white px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter shadow-sm animate-pulse">SuperUser Account</span>
                               }
+                              <span class="text-[10px] font-black tracking-tight text-white/90 uppercase">Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto }}</span></span>
                           </div>
+                          <span class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em]">{{ today | date:'EEEE, d MMMM y' }}</span>
+                      </div>
+                      
+                      <div class="flex items-center gap-3">
+                          <!-- ÚNICA CAMPANA UNIFICADA -->
+                          <div class="relative">
+                            <button (click)="toggleNotif()" class="relative h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group border border-white/10 shadow-inner">
+                                <i class="bi bi-bell-fill text-xl group-hover:animate-swing"></i>
+                                @let totalAlerts = unreadCount();
+                                @if (totalAlerts > 0) {
+                                    <span class="absolute -top-1 -right-1 h-6 w-6 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce shadow-lg">
+                                        {{ totalAlerts }}
+                                    </span>
+                                }
+                            </button>
+
+                            @if (showNotif()) {
+                                <div class="absolute right-0 top-14 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fadeIn origin-top-right">
+                                   <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                        <h5 class="text-[10px] font-black text-white uppercase tracking-widest">Notificaciones</h5>
+                                        @if (unreadCount() > 0) {
+                                            <button (click)="markAllRead()" class="text-[9px] text-[#f06427] hover:underline uppercase font-bold">Marcar todo</button>
+                                        }
+                                    </div>
+                                    <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                        @for (n of myNotifications(); track n.id) {
+                                            <div class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4" [class.bg-white/[0.02]]="!n.read">
+                                                <div class="mt-1">
+                                                    <i class="bi bi-info-circle-fill text-[#f06427]"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h6 class="text-xs font-bold text-white">{{ n.title }}</h6>
+                                                    <p class="text-[10px] text-gray-500 leading-tight mt-1">{{ n.message }}</p>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (myNotifications().length === 0) {
+                                            <div class="p-8 text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">Sin notificaciones</div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                          </div>
+
+                          <button (click)="toggleDark()" class="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all shadow-inner">
+                              <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+                          </button>
                       </div>
                   </div>
               </div>
