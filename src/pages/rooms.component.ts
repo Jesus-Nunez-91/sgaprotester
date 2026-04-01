@@ -601,24 +601,62 @@ export class RoomsComponent implements OnInit {
   }
 
   showReservationDetails(res: any) {
+      if (!this.canApprove()) {
+         Swal.fire({ title: 'Reserva', text: `Motivo: ${res.motivo}\nEstado: ${res.estado}`, icon: 'info' });
+         return;
+      }
+
+      const isPendiente = res.estado === 'Pendiente';
       const isAprobada = res.estado === 'Aprobada';
+
       Swal.fire({
-          title: 'Gestión de Reserva',
-          html: `<div class="text-left p-4 bg-gray-50 rounded-2xl uppercase font-black text-[10px] space-y-1">
-                  <p><b>Motivo:</b> ${res.motivo}</p>
-                  <p><b>Reservado por:</b> ${res.createdBy}</p>
-                  <p><b>Estado:</b> ${res.estado}</p>
+          title: 'GESTIÓN DE RESERVA',
+          html: `<div class="text-left p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+                  <div class="flex items-center gap-3 mb-4">
+                     <div class="h-10 w-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-700 shadow-sm">
+                        <i class="bi bi-person-circle text-[#f06427] text-xl"></i>
+                     </div>
+                     <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Solicitante</p>
+                        <p class="text-xs font-black text-black dark:text-white uppercase">${res.createdBy || 'Usuario UAH'}</p>
+                     </div>
+                  </div>
+                  <div class="space-y-3">
+                     <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Motivo Institucional</p>
+                        <p class="text-sm font-bold text-gray-800 dark:text-gray-200">${res.motivo}</p>
+                     </div>
+                     <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estado Actual</p>
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm"
+                              [style.backgroundColor]="isAprobada ? '#10b98120' : (isPendiente ? '#f0642720' : '#ef444420')"
+                              [style.color]="isAprobada ? '#10b981' : (isPendiente ? '#f06427' : '#ef4444')">
+                           ${res.estado}
+                        </span>
+                     </div>
+                  </div>
                  </div>`,
           showCancelButton: true,
-          confirmButtonText: isAprobada ? 'BORRAR RESERVA' : 'APROBAR RESERVA',
-          confirmButtonColor: isAprobada ? '#ef4444' : '#10b981',
+          showDenyButton: isPendiente,
+          confirmButtonText: isPendiente ? 'APROBAR RESERVA' : 'ELIMINAR RESERVA',
+          denyButtonText: 'RECHAZAR SOLICITUD',
           cancelButtonText: 'CERRAR',
+          confirmButtonColor: isPendiente ? '#10b981' : '#ef4444',
+          denyButtonColor: '#f06427',
+          reverseButtons: true
       }).then((result: any) => {
           if (result.isConfirmed) {
-              if (isAprobada) this.updateStatus(res.id, 'Cancelada');
-              else this.updateStatus(res.id, 'Aprobada');
+              if (isPendiente) this.updateStatus(res.id, 'Aprobada');
+              else this.borrarReservaDirectamente(res.id);
+          } else if (result.isDenied) {
+              this.updateStatus(res.id, 'Rechazada');
           }
       });
+  }
+
+  async borrarReservaDirectamente(id: number) {
+     const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Reserva?', text: 'Esta acción liberará el bloque permanentemente.', icon: 'warning', showCancelButton: true, confirmButtonText: 'SÍ, BORRAR', confirmButtonColor: '#ef4444' });
+     if (isConfirmed) this.updateStatus(id, 'Cancelada');
   }
 
   async updateStatus(resId: number, estado: string) {

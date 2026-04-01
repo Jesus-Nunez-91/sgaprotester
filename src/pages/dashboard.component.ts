@@ -129,30 +129,31 @@ declare var Swal: any;
                                       <td class="p-6 pl-10">
                                           <div class="flex items-center gap-5">
                                               <div class="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center font-black group-hover:bg-[#f06427] transition-colors shadow-lg">
-                                                  {{ res.nombreSolicitante.charAt(0) }}
+                                                  {{ res.user.charAt(0) }}
                                               </div>
                                               <div>
-                                                  <div class="text-sm font-bold text-black dark:text-white">{{ res.nombreSolicitante }}</div>
-                                                  <div class="text-[9px] font-black text-[#f06427] uppercase tracking-widest mt-1">{{ res.tipoUsuario }}</div>
+                                                  <div class="text-sm font-bold text-black dark:text-white">{{ res.user }}</div>
+                                                  <div class="text-[9px] font-black text-[#f06427] uppercase tracking-widest mt-1">{{ res.userRole }}</div>
                                               </div>
                                           </div>
                                       </td>
                                       <td class="p-6">
-                                          @let item = getItem(res.equipoId);
-                                          <div class="text-sm font-black text-black dark:text-gray-200">{{ item?.marca }}</div>
-                                          <div class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{{ item?.subCategoria }} <span class="text-black dark:text-white font-black">x{{ res.cantidad }}</span></div>
+                                          <div class="flex items-center gap-3">
+                                              <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest"
+                                                    [class]="res.tipoItem === 'SALA' ? 'bg-indigo-100 text-indigo-500' : 'bg-orange-100 text-orange-500'">
+                                                  {{ res.tipoItem }}
+                                              </span>
+                                              <div class="text-xs font-black text-black dark:text-gray-200 uppercase truncate max-w-[200px]">{{ res.detalle }}</div>
+                                          </div>
                                       </td>
                                       <td class="p-6">
-                                          <div class="text-xs font-black text-black dark:text-white">{{ res.fecha | date:'EE dd MMM' }}</div>
-                                          <div class="text-[10px] font-bold text-[#f06427] uppercase tracking-widest mt-1">{{ res.bloque }}</div>
+                                          <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ res.createdAt | date:'EE dd MMM' }}</div>
+                                          <div class="text-[9px] font-bold text-[#f06427] uppercase tracking-widest">{{ res.createdAt | date:'HH:mm' }} HRS</div>
                                       </td>
                                       <td class="p-6 pr-10 text-center">
                                           <div class="flex items-center justify-center gap-3">
-                                              <button (click)="approve(res.id)" class="w-10 h-10 rounded-xl bg-black text-white hover:bg-[#f06427] transition-all flex items-center justify-center shadow-lg active:scale-95">
-                                                  <i class="bi bi-check-lg"></i>
-                                              </button>
-                                              <button (click)="reject(res.id)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-400 hover:text-white hover:bg-rose-500 transition-all flex items-center justify-center shadow-lg active:scale-95">
-                                                  <i class="bi bi-x-lg"></i>
+                                              <button [routerLink]="['/requests']" class="px-4 py-2 rounded-xl bg-black text-white hover:bg-[#f06427] transition-all text-[9px] font-black tracking-widest uppercase shadow-lg active:scale-95">
+                                                  GESTIONAR
                                               </button>
                                           </div>
                                       </td>
@@ -424,10 +425,13 @@ export class DashboardComponent implements OnInit {
    router = inject(Router);
    today = new Date();
 
-   // Solicitudes que aún no han sido aprobadas ni rechazadas
-   pendingReservations = computed(() => this.data.reservations().filter(r => !r.aprobada && !r.rechazada));
+   // Solicitudes Unificadas (Caja Negra)
+   unifiedRequests = computed(() => this.data.unifiedRequests());
+   
+   // Solicitudes que aún no han sido aprobadas ni rechazadas (Caja Negra Total)
+   pendingReservations = computed(() => this.unifiedRequests().filter(r => r.status === 'Pendiente'));
 
-   // Préstamos que ya han sido aprobados
+   // Préstamos de equipos activos (Histórico compatible)
    activeReservations = computed(() => this.data.reservations().filter(r => r.aprobada && !r.rechazada));
 
    // Usuarios que han hecho check-in pero no check-out
@@ -643,9 +647,10 @@ export class DashboardComponent implements OnInit {
           return;
        }
 
-     // Carga de datos de salas para dashboard live
-     this.loadRooms();
-     this.loadRoomReservationsToday();
+      // Carga de datos de salas para dashboard live
+      this.loadRooms();
+      this.loadRoomReservationsToday();
+      this.data.fetchUnifiedRequests(); // Sincronizar Caja Negra
 
      // Auto-actualización de datos cada 1 minuto
      setInterval(() => {

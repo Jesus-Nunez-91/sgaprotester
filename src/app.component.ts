@@ -24,7 +24,7 @@ import { FormsModule } from '@angular/forms';
           <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
               <a routerLink="/areas" class="flex items-center gap-3 group cursor-pointer">
                     <div class="relative">
-                        <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" class="h-10 w-auto shadow-xl relative z-10 object-contain bg-white p-1 rounded-lg" alt="Logo UAH">
+                        <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2021/04/Logo-Ingenieria-UAH.png" class="h-12 w-auto shadow-xl relative z-10 object-contain bg-white p-2 rounded-xl" alt="Logo UAH">
                     </div>
                   <div class="hidden lg:flex flex-col">
                       <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
@@ -177,20 +177,28 @@ import { FormsModule } from '@angular/forms';
                   </div>
 
                   <div class="flex items-center gap-6">
-                       <!-- Bienvenida -->
-                      <div class="hidden md:flex flex-col text-right">
-                          <div class="flex items-center justify-end gap-2">
-                             <span [ngClass]="getRoleBadgeClass()" class="text-[9px] font-black px-2 py-0.5 rounded-md border uppercase tracking-wider">
-                                 {{ authService.currentUser()?.rol }}
-                             </span>
-                             <h1 class="text-sm font-black text-white tracking-tight uppercase">
-                                 Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span>
-                             </h1>
-                          </div>
-                          <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-                              {{ today | date:'fullDate' }}
-                          </p>
-                      </div>
+                       <!-- Info & Notificaciones -->
+                       <div class="flex items-center gap-4">
+                           <div class="hidden md:flex flex-col items-end">
+                               <div class="flex items-center gap-2">
+                                   @if (authService.currentUser()?.rol === 'SuperUser') {
+                                       <span class="bg-red-500 text-[8px] text-white px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter shadow-sm animate-pulse">SuperUser</span>
+                                   }
+                                   <span class="text-[10px] font-black tracking-tight text-white/90 uppercase">Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span></span>
+                               </div>
+                               <span class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em]">{{ today | date:'fullDate' }}</span>
+                           </div>
+                           
+                           <button class="relative h-10 w-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group" routerLink="/requests">
+                               <i class="bi bi-bell-fill text-lg group-hover:animate-swing"></i>
+                               @let pendingCount = authService.unifiedRequests().filter(r => r.status === 'Pendiente').length;
+                               @if (pendingCount > 0) {
+                                   <span class="absolute -top-1 -right-1 h-5 w-5 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce">
+                                       {{ pendingCount }}
+                                   </span>
+                               }
+                           </button>
+                       </div>
 
                       <!-- Acciones Rápidas -->
                       <div class="flex items-center gap-3">
@@ -478,14 +486,24 @@ export class AppComponent {
     });
 
     /**
-     * Cuenta las notificaciones no leídas.
+     * Cuenta las notificaciones no leídas y solicitudes pendientes (Caja Negra).
      */
-    unreadCount = computed(() => this.myNotifications().filter(n => !n.read).length);
+    unreadCount = computed(() => {
+        const notifs = this.myNotifications().filter(n => !n.read).length;
+        const pendingRequests = this.authService.unifiedRequests().filter(r => r.status === 'Pendiente').length;
+        
+        // Si es Admin, suma las solicitudes pendientes de la Caja Negra al contador
+        return this.isRoomAdmin() ? (notifs + pendingRequests) : notifs;
+    });
 
     /**
      * Alterna la visibilidad del panel de notificaciones.
      */
-    toggleNotif() { this.showNotif.update(v => !v); }
+    toggleNotif() { 
+        this.showNotif.update(v => !v); 
+        // Al abrir, refrescar la caja negra
+        if (this.isRoomAdmin()) this.authService.fetchUnifiedRequests();
+    }
 
     /**
      * Marca todas las notificaciones como leídas.
