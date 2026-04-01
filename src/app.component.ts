@@ -340,6 +340,17 @@ export class AppComponent {
   }
 
     constructor() {
+        const router = inject(Router);
+        router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                console.log(`[ROUTE_TRAX]: Navegación Exitosa a: ${event.url}`);
+            } else if ((event as any).type === 2) { // NavigationError
+                console.error(`[ROUTE_TRAX_ERR]: Error al navegar:`, event);
+            } else if ((event as any).type === 3) { // NavigationCancel
+                console.warn(`[ROUTE_TRAX_CANCEL]: Navegación cancelada:`, event);
+            }
+        });
+        
         // Lógica de SEO Dinámico
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
