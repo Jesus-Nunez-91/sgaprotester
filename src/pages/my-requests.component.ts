@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
+declare var Swal: any;
+
 @Component({
   selector: 'app-my-requests',
   standalone: true,
@@ -152,14 +154,32 @@ export class MyRequestsComponent {
   // Historial: Ya aprobadas o rechazadas
   filteredHistoryRequests = computed(() => this.allRequests().filter(r => r.status !== 'Pendiente'));
 
+  /**
+   * Helper para extraer el ID real si recId está ausente en el objeto de historial.
+   */
+  getSafeId(req: any): number {
+    if (req.recId && req.recId !== 'null' && req.recId !== 'undefined') {
+       return parseInt(req.recId);
+    }
+    // Fallback: Buscar el ID en el texto de "detalle" (Ej: "Reserva de sala 45")
+    const match = req.detalle.match(/\d+/);
+    return match ? parseInt(match[0]) : 0;
+  }
+
   async approve(req: any) {
+    const safeId = this.getSafeId(req);
+    if (!safeId) {
+       Swal.fire('Error', 'No se pudo identificar el ID físico de la solicitud.', 'error');
+       return;
+    }
+
     const isSala = req.tipoItem === 'SALA';
     const baseUrl = (window.hasOwnProperty('Capacitor')) ? 'http://10.10.0.20:3040' : '';
     
     // 1. Aprobar el registro raíz (Sala o Equipo)
     const endpoint = isSala 
-        ? `${baseUrl}/api/room-reservations/${req.recId}/status`
-        : `${baseUrl}/api/reservations/${req.recId}`;
+        ? `${baseUrl}/api/room-reservations/${safeId}/status`
+        : `${baseUrl}/api/reservations/${safeId}`;
     
     try {
         const res = await fetch(endpoint, {
@@ -172,11 +192,11 @@ export class MyRequestsComponent {
         });
 
         if (res.ok) {
-            // 2. Actualizar el LOG de la Caja Negra (opcional si backend lo hace solo)
-            // Recargar lista
             this.data.fetchUnifiedRequests();
-            // @ts-ignore
-            Swal.fire({ icon: 'success', title: 'Aprobado!', text: 'Solicitud aprobada con éxito.' });
+            Swal.fire({ icon: 'success', title: '¡Aprobado!', text: 'Solicitud aprobada con éxito.', timer: 1500, showConfirmButton: false });
+        } else {
+            const err = await res.json();
+            Swal.fire('Error', err.message || 'Error al procesar la aprobación', 'error');
         }
     } catch (e) {
         console.error("Error al aprobar", e);
@@ -184,11 +204,14 @@ export class MyRequestsComponent {
   }
 
   async reject(req: any) {
+    const safeId = this.getSafeId(req);
+    if (!safeId) return;
+
     const isSala = req.tipoItem === 'SALA';
     const baseUrl = (window.hasOwnProperty('Capacitor')) ? 'http://10.10.0.20:3040' : '';
     const endpoint = isSala 
-        ? `${baseUrl}/api/room-reservations/${req.recId}/status`
-        : `${baseUrl}/api/reservations/${req.recId}`;
+        ? `${baseUrl}/api/room-reservations/${safeId}/status`
+        : `${baseUrl}/api/reservations/${safeId}`;
 
     try {
         const res = await fetch(endpoint, {
@@ -197,10 +220,11 @@ export class MyRequestsComponent {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.data.token()}` 
             },
-            body: JSON.stringify({ estado: 'Rechazada', aprobada: false, rechazada: true, motivoRechazo: 'Rechazado por Admin' })
+            body: JSON.stringify({ estado: 'Rechazada', aprobada: false, rechazada: true, motivoRechazo: 'Cancelado por SuperUser' })
         });
         if (res.ok) {
             this.data.fetchUnifiedRequests();
+            Swal.fire({ icon: 'info', title: 'Rechazado', text: 'Solicitud cancelada.', timer: 1500, showConfirmButton: false });
         }
     } catch (e) {
         console.error("Error al rechazar", e);

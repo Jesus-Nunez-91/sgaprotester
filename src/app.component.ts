@@ -21,14 +21,14 @@ import { FormsModule } from '@angular/forms';
       <!-- BARRA LATERAL IZQUIERDA (Institucional Black) -->
       <aside class="w-20 lg:w-72 bg-black flex flex-col justify-between z-50 transition-all duration-300 shadow-2xl relative border-r border-[#f06427]/30">
           <!-- Área del Logo / Banner Pequeño -->
-          <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
-              <a routerLink="/areas" class="flex items-center gap-3 group cursor-pointer">
-                    <div class="relative">
-                        <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2021/04/Logo-Ingenieria-UAH.png" class="h-12 w-auto shadow-xl relative z-10 object-contain bg-white p-2 rounded-xl" alt="Logo UAH">
+          <div class="h-24 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black text-center">
+              <a routerLink="/areas" class="flex flex-col items-center group cursor-pointer">
+                    <div class="relative mb-1">
+                        <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" class="h-10 w-auto shadow-xl relative z-10 object-contain rounded-lg border-2 border-[#f06427]/50" alt="Logo UAH">
                     </div>
-                  <div class="hidden lg:flex flex-col">
-                      <span class="text-white font-black text-xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
-                      <span class="text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
+                  <div class="hidden lg:flex flex-col text-center">
+                      <span class="text-white font-black text-lg leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
+                      <span class="text-[8px] text-[#f06427] font-black tracking-widest uppercase">Ingeniería UAH</span>
                   </div>
               </a>
           </div>
@@ -172,49 +172,33 @@ import { FormsModule } from '@angular/forms';
               <!-- Banda Principal con Banner -->
               <div class="flex items-center justify-between px-6 lg:px-10 h-20">
                   <div class="flex items-center gap-8">
-                       <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
-                            class="h-10 lg:h-12 w-auto object-contain" alt="Facultad de Ingeniería UAH - Sistema SGA FIN">
-                  </div>
+                   <div class="flex items-center gap-2">
+                       @if (authService.currentUser()?.rol === 'SuperUser') {
+                           <span class="bg-red-500 text-[8px] text-white px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter shadow-sm animate-pulse">SuperUser</span>
+                       }
+                       <span class="text-[10px] font-black tracking-tight text-white/90 uppercase">Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span></span>
+                   </div>
+                   <span class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em]">{{ today | date:'EEEE, d MMMM y' }}</span>
+               </div>
+               
+               <div class="flex items-center gap-2">
+                   <!-- ÚNICA CAMPANA UNIFICADA -->
+                   <button (click)="toggleNotif()" class="relative h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group border border-white/10">
+                       <i class="bi bi-bell-fill text-xl group-hover:animate-swing"></i>
+                       @let totalAlerts = unreadCount();
+                       @if (totalAlerts > 0) {
+                           <span class="absolute -top-1 -right-1 h-6 w-6 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce shadow-lg">
+                               {{ totalAlerts }}
+                           </span>
+                       }
+                   </button>
 
-                  <div class="flex items-center gap-6">
-                       <!-- Info & Notificaciones -->
-                       <div class="flex items-center gap-4">
-                           <div class="hidden md:flex flex-col items-end">
-                               <div class="flex items-center gap-2">
-                                   @if (authService.currentUser()?.rol === 'SuperUser') {
-                                       <span class="bg-red-500 text-[8px] text-white px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter shadow-sm animate-pulse">SuperUser</span>
-                                   }
-                                   <span class="text-[10px] font-black tracking-tight text-white/90 uppercase">Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')?.[0] }}</span></span>
-                               </div>
-                               <span class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em]">{{ today | date:'fullDate' }}</span>
-                           </div>
-                           
-                           <button class="relative h-10 w-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group" routerLink="/requests">
-                               <i class="bi bi-bell-fill text-lg group-hover:animate-swing"></i>
-                               @let pendingCount = authService.unifiedRequests().filter(r => r.status === 'Pendiente').length;
-                               @if (pendingCount > 0) {
-                                   <span class="absolute -top-1 -right-1 h-5 w-5 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce">
-                                       {{ pendingCount }}
-                                   </span>
-                               }
-                           </button>
-                       </div>
-
-                      <!-- Acciones Rápidas -->
-                      <div class="flex items-center gap-3">
-                          <button (click)="toggleDark()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all">
-                              <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
-                          </button>
-
-                          <div class="relative">
-                              <button (click)="toggleNotif()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all relative">
-                                  <i class="bi bi-bell-fill" [class.animate-swing]="unreadCount() > 0"></i>
-                                  @if (unreadCount() > 0) {
-                                      <span class="absolute -top-1 -right-1 w-5 h-5 bg-[#f06427] border-2 border-black rounded-full flex items-center justify-center text-[9px] font-black text-white">
-                                          {{ unreadCount() }}
-                                      </span>
-                                  }
-                              </button>
+                   <button (click)="toggleDark()" class="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all">
+                       <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+                   </button>
+               </div>
+           </div>
+     </button>
                               
                               @if (showNotif()) {
                                   <div class="absolute right-0 top-12 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fadeIn origin-top-right">
@@ -259,8 +243,8 @@ import { FormsModule } from '@angular/forms';
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20">
                       <!-- Col 1: Logo & Info -->
                       <div class="space-y-8">
-                          <img src="https://ingenieria.uahurtado.cl/wp-content/uploads/2024/01/Componente-14-%E2%80%93-1.png" 
-                               class="h-10 w-auto brightness-0 dark:brightness-100" alt="Logo Institucional Universidad Alberto Hurtado">
+                          <img src="https://i.postimg.cc/XvtMGSVX/UAH-Insignia.jpg" 
+                               class="h-10 w-auto rounded-lg border border-white/10 shadow-sm" alt="Logo Institucional Universidad Alberto Hurtado">
                           <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 space-y-2 leading-relaxed uppercase tracking-tighter">
                               <p>Universidad Alberto Hurtado</p>
                               <p>Alameda 1825, Santiago de Chile</p>
