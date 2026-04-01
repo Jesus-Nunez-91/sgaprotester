@@ -17,6 +17,7 @@ import { Bitacora } from "../src/entities/Bitacora";
 import { Room } from "../src/entities/Room";
 import { RoomBlock } from "../src/entities/RoomBlock";
 import { RoomReservation } from "../src/entities/RoomReservation";
+import { ProcurementRequest } from "../src/entities/ProcurementRequest";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -30,7 +31,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME || "sga_db",
     synchronize: false,
     logging: false,
-    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora, Room, RoomBlock, RoomReservation],
+    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora, Room, RoomBlock, RoomReservation, ProcurementRequest],
     migrations: [],
     subscribers: [],
 });

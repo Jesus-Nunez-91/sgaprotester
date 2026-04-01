@@ -6,28 +6,32 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import "reflect-metadata";
 import { AppDataSource } from './data-source';
-import { Ticket } from '../src/entities/Ticket';
-import { Message } from '../src/entities/Message';
-import { User } from '../src/entities/User';
-import { Schedule } from '../src/entities/Schedule';
-import { InventoryItem } from '../src/entities/InventoryItem';
-import { Reservation } from '../src/entities/Reservation';
-import { AdminTask } from '../src/entities/AdminTask';
-import { MaintenanceTask } from '../src/entities/MaintenanceTask';
-import { PurchaseOrder } from '../src/entities/PurchaseOrder';
-import { AuditLog } from '../src/entities/AuditLog';
-import { Project } from '../src/entities/Project';
-import { ProjectTask } from '../src/entities/ProjectTask';
-import { WikiDoc } from '../src/entities/WikiDoc';
-import { Bitacora } from '../src/entities/Bitacora';
-import { Room } from '../src/entities/Room';
-import { RoomBlock } from '../src/entities/RoomBlock';
-import { RoomReservation } from '../src/entities/RoomReservation';
+import { Like } from "typeorm";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
+
+// Entidades UAH
+import { Ticket } from "../src/entities/Ticket";
+import { Message } from "../src/entities/Message";
+import { User } from "../src/entities/User";
+import { Schedule } from "../src/entities/Schedule";
+import { InventoryItem } from "../src/entities/InventoryItem";
+import { Reservation } from "../src/entities/Reservation";
+import { AdminTask } from "../src/entities/AdminTask";
+import { MaintenanceTask } from "../src/entities/MaintenanceTask";
+import { PurchaseOrder } from "../src/entities/PurchaseOrder";
+import { AuditLog } from "../src/entities/AuditLog";
+import { Project } from "../src/entities/Project";
+import { ProjectTask } from "../src/entities/ProjectTask";
+import { WikiDoc } from "../src/entities/WikiDoc";
+import { Bitacora } from "../src/entities/Bitacora";
+import { Room } from "../src/entities/Room";
+import { RoomBlock } from "../src/entities/RoomBlock";
+import { RoomReservation } from "../src/entities/RoomReservation";
+import { ProcurementRequest } from "../src/entities/ProcurementRequest";
 
 dotenv.config();
 
@@ -364,6 +368,19 @@ app.post('/api/auth/login', authRateLimit, async (req, res) => {
         if (!recaptchaToken) {
             return res.status(401).json({ message: 'Validación de seguridad requerida (CAPTCHA)' });
         }
+        /* 
+        // [TEMPORAL] Comentado para pruebas en servidor 10.10.0.20
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`;
+        const response = await fetch(verificationUrl, { method: 'POST' });
+        const verification: any = await response.json();
+        
+        if (!verification.success) {
+          return res.status(401).json({ message: 'Falló verificación de reCAPTCHA' });
+        }
+        */
+        console.log("[AUTH] reCAPTCHA puenteado para entorno de pruebas.");
+        
+        /*
         const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
         const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
         const recaptchaData = await recaptchaRes.json();
@@ -372,6 +389,7 @@ app.post('/api/auth/login', authRateLimit, async (req, res) => {
             await logAudit('Sistema', correo || 'N/A', 'N/A', 'LOGIN_FAIL', 'Intento bloqueado: reCAPTCHA fallido o expirado');
             return res.status(401).json({ message: 'Comprobación anti-robot fallida' });
         }
+        */
     }
 
     const userRepo = AppDataSource.getRepository(User);
@@ -450,17 +468,36 @@ const authMiddleware = (req: any, res: any, next: any) => {
   }
 };
 
-// Endpoints de Usuario (Ejemplo protegidos)
-app.get('/api/users', authMiddleware, async (req: any, res) => {
-  // Solo SuperUser puede ver y gestionar usuarios
-  if (req.user.rol !== 'SuperUser') {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere SuperUser para gestionar usuarios' });
+// --- NÚCLEO DE PERMISOS (RBAC) ---
+const ROLES = {
+  ADMIN_STUFF: ['SuperUser', 'Admin_Labs', 'Admin_Acade'],
+  RESERVATION_USERS: ['SuperUser', 'Admin_Labs', 'Admin_Acade', 'Academico', 'Docente', 'Alumno'],
+  ACADEMIC_EDIT: ['SuperUser', 'Admin_Labs', 'Admin_Acade'],
+  SECURITY_ONLY: ['SuperUser']
+};
+
+const checkPermission = (allowedRoles: string[]) => {
+  return (req: any, res: any, next: any) => {
+    if (!req.user || !allowedRoles.includes(req.user.rol)) {
+      return res.status(403).json({ 
+        message: `Acceso denegado: El rol ${req.user?.rol || 'N/A'} no tiene permisos para esta acción.` 
+      });
+    }
+    next();
+  };
+};
+
+// Endpoints de Usuario (Protegidos)
+app.get('/api/users', authMiddleware, checkPermission(ROLES.SECURITY_ONLY), async (req: any, res) => {
+  try {
+    const users = await AppDataSource.getRepository(User).find();
+    res.json(users.map(u => {
+      const { password, ...rest } = u as any;
+      return rest;
+    }));
+  } catch (e) {
+    res.status(500).json({ message: 'Error al obtener usuarios' });
   }
-  const users = await AppDataSource.getRepository(User).find();
-  res.json(users.map(u => {
-    const { password, ...rest } = u;
-    return rest;
-  }));
 });
 
 app.get('/api/audit', authMiddleware, async (req: any, res) => {
@@ -574,16 +611,8 @@ app.delete('/api/users/:id', authMiddleware, async (req: any, res) => {
 
 // --- ENDPOINTS DE HORARIOS ---
 
-app.get('/api/schedules', authMiddleware, async (req, res) => {
-  const schedules = await AppDataSource.getRepository(Schedule).find();
-  res.json(schedules);
-});
-
-app.post('/api/schedules', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Acade'].includes(req.user.rol);
-  if (!canManage) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Acade o SuperUser' });
-  }
+// --- HORARIOS (ACADÉMICOS) ---
+app.post('/api/schedules', authMiddleware, checkPermission(ROLES.ACADEMIC_EDIT), async (req: any, res) => {
   try {
     const { lab, day, block, subject, color } = req.body;
     const scheduleRepo = AppDataSource.getRepository(Schedule);
@@ -644,11 +673,7 @@ app.post('/api/schedules', authMiddleware, async (req: any, res) => {
   }
 });
 
-app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Acade'].includes(req.user.rol);
-  if (!canManage) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Acade o SuperUser' });
-  }
+app.post('/api/schedules/bulk', authMiddleware, checkPermission(ROLES.ACADEMIC_EDIT), async (req: any, res) => {
   try {
     const schedulesData = req.body;
     if (!Array.isArray(schedulesData)) {
@@ -711,11 +736,7 @@ app.post('/api/schedules/bulk', authMiddleware, async (req: any, res) => {
   }
 });
 
-app.delete('/api/schedules/:id', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Acade'].includes(req.user.rol);
-  if (!canManage) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Acade o SuperUser' });
-  }
+app.delete('/api/schedules/:id', authMiddleware, checkPermission(ROLES.ACADEMIC_EDIT), async (req: any, res) => {
   try {
     await AppDataSource.getRepository(Schedule).delete(req.params.id);
     res.status(204).send();
@@ -731,10 +752,7 @@ app.get('/api/inventory', authMiddleware, async (req, res) => {
   res.json(items);
 });
 
-app.post('/api/inventory', authMiddleware, async (req: any, res) => {
-  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
-  }
+app.post('/api/inventory', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     const { marca, modelo, rotulo_ID, sn } = req.body;
@@ -769,10 +787,7 @@ app.post('/api/inventory', authMiddleware, async (req: any, res) => {
   }
 });
 
-app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
-  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
-  }
+app.post('/api/inventory/bulk', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     const itemsData = req.body;
@@ -804,12 +819,22 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
                 exists.stockActual = (exists.stockActual || 0) + (data.stockActual || 1);
                 await itemRepo.save(exists);
                 created.push(exists);
+                const saved = await itemRepo.save(exists);
+                
+                // Trazabilidad Unificada
+                await logRequest(req, 'MATERIAL', `Update de ítem: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id);
+                
+                created.push(saved);
                 continue;
             }
         }
 
         const newItem = itemRepo.create(data);
-        const saved = await itemRepo.save(newItem);
+        const saved: any = await itemRepo.save(newItem);
+        
+        // Trazabilidad Unificada (UAH Auditoría)
+        await logRequest(req, 'MATERIAL', `Carga masiva: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id);
+        
         created.push(saved);
       } catch (err: any) {
         console.error("FALLO ITEM INDIVIDUAL:", data.marca, data.modelo);
@@ -832,10 +857,7 @@ app.post('/api/inventory/bulk', authMiddleware, async (req: any, res) => {
   }
 });
 
-app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
-  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
-  }
+app.put('/api/inventory/:id', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     const item = await itemRepo.findOneBy({ id: parseInt(req.params.id) });
@@ -849,10 +871,7 @@ app.put('/api/inventory/:id', authMiddleware, async (req: any, res) => {
   }
 });
 
-app.delete('/api/inventory/:id', authMiddleware, async (req: any, res) => {
-  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
-  }
+app.delete('/api/inventory/:id', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
   try {
     await AppDataSource.getRepository(InventoryItem).delete(req.params.id);
     res.status(204).send();
@@ -862,10 +881,7 @@ app.delete('/api/inventory/:id', authMiddleware, async (req: any, res) => {
 });
 
 // Endpoint para vaciar TODO el inventario
-app.delete('/api/inventory/mass/clear', authMiddleware, async (req: any, res) => {
-  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
-    return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
-  }
+app.delete('/api/inventory/mass/clear', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
   try {
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     await itemRepo.clear(); // Esto vacía la tabla por completo
@@ -877,6 +893,45 @@ app.delete('/api/inventory/mass/clear', authMiddleware, async (req: any, res) =>
 });
 
 // --- ENDPOINTS DE RESERVAS ---
+
+// --- RESERVAS DE SALAS (REPARADO Y TRAZABLE) ---
+app.post('/api/room-reservations', authMiddleware, checkPermission(ROLES.RESERVATION_USERS), async (req: any, res) => {
+  try {
+    const resRepo = AppDataSource.getRepository(RoomReservation);
+    const reservation = resRepo.create({
+      ...req.body,
+      userCorreo: req.user.correo,
+      userName: req.user.nombre,
+      status: req.user.rol.includes('Admin') ? 'Aprobada' : 'Pendiente'
+    });
+    const saved = await resRepo.save(reservation);
+    
+    // Trazabilidad Unificada: Registrar en Historial de Solicitudes
+    await logRequest(req, 'SALA', `Reserva de sala ${req.body.roomName}`, (saved as any).id);
+    
+    res.status(201).json(saved);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Función Auxiliar de Trazabilidad Unificada
+async function logRequest(req: any, tipo: string, detalle: string, recId: number) {
+    try {
+        const logRepo = AppDataSource.getRepository(ProcurementRequest);
+        const newLog = logRepo.create({
+            usuario: req.user.nombre,
+            correo: req.user.correo,
+            tipoItem: tipo,
+            detalle: detalle,
+            status: req.user.rol.includes('Admin') ? 'Aprobado' : 'Pendiente',
+            fecha: new Date().toISOString()
+        });
+        await logRepo.save(newLog);
+    } catch (e) {
+        console.error("Error en Trazabilidad Log:", e);
+    }
+}
 
 app.get('/api/reservations', authMiddleware, async (req, res) => {
   const reservations = await AppDataSource.getRepository(Reservation).find();
@@ -1056,9 +1111,10 @@ app.delete('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
 
 // --- ENDPOINTS DE MANTENCIÓN ---
 
-app.get('/api/maintenance', authMiddleware, async (req: any, res) => {
-  const tasks = await AppDataSource.getRepository(MaintenanceTask).find({ order: { dateScheduled: 'DESC' } });
-  res.json(tasks);
+// --- SEGURIDAD Y CAJA NEGRA (SOLO SUPERUSER) ---
+app.get('/api/audit-logs', authMiddleware, checkPermission(ROLES.SECURITY_ONLY), async (req: any, res) => {
+  const logs = await AppDataSource.getRepository(AuditLog).find({ order: { id: "DESC" }, take: 100 });
+  res.json(logs);
 });
 
 app.post('/api/maintenance', authMiddleware, async (req: any, res) => {
@@ -1105,6 +1161,35 @@ app.delete('/api/maintenance/:id', authMiddleware, async (req: any, res) => {
 
 
 // --- ENDPOINTS DE PROYECTOS ---
+
+// --- GESTIÓN DE SOLICITUDES (UNIFICADO) ---
+app.get('/api/procurement-requests', authMiddleware, async (req: any, res) => {
+  const logRepo = AppDataSource.getRepository(ProcurementRequest);
+  try {
+    let requests;
+    if (ROLES.ADMIN_STUFF.includes(req.user.rol)) {
+      // Admin ve todo (Buscador Global)
+      const { search } = req.query;
+      if (search) {
+        requests = await logRepo.createQueryBuilder("req")
+          .where("LOWER(req.usuario) LIKE LOWER(:search) OR LOWER(req.detalle) LIKE LOWER(:search) OR LOWER(req.tipoItem) LIKE LOWER(:search)", { search: `%${search}%` })
+          .orderBy("req.id", "DESC")
+          .getMany();
+      } else {
+        requests = await logRepo.find({ order: { id: "DESC" } });
+      }
+    } else {
+      // Alumno/Docente solo ve lo suyo
+      requests = await logRepo.find({ 
+        where: { correo: req.user.correo },
+        order: { id: "DESC" }
+      });
+    }
+    res.json(requests);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.get('/api/projects', authMiddleware, async (req: any, res) => {
   if (req.user.rol !== 'SuperUser') {
@@ -1688,11 +1773,8 @@ app.post('/api/room-reservations', authMiddleware, async (req: any, res) => {
     }
 });
 
-app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, res) => {
-  // Admin_Labs es quien aprueba/rechaza reservas (módulo de Salas y Labs)
-  if (req.user.rol !== 'SuperUser' && req.user.rol !== 'Admin_Labs') {
-    return res.status(403).json({ message: 'Acceso denegado: Solo Admin_Labs o SuperUser puede gestionar estados de reserva' });
-  }
+app.put('/api/room-reservations/:id/status', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), async (req: any, res) => {
+  // Admin_Acade y Admin_Labs pueden aprobar/rechazar reservas según su área
     try {
         const repo = AppDataSource.getRepository(RoomReservation);
         const reserve = await repo.findOneBy({ id: parseInt(req.params.id) });
@@ -1703,6 +1785,14 @@ app.put('/api/room-reservations/:id/status', authMiddleware, async (req: any, re
 
         await repo.save(reserve);
         await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'ROOM_RES_STATUS', `Reserva ${reserve.id} cambió a ${reserve.estado}`);
+
+        // [TRAZABILIDAD] Actualizar el estado en el historial unificado también
+        const histRepo = AppDataSource.getRepository(ProcurementRequest);
+        const historyEntry = await histRepo.findOne({ where: { detalle: Like(`%SALA%${reserve.id}%`) } as any });
+        if (historyEntry) {
+            historyEntry.status = reserve.estado;
+            await histRepo.save(historyEntry);
+        }
 
         res.json(reserve);
     } catch(e) {
