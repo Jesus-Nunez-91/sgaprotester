@@ -12,28 +12,6 @@ import { Router, ActivatedRoute } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="max-w-7xl mx-auto py-8 animate-fadeIn h-full flex flex-col">
-      
-      <!-- CONTENEDOR INMERSIVO DE LABORATORIOS -->
-      <div *ngIf="!selectedArea()" class="relative flex-1 rounded-[3rem] overflow-hidden shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] animate-scaleUp min-h-[700px] flex flex-col">
-          
-          <!-- Fondo de Imagen Institucional -->
-          <div class="absolute inset-0 z-0">
-              <img src="https://i.postimg.cc/cJBkTjYs/Gemini-Generated-Image-iz80n9iz80n9iz80.png" 
-                   alt="Laboratorio Background" 
-                   class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-[10s]">
-              <!-- Gradiente de Contraste -->
-              <div class="absolute inset-0 bg-gradient-to-b from-uah-blue/80 via-uah-blue/30 to-uah-blue/90"></div>
-          </div>
-
-          <!-- Contenido del Sistema -->
-          <div class="relative z-10 flex-1 flex flex-col items-center justify-center p-8 md:p-16">
-              
-              <!-- Título Institucional (Glassmorphism) -->
-              <div class="text-center mb-16 animate-slideDown">
-                  <div class="inline-block px-12 py-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2.5rem] shadow-2xl">
-                      <h1 class="text-4xl md:text-6xl font-black text-white tracking-widest leading-none drop-shadow-2xl selection:bg-uah-orange">
-                          SISTEMA DE GESTIÓN INTEGRAL
                       </h1>
                       <div class="flex items-center justify-center gap-6 mt-4 opacity-80">
                           <span class="h-0.5 w-12 bg-uah-orange rounded-full"></span>

@@ -4,6 +4,7 @@ dist/
 dist-server/
 .angular/
 postgres_data/
+data/
 *.log
 tmp_*.ts
 debug_*.ts
