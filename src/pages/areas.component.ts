@@ -12,66 +12,118 @@ import { Router, ActivatedRoute } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="max-w-6xl mx-auto py-8 animate-fadeIn">
-      <!-- Encabezado de la página -->
-      <div class="text-center mb-12">
-        <h1 class="text-3xl md:text-4xl font-black text-uah-blue dark:text-white mb-2 tracking-tighter">SISTEMA DE GESTIÓN INTEGRAL</h1>
-        <p class="text-gray-500 dark:text-slate-400 font-medium">Seleccione el área de laboratorios para operar</p>
+    <div class="max-w-7xl mx-auto py-8 animate-fadeIn h-full flex flex-col">
+      
+      <!-- CONTENEDOR INMERSIVO DE LABORATORIOS -->
+      <div *ngIf="!selectedArea()" class="relative flex-1 rounded-[3rem] overflow-hidden shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] animate-scaleUp min-h-[700px] flex flex-col">
+          
+          <!-- Fondo de Imagen Institucional -->
+          <div class="absolute inset-0 z-0">
+              <img src="https://i.postimg.cc/cJBkTjYs/Gemini-Generated-Image-iz80n9iz80n9iz80.png" 
+                   alt="Laboratorio Background" 
+                   class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-[10s]">
+              <!-- Gradiente de Contraste -->
+              <div class="absolute inset-0 bg-gradient-to-b from-uah-blue/80 via-uah-blue/30 to-uah-blue/90"></div>
+          </div>
+
+          <!-- Contenido del Sistema -->
+          <div class="relative z-10 flex-1 flex flex-col items-center justify-center p-8 md:p-16">
+              
+              <!-- Título Institucional (Glassmorphism) -->
+              <div class="text-center mb-16 animate-slideDown">
+                  <div class="inline-block px-12 py-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2.5rem] shadow-2xl">
+                      <h1 class="text-4xl md:text-6xl font-black text-white tracking-widest leading-none drop-shadow-2xl selection:bg-uah-orange">
+                          SISTEMA DE GESTIÓN INTEGRAL
+                      </h1>
+                      <div class="flex items-center justify-center gap-6 mt-4 opacity-80">
+                          <span class="h-0.5 w-12 bg-uah-orange rounded-full"></span>
+                          <p class="text-white font-black uppercase tracking-[0.4em] text-[10px]">Área de Laboratorios UAH</p>
+                          <span class="h-0.5 w-12 bg-uah-orange rounded-full"></span>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Cuadrícula de Tarjetas Flotantes -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-10 w-full max-w-6xl">
+                  
+                  <!-- FABLAB -->
+                  <div (click)="selectArea('FABLAB')" class="group relative bg-white/95 dark:bg-slate-900/95 p-10 rounded-[2.5rem] shadow-2xl cursor-pointer hover:-translate-y-4 transition-all duration-500 border-b-[12px] border-uah-blue hover:border-uah-orange active:scale-95">
+                      <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                         <i class="bi bi-printer-fill text-6xl"></i>
+                      </div>
+                      <div class="h-20 w-20 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-8 text-uah-blue group-hover:bg-uah-blue group-hover:text-white transition-all duration-500 shadow-xl">
+                        <i class="bi bi-printer-fill text-4xl"></i>
+                      </div>
+                      <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tighter uppercase">FABLAB</h3>
+                      <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed font-medium">Textil, Impresión 3D, Biomateriales y Computación móvil.</p>
+                      <div class="mt-8 flex items-center gap-2 text-uah-blue font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+                          Ingresar Área <i class="bi bi-chevron-right"></i>
+                      </div>
+                  </div>
+
+                  <!-- LAB CIENCIAS BASICAS -->
+                  <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="group relative bg-white/95 dark:bg-slate-900/95 p-10 rounded-[2.5rem] shadow-2xl cursor-pointer hover:-translate-y-4 transition-all duration-500 border-b-[12px] border-emerald-600 hover:border-uah-orange active:scale-95">
+                      <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                         <i class="bi bi-flask-fill text-6xl"></i>
+                      </div>
+                      <div class="h-20 w-20 bg-green-50 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mb-8 text-green-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-xl">
+                        <i class="bi bi-people-fill text-4xl"></i>
+                      </div>
+                      <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tighter uppercase">CIENCIAS BÁSICAS</h3>
+                      <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed font-medium">Laboratorios de Física y Química experimental.</p>
+                      <div class="mt-8 flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+                          Ingresar Área <i class="bi bi-chevron-right"></i>
+                      </div>
+                  </div>
+
+                  <!-- LAB INFORMATICA -->
+                  <div (click)="selectArea('LAB INFORMATICA')" class="group relative bg-white/95 dark:bg-slate-900/95 p-10 rounded-[2.5rem] shadow-2xl cursor-pointer hover:-translate-y-4 transition-all duration-500 border-b-[12px] border-uah-blue hover:border-uah-orange active:scale-95">
+                      <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                         <i class="bi bi-cpu-fill text-6xl"></i>
+                      </div>
+                      <div class="h-20 w-20 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-8 text-uah-blue group-hover:bg-uah-blue group-hover:text-white transition-all duration-500 shadow-xl">
+                        <i class="bi bi-cpu-fill text-4xl"></i>
+                      </div>
+                      <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tighter uppercase">INFORMÁTICA</h3>
+                      <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed font-medium">Hackerlab, Desarrollo Tecnológico y Hardware.</p>
+                      <div class="mt-8 flex items-center gap-2 text-uah-blue font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+                          Ingresar Área <i class="bi bi-chevron-right"></i>
+                      </div>
+                  </div>
+              </div>
+          </div>
       </div>
 
-      <!-- Cuadrícula de Áreas Principales (Visible si no hay área seleccionada) -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12" *ngIf="!selectedArea()">
-        <!-- FABLAB -->
-        <div (click)="selectArea('FABLAB')" class="glass-panel p-8 rounded-3xl shadow-xl cursor-pointer group hover:-translate-y-2 transition-all border-b-8 border-uah-blue hover:border-uah-orange">
-           <div class="h-20 w-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-uah-blue group-hover:bg-orange-50 group-hover:text-uah-orange transition-colors">
-            <i class="bi bi-printer-fill text-4xl"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">FABLAB</h3>
-          <p class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed">Textil, Impresión 3D, Biomateriales y Computación móvil.</p>
-        </div>
-
-        <!-- LAB CIENCIAS BASICAS -->
-        <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="glass-panel p-8 rounded-3xl shadow-xl cursor-pointer group hover:-translate-y-2 transition-all border-b-8 border-emerald-600 hover:border-uah-orange">
-           <div class="h-20 w-20 bg-green-50 rounded-2xl flex items-center justify-center mb-6 text-green-600 group-hover:bg-orange-50 group-hover:text-uah-orange transition-colors">
-            <i class="bi bi-people-fill text-4xl"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">CIENCIAS BÁSICAS</h3>
-          <p class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed">Laboratorios de Física y Química experimental.</p>
-        </div>
-
-        <!-- LAB INFORMATICA -->
-        <div (click)="selectArea('LAB INFORMATICA')" class="glass-panel p-8 rounded-3xl shadow-xl cursor-pointer group hover:-translate-y-2 transition-all border-b-8 border-indigo-500 hover:border-uah-orange">
-           <div class="h-20 w-20 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:bg-orange-100 group-hover:text-uah-orange transition-colors">
-            <i class="bi bi-cpu-fill text-4xl"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">INFORMÁTICA</h3>
-          <p class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed">Hackerlab, Desarrollo Tecnológico y Hardware.</p>
-        </div>
-      </div>
-
-      <!-- Cuadrícula de Sub-Laboratorios (Visible cuando se selecciona un área) -->
-      <div *ngIf="selectedArea()" class="animate-fadeIn">
-        <div class="flex items-center justify-between mb-8 bg-white/80 dark:bg-slate-800/80 p-4 rounded-2xl shadow-sm backdrop-blur-sm">
+      <!-- VISTA DE SUB-LABORATORIOS (Democratizada) -->
+      <div *ngIf="selectedArea()" class="animate-fadeIn p-4">
+        <div class="flex items-center justify-between mb-12 bg-white/80 dark:bg-slate-800/80 p-8 rounded-[2rem] shadow-2xl backdrop-blur-md border-l-8 border-uah-blue">
            <div>
-              <h2 class="text-2xl font-black text-uah-blue dark:text-white tracking-tighter uppercase">{{ selectedArea() }}</h2>
-              <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-widest font-black">Seleccione Laboratorio Específico</p>
+              <h2 class="text-3xl font-black text-uah-blue dark:text-white tracking-tighter uppercase leading-none mb-2">{{ selectedArea() }}</h2>
+              <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.4em] font-black">Seleccione Infraestructura Específica</p>
            </div>
-           <button (click)="selectedArea.set('')" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
-             <i class="bi bi-arrow-left"></i> VOLVER
+           <button (click)="selectedArea.set('')" class="px-8 py-4 rounded-2xl bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-200 text-xs font-black hover:bg-uah-blue hover:text-white transition-all flex items-center gap-3 uppercase tracking-widest shadow-lg">
+             <i class="bi bi-arrow-left text-lg"></i> VOLVER AL PANEL
            </button>
         </div>
 
-        <div class="flex flex-wrap justify-center gap-8">
-          <div *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="w-full sm:w-72 bg-white dark:bg-gray-900 p-10 rounded-[2rem] shadow-xl cursor-pointer hover:shadow-2xl hover:scale-[1.03] transition-all text-center border border-gray-100 dark:border-white/10 group relative overflow-hidden">
+        <div class="flex flex-wrap justify-center gap-10">
+          <div *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="w-full sm:w-80 bg-white dark:bg-gray-950 p-12 rounded-[2.5rem] shadow-xl cursor-pointer hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all text-center border border-gray-100 dark:border-white/5 group relative overflow-hidden">
              <div class="absolute inset-0 bg-uah-orange opacity-0 group-hover:opacity-[0.03] transition-opacity"></div>
-             <i class="bi bi-folder2-open text-6xl text-uah-blue/10 dark:text-white/20 group-hover:text-uah-orange transition-all duration-500 mb-6 block transform group-hover:scale-110"></i>
-             <h4 class="font-black text-slate-800 dark:text-gray-100 group-hover:text-uah-orange transition-colors uppercase text-lg tracking-tighter mb-6">{{ lab }}</h4>
-             <span class="inline-block px-8 py-3 bg-uah-blue dark:bg-[#f06427] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl group-hover:bg-uah-orange dark:group-hover:bg-orange-500 transition-all shadow-lg group-hover:shadow-orange-500/20">Acceder al Panel</span>
+             <div class="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                <i class="bi bi-box-seam text-4xl text-uah-blue/20 dark:text-white/20 group-hover:text-uah-orange"></i>
+             </div>
+             <h4 class="font-black text-slate-800 dark:text-gray-100 group-hover:text-uah-orange transition-colors uppercase text-xl leading-tight mb-8">{{ lab }}</h4>
+             <button class="w-full py-4 bg-uah-blue dark:bg-[#f06427] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl group-hover:bg-uah-orange shadow-lx transition-all active:scale-95">PANEL DE CONTROL</button>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    :host { display: block; height: 100%; }
+    .animate-scaleUp { animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  `]
 })
 export class AreasComponent {
   dataService = inject(DataService);
