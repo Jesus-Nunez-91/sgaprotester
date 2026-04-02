@@ -3,136 +3,127 @@ import { DataService } from '../services/data.service';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 
-/**
- * Componente de selección de Áreas y Laboratorios.
- * Permite al usuario navegar por la jerarquía de laboratorios de la universidad.
- */
 @Component({
   selector: 'app-areas',
   standalone: true,
   imports: [CommonModule],
   template: `
-                      </h1>
-                      <div class="flex items-center justify-center gap-6 mt-4 opacity-80">
-                          <span class="h-0.5 w-12 bg-uah-orange rounded-full"></span>
-                          <p class="text-white font-black uppercase tracking-[0.4em] text-[10px]">Área de Laboratorios UAH</p>
-                          <span class="h-0.5 w-12 bg-uah-orange rounded-full"></span>
-                      </div>
-                  </div>
-              </div>
+    <div class="absolute inset-0 bg-black text-white font-sans overflow-x-hidden overflow-y-auto z-10 custom-scrollbar">
+      
+      <!-- HERO SECTION INMERSIVA -->
+      <div class="relative w-full min-h-[60vh] flex flex-col items-center justify-center overflow-hidden">
+        <div class="absolute inset-0">
+          <img 
+            src="https://i.postimg.cc/cJBkTjYs/Gemini-Generated-Image-iz80n9iz80n9iz80.png" 
+            alt="Laboratorio UAH" 
+            class="w-full h-full object-cover object-center"
+          >
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60"></div>
+        </div>
 
-              <!-- Cuadrícula de Tarjetas Flotantes -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-10 w-full max-w-6xl">
-                  
-                  <!-- FABLAB -->
-                  <div (click)="selectArea('FABLAB')" class="group relative bg-white/95 dark:bg-slate-900/95 p-10 rounded-[2.5rem] shadow-2xl cursor-pointer hover:-translate-y-4 transition-all duration-500 border-b-[12px] border-uah-blue hover:border-uah-orange active:scale-95">
-                      <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                         <i class="bi bi-printer-fill text-6xl"></i>
-                      </div>
-                      <div class="h-20 w-20 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-8 text-uah-blue group-hover:bg-uah-blue group-hover:text-white transition-all duration-500 shadow-xl">
-                        <i class="bi bi-printer-fill text-4xl"></i>
-                      </div>
-                      <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tighter uppercase">FABLAB</h3>
-                      <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed font-medium">Textil, Impresión 3D, Biomateriales y Computación móvil.</p>
-                      <div class="mt-8 flex items-center gap-2 text-uah-blue font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
-                          Ingresar Área <i class="bi bi-chevron-right"></i>
-                      </div>
-                  </div>
-
-                  <!-- LAB CIENCIAS BASICAS -->
-                  <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="group relative bg-white/95 dark:bg-slate-900/95 p-10 rounded-[2.5rem] shadow-2xl cursor-pointer hover:-translate-y-4 transition-all duration-500 border-b-[12px] border-emerald-600 hover:border-uah-orange active:scale-95">
-                      <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                         <i class="bi bi-flask-fill text-6xl"></i>
-                      </div>
-                      <div class="h-20 w-20 bg-green-50 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mb-8 text-green-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-xl">
-                        <i class="bi bi-people-fill text-4xl"></i>
-                      </div>
-                      <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tighter uppercase">CIENCIAS BÁSICAS</h3>
-                      <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed font-medium">Laboratorios de Física y Química experimental.</p>
-                      <div class="mt-8 flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
-                          Ingresar Área <i class="bi bi-chevron-right"></i>
-                      </div>
-                  </div>
-
-                  <!-- LAB INFORMATICA -->
-                  <div (click)="selectArea('LAB INFORMATICA')" class="group relative bg-white/95 dark:bg-slate-900/95 p-10 rounded-[2.5rem] shadow-2xl cursor-pointer hover:-translate-y-4 transition-all duration-500 border-b-[12px] border-uah-blue hover:border-uah-orange active:scale-95">
-                      <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                         <i class="bi bi-cpu-fill text-6xl"></i>
-                      </div>
-                      <div class="h-20 w-20 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-8 text-uah-blue group-hover:bg-uah-blue group-hover:text-white transition-all duration-500 shadow-xl">
-                        <i class="bi bi-cpu-fill text-4xl"></i>
-                      </div>
-                      <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tighter uppercase">INFORMÁTICA</h3>
-                      <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed font-medium">Hackerlab, Desarrollo Tecnológico y Hardware.</p>
-                      <div class="mt-8 flex items-center gap-2 text-uah-blue font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
-                          Ingresar Área <i class="bi bi-chevron-right"></i>
-                      </div>
-                  </div>
-              </div>
+        <div class="relative z-10 text-center px-4 max-w-4xl mt-16 pb-12">
+          <div class="bg-black/50 backdrop-blur-sm px-12 py-10 rounded-3xl border-2 border-orange-500/50 shadow-[0_0_40px_rgba(249,115,22,0.3)]">
+            <h1 class="text-6xl md:text-8xl font-black tracking-tighter mb-4 italic text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+              RESERVA
+            </h1>
+            <div class="h-2 w-40 bg-orange-500 mx-auto mb-8 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.8)]"></div>
+            <p class="text-xl md:text-2xl font-black tracking-[0.3em] text-orange-400 uppercase drop-shadow-md">
+              Área de Laboratorios UAH
+            </p>
           </div>
+        </div>
       </div>
 
-      <!-- VISTA DE SUB-LABORATORIOS (Democratizada) -->
-      <div *ngIf="selectedArea()" class="animate-fadeIn p-4">
-        <div class="flex items-center justify-between mb-12 bg-white/80 dark:bg-slate-800/80 p-8 rounded-[2rem] shadow-2xl backdrop-blur-md border-l-8 border-uah-blue">
-           <div>
-              <h2 class="text-3xl font-black text-uah-blue dark:text-white tracking-tighter uppercase leading-none mb-2">{{ selectedArea() }}</h2>
-              <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.4em] font-black">Seleccione Infraestructura Específica</p>
+      <!-- GRID DE TARJETAS -->
+      <div class="max-w-7xl mx-auto px-6 -mt-16 sm:-mt-24 relative z-20 pb-32">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <div (click)="selectArea('FABLAB')" class="group cursor-pointer bg-white rounded-[2.5rem] p-10 shadow-2xl hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] transition-all duration-500 transform hover:-translate-y-4 border-b-[12px] border-black hover:border-orange-500">
+            <div class="relative w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-black transition-colors duration-300 mx-auto">
+              <i class="bi bi-printer-fill text-5xl text-black group-hover:text-orange-500"></i>
+            </div>
+            <h3 class="text-3xl font-black text-black mb-4 text-center group-hover:text-orange-500 tracking-tighter">FABLAB</h3>
+            <p class="text-gray-600 text-base leading-relaxed text-center font-medium">Taller de Fabricación Digital: Impresión 3D, Corte Láser y Prototipado Avanzado.</p>
+            <div class="mt-10 flex justify-center items-center text-black font-black text-sm tracking-widest uppercase group-hover:text-orange-500">
+              Ingresar <i class="bi bi-arrow-right ml-3 group-hover:translate-x-3 transition-transform text-lg"></i>
+            </div>
+          </div>
+
+          <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="group cursor-pointer bg-white rounded-[2.5rem] p-10 shadow-2xl hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] transition-all duration-500 transform hover:-translate-y-4 border-b-[12px] border-black hover:border-orange-500">
+            <div class="relative w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-black transition-colors duration-300 mx-auto">
+              <i class="bi bi-flask-fill text-5xl text-black group-hover:text-orange-500"></i>
+            </div>
+            <h3 class="text-3xl font-black text-black mb-4 text-center group-hover:text-orange-500 tracking-tighter">CIENCIAS BÁSICAS</h3>
+            <p class="text-gray-600 text-base leading-relaxed text-center font-medium">Laboratorios de Física, Química y Biología con instrumental de alta precisión.</p>
+            <div class="mt-10 flex justify-center items-center text-black font-black text-sm tracking-widest uppercase group-hover:text-orange-500">
+              Ingresar <i class="bi bi-arrow-right ml-3 group-hover:translate-x-3 transition-transform text-lg"></i>
+            </div>
+          </div>
+
+          <div (click)="selectArea('LAB INFORMATICA')" class="group cursor-pointer bg-white rounded-[2.5rem] p-10 shadow-2xl hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] transition-all duration-500 transform hover:-translate-y-4 border-b-[12px] border-black hover:border-orange-500">
+            <div class="relative w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-black transition-colors duration-300 mx-auto">
+              <i class="bi bi-cpu-fill text-5xl text-black group-hover:text-orange-500"></i>
+            </div>
+            <h3 class="text-3xl font-black text-black mb-4 text-center group-hover:text-orange-500 tracking-tighter">INFORMÁTICA</h3>
+            <p class="text-gray-600 text-base leading-relaxed text-center font-medium">Infraestructura de Redes, Computación de Alto Rendimiento y Desarrollo de Software.</p>
+            <div class="mt-10 flex justify-center items-center text-black font-black text-sm tracking-widest uppercase group-hover:text-orange-500">
+              Ingresar <i class="bi bi-arrow-right ml-3 group-hover:translate-x-3 transition-transform text-lg"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA DE SUB-LABORATORIOS -->
+      <div *ngIf="selectedArea()" class="max-w-7xl mx-auto px-6 pb-20 mt-8 animate-fade-in relative z-20">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-12 bg-white/10 backdrop-blur-md p-10 rounded-[2.5rem] shadow-2xl border-l-[12px] border-orange-500">
+           <div class="mb-6 md:mb-0 text-center md:text-left">
+              <h2 class="text-5xl font-black text-white tracking-tighter uppercase leading-none mb-3 drop-shadow-md">{{ selectedArea() }}</h2>
+              <p class="text-sm text-gray-300 uppercase tracking-[0.4em] font-black">Seleccione Infraestructura Específica</p>
            </div>
-           <button (click)="selectedArea.set('')" class="px-8 py-4 rounded-2xl bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-200 text-xs font-black hover:bg-uah-blue hover:text-white transition-all flex items-center gap-3 uppercase tracking-widest shadow-lg">
-             <i class="bi bi-arrow-left text-lg"></i> VOLVER AL PANEL
+           <button (click)="selectedArea.set('')" class="px-8 py-5 rounded-2xl bg-white text-black text-sm font-black hover:bg-orange-500 hover:text-white transition-colors flex items-center justify-center gap-3 uppercase tracking-widest">
+             <i class="bi bi-arrow-left text-xl"></i> VOLVER AL PANEL
            </button>
         </div>
 
-        <div class="flex flex-wrap justify-center gap-10">
-          <div *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="w-full sm:w-80 bg-white dark:bg-gray-950 p-12 rounded-[2.5rem] shadow-xl cursor-pointer hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all text-center border border-gray-100 dark:border-white/5 group relative overflow-hidden">
-             <div class="absolute inset-0 bg-uah-orange opacity-0 group-hover:opacity-[0.03] transition-opacity"></div>
-             <div class="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                <i class="bi bi-box-seam text-4xl text-uah-blue/20 dark:text-white/20 group-hover:text-uah-orange"></i>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="bg-white p-10 rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer hover:shadow-[0_15px_50px_rgba(249,115,22,0.6)] hover:-translate-y-3 transition-all text-center border-[4px] border-transparent hover:border-orange-500 group relative">
+             <div class="w-24 h-24 bg-gray-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6 group-hover:bg-black transition-colors duration-500">
+                <i class="bi bi-box-seam text-5xl text-black group-hover:text-orange-500"></i>
              </div>
-             <h4 class="font-black text-slate-800 dark:text-gray-100 group-hover:text-uah-orange transition-colors uppercase text-xl leading-tight mb-8">{{ lab }}</h4>
-             <button class="w-full py-4 bg-uah-blue dark:bg-[#f06427] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl group-hover:bg-uah-orange shadow-lx transition-all active:scale-95">PANEL DE CONTROL</button>
+             <h4 class="font-black text-black group-hover:text-orange-500 uppercase text-2xl leading-tight mb-8">{{ lab }}</h4>
+             <button class="w-full py-5 bg-black text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl group-hover:bg-orange-500 shadow-xl transition-all active:scale-95">PANEL DE RESERVA</button>
           </div>
         </div>
       </div>
     </div>
-  `,
-  styles: [`
-    :host { display: block; height: 100%; }
-    .animate-scaleUp { animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-    @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-  `]
+
+    <style>
+      @keyframes fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      :host { display: block; width: 100%; height: 100%; position: relative; }
+      .custom-scrollbar::-webkit-scrollbar { width: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #000; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #f97316; border-radius: 5px; }
+    </style>
+  `
 })
 export class AreasComponent {
   dataService = inject(DataService);
   router = inject(Router);
-  
-  // Señal para el área seleccionada actualmente
   selectedArea = signal('');
-  // Señal para la lista de laboratorios pertenecientes al área seleccionada
   subLabs = signal<string[]>([]);
 
   constructor(private route: ActivatedRoute) {
     this.route.queryParams.subscribe(params => {
-      if (params['area']) {
-        this.selectArea(params['area']);
-      }
+      if (params['area']) this.selectArea(params['area']);
     });
   }
 
-  /**
-   * Selecciona un área y carga sus laboratorios asociados.
-   * @param area Nombre del área seleccionada.
-   */
   selectArea(area: string) {
     this.selectedArea.set(area);
     this.subLabs.set(this.dataService.hierarchy[area] || []);
   }
 
-  /**
-   * Navega a la vista de inventario del laboratorio seleccionado.
-   * @param lab Nombre del laboratorio específico.
-   */
   goToInventory(lab: string) {
     this.router.navigate(['/inventory', this.selectedArea(), lab]);
   }
