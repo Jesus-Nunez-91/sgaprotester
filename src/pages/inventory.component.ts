@@ -814,12 +814,12 @@ export class InventoryComponent {
     const diffMs = reservationDateTime.getTime() - now.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
 
-    if (this.inventoryMode() === 'Equipos' && diffHours < 12) {
-      return "Las reservas de equipos deben realizarse con al menos 12 horas de antelación.";
+    if (this.inventoryMode() === 'Equipos' && diffHours < 4) {
+      return "Las reservas de equipos deben realizarse con al menos 4 horas de antelación.";
     }
 
-    if (this.inventoryMode() === 'Materiales' && diffHours < 12) {
-      return "Las reservas de materiales deben realizarse con al menos 12 horas de antelación.";
+    if (this.inventoryMode() === 'Materiales' && diffHours < 48) {
+      return "Las reservas de materiales deben realizarse con al menos 48 horas de antelación.";
     }
 
     return null;
@@ -897,34 +897,16 @@ export class InventoryComponent {
       return;
     }
 
-    // 12h Lead Time Restriction for Students/Docents
+    // Lead Time Restriction already checked via getLeadTimeError()
     if (!this.isAdmin()) {
       const blockStart = block.split(' - ')[0]; // HH:mm
       const reservationDateTime = new Date(`${date}T${blockStart}:00`);
       const now = new Date();
-      const diffMs = reservationDateTime.getTime() - now.getTime();
-      const diffHrs = diffMs / (1000 * 60 * 60);
-
-      if (diffMs < 0) {
+      if (reservationDateTime.getTime() < now.getTime()) {
         Swal.fire({ 
           icon: 'error', 
           title: 'Fecha no válida', 
           text: 'No puedes reservar en tiempo pasado.', 
-          customClass: {
-            popup: 'uah-premium-popup',
-            title: 'uah-premium-title',
-            confirmButton: 'uah-premium-confirm'
-          },
-          buttonsStyling: false,
-          confirmButtonColor: '#003366' 
-        });
-        return;
-      }
-      if (diffHrs < 12) {
-        Swal.fire({ 
-          icon: 'warning', 
-          title: 'Aviso de Antelación', 
-          text: 'Las reservas deben realizarse con al menos 12 horas de antelación.', 
           customClass: {
             popup: 'uah-premium-popup',
             title: 'uah-premium-title',

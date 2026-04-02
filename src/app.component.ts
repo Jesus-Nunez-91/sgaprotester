@@ -44,21 +44,17 @@ import { FormsModule } from '@angular/forms';
                   </a>
               }
 
-              @if (isLabAdmin()) {
-                  <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Laboratorios</span>
-                  </a>
-              }
+               <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                   <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
+                   <span class="hidden lg:inline text-sm">Laboratorios</span>
+               </a>
 
-              @if (isAcadeAdmin()) {
-                  <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Horarios Academicos</span>
-                  </a>
-              }
+               <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                   <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
+                   <span class="hidden lg:inline text-sm">Horarios Academicos</span>
+               </a>
 
               <a routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
@@ -379,22 +375,17 @@ export class AppComponent {
             return;
         }
 
-        // 2. Zonas de Administración de Laboratorios (Admin_Labs + SuperUser)
-        const labAdminZones = url.includes('procurement') || url.includes('maintenance') || url.includes('projects') || url.includes('areas') || url.includes('bitacora');
-        if (labAdminZones && !this.isLabAdmin()) {
+        // 2. Zonas de Administración de Laboratorios (EDICIÓN)
+        const labAdminEditZones = url.includes('procurement') || url.includes('maintenance') || url.includes('projects') || url.includes('bitacora');
+        if (labAdminEditZones && !this.isLabAdmin()) {
             this.router.navigate(['/rooms']);
             return;
         }
 
-        // 3. Zonas de Administración Académica (Admin_Acade + SuperUser)
-        const acadeAdminZones = url.includes('schedule');
-        if (acadeAdminZones && !this.isAcadeAdmin()) {
-            this.router.navigate(['/rooms']);
-            return;
-        }
-        
-        // 4. Zonas Compartidas (Wiki) - ACCESO UNIVERSAL HABILITADO
-        // Se permite el acceso a todos los roles autenticados.
+        // 3. Zonas de Consulta Universal (Laboratorios, Horarios, Wiki)
+        // Se permite el acceso a todos los roles para áreas cognitivas e informativas.
+        const universalZones = url.includes('areas') || url.includes('inventory') || url.includes('schedule') || url.includes('wiki') || url.includes('rooms');
+        // No se aplican redirecciones en estas zonas para usuarios autenticados.
     }
 
     // Estados de Notificaciones

@@ -12,23 +12,25 @@ export class Bitacora {
     @Column({
         type: 'enum',
         enum: ['FABLAB', 'LAB CIENCIAS BASICAS', 'LAB INFORMATICA'],
+        nullable: true
     })
     lab: 'FABLAB' | 'LAB CIENCIAS BASICAS' | 'LAB INFORMATICA';
 
-    @Column()
+    @Column({ nullable: true })
     section: string;
 
     @Column({
         type: 'enum',
         enum: ['Incidencia', 'Observacion', 'Mejora'],
-        default: 'Incidencia'
+        default: 'Incidencia',
+        nullable: true
     })
     type: 'Incidencia' | 'Observacion' | 'Mejora';
 
-    @Column('text')
+    @Column('text', { nullable: true })
     description: string;
 
-    @Column()
+    @Column({ nullable: true })
     adminName: string;
 
     @Column({ nullable: true })
