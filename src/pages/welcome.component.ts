@@ -90,10 +90,12 @@ export class WelcomeComponent implements OnInit {
     const role = user.rol;
     const isAcad = ['Academico', 'Docente', 'Alumno'].includes(role);
 
-    if (isAcad) {
+    if (role === 'SuperUser') {
+      this.router.navigate(['/dashboard']);
+    } else if (isAcad) {
       this.router.navigate(['/schedule']);
     } else {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/areas']);
     }
   }
 }
