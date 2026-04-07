@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sga-fin.uahurtado.cl/sitemap.xml
