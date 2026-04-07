@@ -7,10 +7,10 @@ import { DataService, PurchaseOrder, PurchaseStage, LabType } from '../services/
 declare var Swal: any;
 
 @Component({
-  selector: 'app-procurement',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-procurement',
+    standalone: true,
+    imports: [CommonModule, FormsModule],
+    template: `
     <div class="animate-fadeIn pb-12 max-w-[98%] mx-auto">
       
       <!-- Top Header Row for Budgets -->
@@ -61,7 +61,7 @@ declare var Swal: any;
       </div>
  
  
-v>
+
 
       <!-- Action & Filter Bar -->
       <div class="flex flex-col md:flex-row gap-4 mb-6 items-center">
@@ -469,706 +469,706 @@ v>
   `
 })
 export class ProcurementComponent {
-  data = inject(DataService);
+    data = inject(DataService);
 
-  currentStage = signal<PurchaseStage>('Solicitud');
-  searchTerm = signal('');
-  selectedLabFilter = signal<LabType | 'ALL'>('ALL');
-  
-  showModal = signal(false);
-  showBudgetModal = signal(false);
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  isEditing = false;
-  currentOrder: Partial<PurchaseOrder> & { idsToCleanup?: number[] } = {};
-  
-  // Bulk Selection [UAH]
-  selectedIds = signal<Set<string>>(new Set());
-  isAllSelected = computed(() => {
-      const current = this.groupedOrders();
-      return current.length > 0 && current.every(g => this.selectedIds().has(g.idNum));
-  });
+    currentStage = signal<PurchaseStage>('Solicitud');
+    searchTerm = signal('');
+    selectedLabFilter = signal<LabType | 'ALL'>('ALL');
 
-  groupedOrders = computed(() => {
-    const orders = this.filteredOrders();
-    const groups: Record<string, any> = {};
-    
-    orders.forEach(o => {
-        // Extraemos ítems y cantidades del registro actual (pueden ser uno o muchos)
-        let currentItems: string[] = [];
-        let currentQty = 0;
+    showModal = signal(false);
+    showBudgetModal = signal(false);
+    @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+    isEditing = false;
+    currentOrder: Partial<PurchaseOrder> & { idsToCleanup?: number[] } = {};
 
-        if (o.itemsArray && Array.isArray(o.itemsArray) && o.itemsArray.length > 0) {
-            currentItems = o.itemsArray.map(i => i?.description || 'Sin descripción');
-            currentQty = o.itemsArray.reduce((acc, i) => acc + (Number(i?.quantity) || 0), 0);
-        } else {
-            currentItems = [o.item || 'Sin descripción'];
-            currentQty = Number(o.cantidad) || 0;
-        }
-
-        if (!groups[o.idNum]) {
-            groups[o.idNum] = {
-                idNum: o.idNum,
-                lab: o.lab,
-                fechaSolicitud: o.fechaSolicitud,
-                stage: o.stage,
-                ids: [o.id],
-                items: [...currentItems],
-                totalCantidad: currentQty,
-                totalValor: Number(o.valorTotal) || 0,
-                proveedor: o.proveedor,
-                rutProveedor: o.rutProveedor,
-                numeroOC: o.numeroOC,
-                originalOrder: o
-            };
-        } else {
-            groups[o.idNum].ids.push(o.id);
-            groups[o.idNum].totalCantidad += currentQty;
-            groups[o.idNum].totalValor += Number(o.valorTotal) || 0;
-            
-            currentItems.forEach(item => {
-                if (item && !groups[o.idNum].items.includes(item)) {
-                    groups[o.idNum].items.push(item);
-                }
-            });
-        }
+    // Bulk Selection [UAH]
+    selectedIds = signal<Set<string>>(new Set());
+    isAllSelected = computed(() => {
+        const current = this.groupedOrders();
+        return current.length > 0 && current.every(g => this.selectedIds().has(g.idNum));
     });
 
-    return Object.values(groups);
-  });
-  
-  // Budget Editing
-  editingBudgets: Record<string, number> = {};
+    groupedOrders = computed(() => {
+        const orders = this.filteredOrders();
+        const groups: Record<string, any> = {};
 
-  labTypes: LabType[] = ['FABLAB', 'QUIMICA', 'FISICA', 'INFORMATICA'];
+        orders.forEach(o => {
+            // Extraemos ítems y cantidades del registro actual (pueden ser uno o muchos)
+            let currentItems: string[] = [];
+            let currentQty = 0;
 
-  tabs: { id: PurchaseStage, label: string, icon: string }[] = [
-      { id: 'Solicitud', label: 'Solicitud', icon: 'bi bi-clipboard-plus' },
-      { id: 'Adjudicacion', label: 'Adjudicación', icon: 'bi bi-hammer' },
-      { id: 'Seguimiento', label: 'Seguimiento', icon: 'bi bi-truck' },
-      { id: 'Cierre', label: 'Cierre', icon: 'bi bi-box-seam-fill' }
-  ];
+            if (o.itemsArray && Array.isArray(o.itemsArray) && o.itemsArray.length > 0) {
+                currentItems = o.itemsArray.map(i => i?.description || 'Sin descripción');
+                currentQty = o.itemsArray.reduce((acc, i) => acc + (Number(i?.quantity) || 0), 0);
+            } else {
+                currentItems = [o.item || 'Sin descripción'];
+                currentQty = Number(o.cantidad) || 0;
+            }
 
-  filteredOrders = computed(() => {
-     let orders = this.data.purchaseOrders().filter(o => o.stage === this.currentStage());
-     
-     if (this.selectedLabFilter() !== 'ALL') {
-         orders = orders.filter(o => o.lab === this.selectedLabFilter());
-     }
+            if (!groups[o.idNum]) {
+                groups[o.idNum] = {
+                    idNum: o.idNum,
+                    lab: o.lab,
+                    fechaSolicitud: o.fechaSolicitud,
+                    stage: o.stage,
+                    ids: [o.id],
+                    items: [...currentItems],
+                    totalCantidad: currentQty,
+                    totalValor: Number(o.valorTotal) || 0,
+                    proveedor: o.proveedor,
+                    rutProveedor: o.rutProveedor,
+                    numeroOC: o.numeroOC,
+                    originalOrder: o
+                };
+            } else {
+                groups[o.idNum].ids.push(o.id);
+                groups[o.idNum].totalCantidad += currentQty;
+                groups[o.idNum].totalValor += Number(o.valorTotal) || 0;
 
-     const term = this.searchTerm().toLowerCase();
-     if (term) {
-         orders = orders.filter(o => 
-             o.item.toLowerCase().includes(term) || 
-             o.idNum.includes(term) ||
-             (o.proveedor && o.proveedor.toLowerCase().includes(term))
-         );
-     }
-     return orders;
-  });
+                currentItems.forEach(item => {
+                    if (item && !groups[o.idNum].items.includes(item)) {
+                        groups[o.idNum].items.push(item);
+                    }
+                });
+            }
+        });
 
-  // --- Stats and Counts (Folio-based) ---
-  countByStage(stage: PurchaseStage): number {
-      const allOrders = this.data.purchaseOrders().filter(o => o.stage === stage);
-      // Conteo UAH por folio único (Anexo 1)
-      const uniqueFolios = new Set(allOrders.map(o => o.idNum));
-      return uniqueFolios.size;
-  }
+        return Object.values(groups);
+    });
 
-  // --- Budget Calculations ---
-  getLabBudget(lab: LabType): number {
-      return this.data.labBudgets()[lab] || 0;
-  }
+    // Budget Editing
+    editingBudgets: Record<string, number> = {};
 
-  getLabSpent(lab: LabType): number {
-      return this.data.purchaseOrders()
-          .filter(o => o.lab === lab)
-          .reduce((sum, o) => sum + (o.valorTotal || 0), 0);
-  }
+    labTypes: LabType[] = ['FABLAB', 'QUIMICA', 'FISICA', 'INFORMATICA'];
 
-  getLabGradient(lab: LabType): string {
-      switch(lab) {
-           case 'FABLAB': return 'bg-uah-blue';
-           case 'QUIMICA': return 'bg-emerald-600';
-           case 'FISICA': return 'bg-indigo-600';
-           case 'INFORMATICA': return 'bg-uah-orange';
-          default: return 'bg-gray-500';
-      }
-  }
-  
-  getLabIcon(lab: LabType): string {
-      switch(lab) {
-          case 'FABLAB': return 'bi bi-printer';
-          case 'QUIMICA': return 'bi bi-droplet';
-          case 'FISICA': return 'bi bi-lightning';
-          case 'INFORMATICA': return 'bi bi-cpu';
-          default: return 'bi bi-box';
-      }
-  }
+    tabs: { id: PurchaseStage, label: string, icon: string }[] = [
+        { id: 'Solicitud', label: 'Solicitud', icon: 'bi bi-clipboard-plus' },
+        { id: 'Adjudicacion', label: 'Adjudicación', icon: 'bi bi-hammer' },
+        { id: 'Seguimiento', label: 'Seguimiento', icon: 'bi bi-truck' },
+        { id: 'Cierre', label: 'Cierre', icon: 'bi bi-box-seam-fill' }
+    ];
 
-  getLabBadgeClass(lab: LabType): string {
-      switch(lab) {
-          case 'FABLAB': return 'text-blue-600 bg-blue-50 border-blue-200';
-          case 'QUIMICA': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-          case 'FISICA': return 'text-purple-600 bg-purple-50 border-purple-200';
-          case 'INFORMATICA': return 'text-orange-600 bg-orange-50 border-orange-200';
-          default: return 'text-gray-600 bg-gray-50';
-      }
-  }
+    filteredOrders = computed(() => {
+        let orders = this.data.purchaseOrders().filter(o => o.stage === this.currentStage());
 
-  pendingCount = computed(() => this.data.purchaseOrders().filter(o => o.stage !== 'Cierre').length);
-  shippingCount = computed(() => this.data.purchaseOrders().filter(o => o.stage === 'Seguimiento').length);
+        if (this.selectedLabFilter() !== 'ALL') {
+            orders = orders.filter(o => o.lab === this.selectedLabFilter());
+        }
 
-  getCount(stage: PurchaseStage) {
-      if (this.selectedLabFilter() !== 'ALL') {
-          return this.data.purchaseOrders().filter(o => o.stage === stage && o.lab === this.selectedLabFilter()).length;
-      }
-      return this.data.purchaseOrders().filter(o => o.stage === stage).length;
-  }
-  
-  getStageLabel() {
-      return this.tabs.find(t => t.id === this.currentStage())?.label;
-  }
+        const term = this.searchTerm().toLowerCase();
+        if (term) {
+            orders = orders.filter(o =>
+                o.item.toLowerCase().includes(term) ||
+                o.idNum.includes(term) ||
+                (o.proveedor && o.proveedor.toLowerCase().includes(term))
+            );
+        }
+        return orders;
+    });
 
-  // --- Budget Actions ---
-  
-  openBudgetEditor() {
-      // Clone current budgets to edit
-      this.editingBudgets = { ...this.data.labBudgets() };
-      this.showBudgetModal.set(true);
-  }
-
-  saveBudgets() {
-      this.data.updateBudgets(this.editingBudgets as Record<LabType, number>);
-      this.showBudgetModal.set(false);
-      Swal.fire({ 
-        icon: 'success', 
-        title: '<h3 class="text-uah-blue font-black uppercase">Presupuestos Actualizados</h3>', 
-        text: 'Los fondos han sido reasignados correctamente.',
-        timer: 2000, 
-        showConfirmButton: false,
-        toast: true,
-        position: 'top-end'
-      });
-  }
-
-  // --- Order Actions ---
-
-  openCreateModal() {
-      this.currentOrder = { 
-          idNum: '', // User editable in new strict mode
-          item: '',
-          lab: this.selectedLabFilter() !== 'ALL' ? this.selectedLabFilter() as LabType : 'FABLAB', 
-          cantidad: 1,
-          valorUnitario: 0,
-          valorTotal: 0,
-          itemsArray: [{ description: '', quantity: 1, unitPrice: 0 }],
-          fechaSolicitud: new Date().toISOString().split('T')[0],
-          linkReferencia: 'N/A'
-      };
-      this.isEditing = false;
-      this.showModal.set(true);
-  }
-
-  openEditModal(group: any) {
-      // 1. Identificamos todas las órdenes que pertenecen a este folio
-      const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
-      
-      // 2. Usamos la primera como base para los metadatos (Lab, Fecha, etc.)
-      const first = allOrdersInGroup[0];
-      this.currentOrder = { ...first };
-      
-      // 3. Fusionamos todos los productos de todas las filas en el itemsArray
-      const mergedItems: any[] = [];
-      allOrdersInGroup.forEach(order => {
-          if (order.itemsArray && order.itemsArray.length > 0) {
-              mergedItems.push(...order.itemsArray);
-          } else {
-              // Si es un registro viejo sin itemsArray, creamos la entrada manual
-              mergedItems.push({
-                  description: order.item,
-                  quantity: order.cantidad,
-                  unitPrice: order.valorUnitario
-              });
-          }
-      });
-      
-      this.currentOrder.itemsArray = mergedItems;
-      this.currentOrder.idsToCleanup = allOrdersInGroup.map(o => o.id);
-      
-      this.updateTotal(); // Calculamos el IVA 19% del total consolidado
-      this.isEditing = true;
-      this.showModal.set(true);
-  }
-
-  editOrder(order: PurchaseOrder) {
-      // Legacy method: will be redirected to folio grouping soon
-      this.currentOrder = { ...order };
-      if (!this.currentOrder.itemsArray || this.currentOrder.itemsArray.length === 0) {
-          this.currentOrder.itemsArray = [{ 
-              description: order.item, 
-              quantity: order.cantidad, 
-              unitPrice: order.valorUnitario 
-          }];
-      }
-      this.isEditing = true;
-      this.showModal.set(true);
-  }
-  
-  closeModal() { this.showModal.set(false); }
-
-  addItemRow() {
-    if (!this.currentOrder.itemsArray) this.currentOrder.itemsArray = [];
-    this.currentOrder.itemsArray.push({ description: '', quantity: 1, unitPrice: 0 });
-  }
-
-  removeItemRow(index: number) {
-    if (this.currentOrder.itemsArray && this.currentOrder.itemsArray.length > 1) {
-        this.currentOrder.itemsArray.splice(index, 1);
-        this.updateTotal();
+    // --- Stats and Counts (Folio-based) ---
+    countByStage(stage: PurchaseStage): number {
+        const allOrders = this.data.purchaseOrders().filter(o => o.stage === stage);
+        // Conteo UAH por folio único (Anexo 1)
+        const uniqueFolios = new Set(allOrders.map(o => o.idNum));
+        return uniqueFolios.size;
     }
-  }
 
-  updateTotal() {
-      if (this.currentOrder.itemsArray && this.currentOrder.itemsArray.length > 0) {
-          let totalNeto = 0;
-          this.currentOrder.itemsArray.forEach(item => {
-              totalNeto += (item.quantity * item.unitPrice);
-          });
-          
-          // UAH Standard: Aplicar 19% de IVA al total bruto
-          this.currentOrder.valorTotal = Math.round(totalNeto * 1.19);
-          
-          // Compatibilidad Institucional: El primer item manda en la descripción resumen
-          this.currentOrder.item = this.currentOrder.itemsArray[0].description;
-          this.currentOrder.cantidad = this.currentOrder.itemsArray[0].quantity;
-          this.currentOrder.valorUnitario = this.currentOrder.itemsArray[0].unitPrice;
-      } else {
-          this.currentOrder.valorTotal = 0;
-      }
-  }
+    // --- Budget Calculations ---
+    getLabBudget(lab: LabType): number {
+        return this.data.labBudgets()[lab] || 0;
+    }
 
-  async saveOrder() {
-      if (!this.currentOrder.itemsArray || this.currentOrder.itemsArray.length === 0 || !this.currentOrder.itemsArray[0].description) {
-           Swal.fire({ icon: 'error', title: 'Faltan Datos', text: 'Complete al menos un producto con descripción.', confirmButtonColor: '#003366' });
-           return;
-      }
-      
-      this.updateTotal();
+    getLabSpent(lab: LabType): number {
+        return this.data.purchaseOrders()
+            .filter(o => o.lab === lab)
+            .reduce((sum, o) => sum + (o.valorTotal || 0), 0);
+    }
 
-      if (this.isEditing) {
-          // Consolidación UAH: Guardamos en el ID principal y borramos los redundantes
-          const mainId = this.currentOrder.id!;
-          await this.data.updatePurchaseOrder(mainId, this.currentOrder);
-          
-          if (this.currentOrder.idsToCleanup && this.currentOrder.idsToCleanup.length > 1) {
-              const redundantIds = this.currentOrder.idsToCleanup.filter(id => id !== mainId);
-              for (const rid of redundantIds) {
-                  await this.data.deletePurchaseOrder(rid);
-              }
-          }
-      } else {
-          await this.data.addPurchaseOrder(this.currentOrder);
-      }
-      
-      this.closeModal();
-      this.clearSelection();
-      Swal.fire({ icon: 'success', title: 'Operación Consolidada', timer: 1500, showConfirmButton: false });
-  }
-
-  deleteOrder(order: PurchaseOrder) {
-      Swal.fire({ 
-        title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Solicitud?</h3>', 
-        text: 'Esta operación no se puede deshacer.',
-        icon: 'warning', 
-        showCancelButton: true, 
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#003366',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((r: any) => {
-          if (r.isConfirmed) this.data.deletePurchaseOrder(order.id);
-      });
-  }
-
-  // --- Transitions ---
-
-  promoteToAdjudication(order: PurchaseOrder) {
-      this.currentOrder = { ...order };
-      this.currentOrder.proveedor = '';
-      this.currentOrder.rutProveedor = '';
-      // Defaults for adjudication fields
-      this.currentOrder.productoAdjudicado = order.item;
-      this.currentOrder.precioAdjudicado = order.valorUnitario;
-      this.currentOrder.cantidadAdjudicada = order.cantidad;
-      
-      this.isEditing = true;
-      this.currentStage.set('Adjudicacion'); 
-      this.data.updatePurchaseOrder(order.id, {}, 'Adjudicacion');
-      Swal.fire({ 
-        icon: 'success', 
-        title: '<h3 class="text-emerald-600 font-black uppercase">Aprobación Técnica</h3>', 
-        text: 'La solicitud ha sido movida a fase de Adjudicación.', 
-        timer: 2000, 
-        showConfirmButton: false 
-      });
-  }
-
-  promoteToTracking(order: PurchaseOrder) {
-      if (!order.proveedor) {
-          Swal.fire('Atención', 'Debe asignar un proveedor antes de generar OC', 'warning');
-          return;
-      }
-      this.data.updatePurchaseOrder(order.id, {}, 'Seguimiento');
-      this.currentStage.set('Seguimiento');
-      Swal.fire({ 
-        icon: 'success', 
-        title: '<h3 class="text-indigo-600 font-black uppercase">Orden Generada</h3>', 
-        text: 'El proceso continúa en fase de seguimiento.', 
-        timer: 2000, 
-        showConfirmButton: false 
-      });
-  }
-
-  promoteToClosing(order: PurchaseOrder) {
-      if (!order.numeroOC) {
-           Swal.fire('Atención', 'Falta el Número de OC', 'warning');
-           return;
-      }
-      this.data.updatePurchaseOrder(order.id, { fechaEntrega: new Date().toISOString().split('T')[0] }, 'Cierre');
-      this.currentStage.set('Cierre');
-      Swal.fire({ icon: 'success', title: 'Proceso Cerrado', text: 'Producto recepcionado.', timer: 1500, showConfirmButton: false });
-  }
-
-  // --- UAH Masive Operations ---
-
-  clearSelection() {
-      this.selectedIds.set(new Set());
-  }
-
-  toggleSelection(idNum: string) {
-      const next = new Set(this.selectedIds());
-      if (next.has(idNum)) next.delete(idNum);
-      else next.add(idNum);
-      this.selectedIds.set(next);
-  }
-
-  toggleSelectAll() {
-      if (this.isAllSelected()) {
-          this.selectedIds.set(new Set());
-      } else {
-          const allFolios = this.groupedOrders().map(g => g.idNum);
-          this.selectedIds.set(new Set(allFolios));
-      }
-  }
-
-  async bulkAdjudicate() {
-      const { value: formValues } = await Swal.fire({
-          title: '<h3 class="text-uah-blue font-black uppercase">Adjudicación Masiva</h3>',
-          html:
-            '<label class="block text-left text-xs font-bold text-gray-500 uppercase mb-1">Proveedor Común</label>' +
-            '<input id="swal-proveedor" class="swal2-input !mt-0 !mb-4 !w-full" placeholder="Razón Social">' +
-            '<label class="block text-left text-xs font-bold text-gray-500 uppercase mb-1">RUT Proveedor</label>' +
-            '<input id="swal-rut" class="swal2-input !mt-0 !w-full" placeholder="77.xxx.xxx-x">',
-          focusConfirm: false,
-          confirmButtonText: 'Procesar ' + this.selectedIds().size + ' Folios',
-          confirmButtonColor: '#10b981',
-          preConfirm: () => {
-            return [
-              (document.getElementById('swal-proveedor') as HTMLInputElement).value,
-              (document.getElementById('swal-rut') as HTMLInputElement).value
-            ]
-          }
-      });
-
-      if (formValues && formValues[0]) {
-          const folios = Array.from(this.selectedIds());
-          const allOrders = this.data.purchaseOrders().filter(o => folios.includes(o.idNum));
-          
-          for (const order of allOrders) {
-              await this.data.updatePurchaseOrder(order.id, { 
-                  proveedor: formValues[0], 
-                  rutProveedor: formValues[1],
-                  stage: 'Adjudicacion'
-              }, 'Adjudicacion');
-          }
-          this.clearSelection();
-          Swal.fire('Éxito', 'Se adjudicaron ' + folios.length + ' folios.', 'success');
-      }
-  }
-
-  async bulkDelete() {
-      const res = await Swal.fire({
-          title: '<h3 class="text-red-600 font-black uppercase">Eliminación Masiva</h3>',
-          text: '¿Confirmas eliminar ' + this.selectedIds().size + ' folios completos permanentemente?',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#ef4444',
-          confirmButtonText: 'Sí, eliminar todo'
-      });
-
-      if (res.isConfirmed) {
-          const folios = Array.from(this.selectedIds());
-          const allOrders = this.data.purchaseOrders().filter(o => folios.includes(o.idNum));
-
-          for (const order of allOrders) {
-              await this.data.deletePurchaseOrder(order.id);
-          }
-          this.clearSelection();
-          Swal.fire('Eliminado', 'Se borraron los folios seleccionados.', 'success');
-      }
-  }
-
-  // --- Group Promotion Logic ---
-
-  async promoteGroupToAdjudication(group: any) {
-    const folios = [group.idNum];
-    const { value: formValues } = await Swal.fire({
-        title: '<h3 class="text-emerald-600 font-black uppercase tracking-widest text-sm">Adjudicación Directa de Folio</h3>',
-        html:
-          '<div class="text-[10px] text-gray-400 mb-4 uppercase tracking-widest font-bold">Folio: ' + group.idNum + '</div>' +
-          '<label class="block text-left text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cargar Proveedor</label>' +
-          '<input id="swal-proveedor" class="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs font-bold mb-3" placeholder="Razón Social">' +
-          '<label class="block text-left text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">RUT Proveedor</label>' +
-          '<input id="swal-rut" class="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs font-bold" placeholder="77.xxx.xxx-x">',
-        focusConfirm: false,
-        confirmButtonText: 'Adjudicar Folio',
-        confirmButtonColor: '#10b981',
-        preConfirm: () => {
-          return [
-            (document.getElementById('swal-proveedor') as HTMLInputElement).value,
-            (document.getElementById('swal-rut') as HTMLInputElement).value
-          ]
+    getLabGradient(lab: LabType): string {
+        switch (lab) {
+            case 'FABLAB': return 'bg-uah-blue';
+            case 'QUIMICA': return 'bg-emerald-600';
+            case 'FISICA': return 'bg-indigo-600';
+            case 'INFORMATICA': return 'bg-uah-orange';
+            default: return 'bg-gray-500';
         }
-    });
+    }
 
-    if (formValues && formValues[0]) {
+    getLabIcon(lab: LabType): string {
+        switch (lab) {
+            case 'FABLAB': return 'bi bi-printer';
+            case 'QUIMICA': return 'bi bi-droplet';
+            case 'FISICA': return 'bi bi-lightning';
+            case 'INFORMATICA': return 'bi bi-cpu';
+            default: return 'bi bi-box';
+        }
+    }
+
+    getLabBadgeClass(lab: LabType): string {
+        switch (lab) {
+            case 'FABLAB': return 'text-blue-600 bg-blue-50 border-blue-200';
+            case 'QUIMICA': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+            case 'FISICA': return 'text-purple-600 bg-purple-50 border-purple-200';
+            case 'INFORMATICA': return 'text-orange-600 bg-orange-50 border-orange-200';
+            default: return 'text-gray-600 bg-gray-50';
+        }
+    }
+
+    pendingCount = computed(() => this.data.purchaseOrders().filter(o => o.stage !== 'Cierre').length);
+    shippingCount = computed(() => this.data.purchaseOrders().filter(o => o.stage === 'Seguimiento').length);
+
+    getCount(stage: PurchaseStage) {
+        if (this.selectedLabFilter() !== 'ALL') {
+            return this.data.purchaseOrders().filter(o => o.stage === stage && o.lab === this.selectedLabFilter()).length;
+        }
+        return this.data.purchaseOrders().filter(o => o.stage === stage).length;
+    }
+
+    getStageLabel() {
+        return this.tabs.find(t => t.id === this.currentStage())?.label;
+    }
+
+    // --- Budget Actions ---
+
+    openBudgetEditor() {
+        // Clone current budgets to edit
+        this.editingBudgets = { ...this.data.labBudgets() };
+        this.showBudgetModal.set(true);
+    }
+
+    saveBudgets() {
+        this.data.updateBudgets(this.editingBudgets as Record<LabType, number>);
+        this.showBudgetModal.set(false);
+        Swal.fire({
+            icon: 'success',
+            title: '<h3 class="text-uah-blue font-black uppercase">Presupuestos Actualizados</h3>',
+            text: 'Los fondos han sido reasignados correctamente.',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    }
+
+    // --- Order Actions ---
+
+    openCreateModal() {
+        this.currentOrder = {
+            idNum: '', // User editable in new strict mode
+            item: '',
+            lab: this.selectedLabFilter() !== 'ALL' ? this.selectedLabFilter() as LabType : 'FABLAB',
+            cantidad: 1,
+            valorUnitario: 0,
+            valorTotal: 0,
+            itemsArray: [{ description: '', quantity: 1, unitPrice: 0 }],
+            fechaSolicitud: new Date().toISOString().split('T')[0],
+            linkReferencia: 'N/A'
+        };
+        this.isEditing = false;
+        this.showModal.set(true);
+    }
+
+    openEditModal(group: any) {
+        // 1. Identificamos todas las órdenes que pertenecen a este folio
         const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
-        for (const order of allOrdersInGroup) {
-            await this.data.updatePurchaseOrder(order.id, { 
-                proveedor: formValues[0], 
-                rutProveedor: formValues[1],
-                stage: 'Adjudicacion'
-            }, 'Adjudicacion');
+
+        // 2. Usamos la primera como base para los metadatos (Lab, Fecha, etc.)
+        const first = allOrdersInGroup[0];
+        this.currentOrder = { ...first };
+
+        // 3. Fusionamos todos los productos de todas las filas en el itemsArray
+        const mergedItems: any[] = [];
+        allOrdersInGroup.forEach(order => {
+            if (order.itemsArray && order.itemsArray.length > 0) {
+                mergedItems.push(...order.itemsArray);
+            } else {
+                // Si es un registro viejo sin itemsArray, creamos la entrada manual
+                mergedItems.push({
+                    description: order.item,
+                    quantity: order.cantidad,
+                    unitPrice: order.valorUnitario
+                });
+            }
+        });
+
+        this.currentOrder.itemsArray = mergedItems;
+        this.currentOrder.idsToCleanup = allOrdersInGroup.map(o => o.id);
+
+        this.updateTotal(); // Calculamos el IVA 19% del total consolidado
+        this.isEditing = true;
+        this.showModal.set(true);
+    }
+
+    editOrder(order: PurchaseOrder) {
+        // Legacy method: will be redirected to folio grouping soon
+        this.currentOrder = { ...order };
+        if (!this.currentOrder.itemsArray || this.currentOrder.itemsArray.length === 0) {
+            this.currentOrder.itemsArray = [{
+                description: order.item,
+                quantity: order.cantidad,
+                unitPrice: order.valorUnitario
+            }];
         }
-        Swal.fire({ icon: 'success', title: 'Folio Adjudicado', timer: 1500, showConfirmButton: false });
+        this.isEditing = true;
+        this.showModal.set(true);
     }
-  }
 
-  promoteGroupToTracking(group: any) {
-    const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
-    for (const order of allOrdersInGroup) {
+    closeModal() { this.showModal.set(false); }
+
+    addItemRow() {
+        if (!this.currentOrder.itemsArray) this.currentOrder.itemsArray = [];
+        this.currentOrder.itemsArray.push({ description: '', quantity: 1, unitPrice: 0 });
+    }
+
+    removeItemRow(index: number) {
+        if (this.currentOrder.itemsArray && this.currentOrder.itemsArray.length > 1) {
+            this.currentOrder.itemsArray.splice(index, 1);
+            this.updateTotal();
+        }
+    }
+
+    updateTotal() {
+        if (this.currentOrder.itemsArray && this.currentOrder.itemsArray.length > 0) {
+            let totalNeto = 0;
+            this.currentOrder.itemsArray.forEach(item => {
+                totalNeto += (item.quantity * item.unitPrice);
+            });
+
+            // UAH Standard: Aplicar 19% de IVA al total bruto
+            this.currentOrder.valorTotal = Math.round(totalNeto * 1.19);
+
+            // Compatibilidad Institucional: El primer item manda en la descripción resumen
+            this.currentOrder.item = this.currentOrder.itemsArray[0].description;
+            this.currentOrder.cantidad = this.currentOrder.itemsArray[0].quantity;
+            this.currentOrder.valorUnitario = this.currentOrder.itemsArray[0].unitPrice;
+        } else {
+            this.currentOrder.valorTotal = 0;
+        }
+    }
+
+    async saveOrder() {
+        if (!this.currentOrder.itemsArray || this.currentOrder.itemsArray.length === 0 || !this.currentOrder.itemsArray[0].description) {
+            Swal.fire({ icon: 'error', title: 'Faltan Datos', text: 'Complete al menos un producto con descripción.', confirmButtonColor: '#003366' });
+            return;
+        }
+
+        this.updateTotal();
+
+        if (this.isEditing) {
+            // Consolidación UAH: Guardamos en el ID principal y borramos los redundantes
+            const mainId = this.currentOrder.id!;
+            await this.data.updatePurchaseOrder(mainId, this.currentOrder);
+
+            if (this.currentOrder.idsToCleanup && this.currentOrder.idsToCleanup.length > 1) {
+                const redundantIds = this.currentOrder.idsToCleanup.filter(id => id !== mainId);
+                for (const rid of redundantIds) {
+                    await this.data.deletePurchaseOrder(rid);
+                }
+            }
+        } else {
+            await this.data.addPurchaseOrder(this.currentOrder);
+        }
+
+        this.closeModal();
+        this.clearSelection();
+        Swal.fire({ icon: 'success', title: 'Operación Consolidada', timer: 1500, showConfirmButton: false });
+    }
+
+    deleteOrder(order: PurchaseOrder) {
+        Swal.fire({
+            title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Solicitud?</h3>',
+            text: 'Esta operación no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#003366',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((r: any) => {
+            if (r.isConfirmed) this.data.deletePurchaseOrder(order.id);
+        });
+    }
+
+    // --- Transitions ---
+
+    promoteToAdjudication(order: PurchaseOrder) {
+        this.currentOrder = { ...order };
+        this.currentOrder.proveedor = '';
+        this.currentOrder.rutProveedor = '';
+        // Defaults for adjudication fields
+        this.currentOrder.productoAdjudicado = order.item;
+        this.currentOrder.precioAdjudicado = order.valorUnitario;
+        this.currentOrder.cantidadAdjudicada = order.cantidad;
+
+        this.isEditing = true;
+        this.currentStage.set('Adjudicacion');
+        this.data.updatePurchaseOrder(order.id, {}, 'Adjudicacion');
+        Swal.fire({
+            icon: 'success',
+            title: '<h3 class="text-emerald-600 font-black uppercase">Aprobación Técnica</h3>',
+            text: 'La solicitud ha sido movida a fase de Adjudicación.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    promoteToTracking(order: PurchaseOrder) {
+        if (!order.proveedor) {
+            Swal.fire('Atención', 'Debe asignar un proveedor antes de generar OC', 'warning');
+            return;
+        }
         this.data.updatePurchaseOrder(order.id, {}, 'Seguimiento');
+        this.currentStage.set('Seguimiento');
+        Swal.fire({
+            icon: 'success',
+            title: '<h3 class="text-indigo-600 font-black uppercase">Orden Generada</h3>',
+            text: 'El proceso continúa en fase de seguimiento.',
+            timer: 2000,
+            showConfirmButton: false
+        });
     }
-    this.currentStage.set('Seguimiento');
-    Swal.fire({ icon: 'success', title: 'OC Generada para Folio', timer: 1500, showConfirmButton: false });
-  }
 
-  promoteGroupToClosing(group: any) {
-    const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
-    for (const order of allOrdersInGroup) {
+    promoteToClosing(order: PurchaseOrder) {
+        if (!order.numeroOC) {
+            Swal.fire('Atención', 'Falta el Número de OC', 'warning');
+            return;
+        }
         this.data.updatePurchaseOrder(order.id, { fechaEntrega: new Date().toISOString().split('T')[0] }, 'Cierre');
+        this.currentStage.set('Cierre');
+        Swal.fire({ icon: 'success', title: 'Proceso Cerrado', text: 'Producto recepcionado.', timer: 1500, showConfirmButton: false });
     }
-    this.currentStage.set('Cierre');
-    Swal.fire({ icon: 'success', title: 'Folio Cerrado', timer: 1500, showConfirmButton: false });
-  }
 
-  deleteGroup(group: any) {
-    Swal.fire({ 
-        title: '¿Eliminar Folio ' + group.idNum + '?', 
-        text: 'Se borrarán todos los ítems asociados.', 
-        icon: 'warning', 
-        showCancelButton: true, 
-        confirmButtonColor: '#ef4444' 
-    }).then((res: any) => {
+    // --- UAH Masive Operations ---
+
+    clearSelection() {
+        this.selectedIds.set(new Set());
+    }
+
+    toggleSelection(idNum: string) {
+        const next = new Set(this.selectedIds());
+        if (next.has(idNum)) next.delete(idNum);
+        else next.add(idNum);
+        this.selectedIds.set(next);
+    }
+
+    toggleSelectAll() {
+        if (this.isAllSelected()) {
+            this.selectedIds.set(new Set());
+        } else {
+            const allFolios = this.groupedOrders().map(g => g.idNum);
+            this.selectedIds.set(new Set(allFolios));
+        }
+    }
+
+    async bulkAdjudicate() {
+        const { value: formValues } = await Swal.fire({
+            title: '<h3 class="text-uah-blue font-black uppercase">Adjudicación Masiva</h3>',
+            html:
+                '<label class="block text-left text-xs font-bold text-gray-500 uppercase mb-1">Proveedor Común</label>' +
+                '<input id="swal-proveedor" class="swal2-input !mt-0 !mb-4 !w-full" placeholder="Razón Social">' +
+                '<label class="block text-left text-xs font-bold text-gray-500 uppercase mb-1">RUT Proveedor</label>' +
+                '<input id="swal-rut" class="swal2-input !mt-0 !w-full" placeholder="77.xxx.xxx-x">',
+            focusConfirm: false,
+            confirmButtonText: 'Procesar ' + this.selectedIds().size + ' Folios',
+            confirmButtonColor: '#10b981',
+            preConfirm: () => {
+                return [
+                    (document.getElementById('swal-proveedor') as HTMLInputElement).value,
+                    (document.getElementById('swal-rut') as HTMLInputElement).value
+                ]
+            }
+        });
+
+        if (formValues && formValues[0]) {
+            const folios = Array.from(this.selectedIds());
+            const allOrders = this.data.purchaseOrders().filter(o => folios.includes(o.idNum));
+
+            for (const order of allOrders) {
+                await this.data.updatePurchaseOrder(order.id, {
+                    proveedor: formValues[0],
+                    rutProveedor: formValues[1],
+                    stage: 'Adjudicacion'
+                }, 'Adjudicacion');
+            }
+            this.clearSelection();
+            Swal.fire('Éxito', 'Se adjudicaron ' + folios.length + ' folios.', 'success');
+        }
+    }
+
+    async bulkDelete() {
+        const res = await Swal.fire({
+            title: '<h3 class="text-red-600 font-black uppercase">Eliminación Masiva</h3>',
+            text: '¿Confirmas eliminar ' + this.selectedIds().size + ' folios completos permanentemente?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Sí, eliminar todo'
+        });
+
         if (res.isConfirmed) {
+            const folios = Array.from(this.selectedIds());
+            const allOrders = this.data.purchaseOrders().filter(o => folios.includes(o.idNum));
+
+            for (const order of allOrders) {
+                await this.data.deletePurchaseOrder(order.id);
+            }
+            this.clearSelection();
+            Swal.fire('Eliminado', 'Se borraron los folios seleccionados.', 'success');
+        }
+    }
+
+    // --- Group Promotion Logic ---
+
+    async promoteGroupToAdjudication(group: any) {
+        const folios = [group.idNum];
+        const { value: formValues } = await Swal.fire({
+            title: '<h3 class="text-emerald-600 font-black uppercase tracking-widest text-sm">Adjudicación Directa de Folio</h3>',
+            html:
+                '<div class="text-[10px] text-gray-400 mb-4 uppercase tracking-widest font-bold">Folio: ' + group.idNum + '</div>' +
+                '<label class="block text-left text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cargar Proveedor</label>' +
+                '<input id="swal-proveedor" class="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs font-bold mb-3" placeholder="Razón Social">' +
+                '<label class="block text-left text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">RUT Proveedor</label>' +
+                '<input id="swal-rut" class="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs font-bold" placeholder="77.xxx.xxx-x">',
+            focusConfirm: false,
+            confirmButtonText: 'Adjudicar Folio',
+            confirmButtonColor: '#10b981',
+            preConfirm: () => {
+                return [
+                    (document.getElementById('swal-proveedor') as HTMLInputElement).value,
+                    (document.getElementById('swal-rut') as HTMLInputElement).value
+                ]
+            }
+        });
+
+        if (formValues && formValues[0]) {
             const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
             for (const order of allOrdersInGroup) {
-                this.data.deletePurchaseOrder(order.id);
+                await this.data.updatePurchaseOrder(order.id, {
+                    proveedor: formValues[0],
+                    rutProveedor: formValues[1],
+                    stage: 'Adjudicacion'
+                }, 'Adjudicacion');
             }
+            Swal.fire({ icon: 'success', title: 'Folio Adjudicado', timer: 1500, showConfirmButton: false });
         }
-    });
-  }
+    }
 
-  exportGroupToCSV(group: any) {
-    const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
-    // Use existing export logic but with all items in group
-    this.exportToCSVMulti(allOrdersInGroup, `FOLIO_${group.idNum}`);
-  }
+    promoteGroupToTracking(group: any) {
+        const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
+        for (const order of allOrdersInGroup) {
+            this.data.updatePurchaseOrder(order.id, {}, 'Seguimiento');
+        }
+        this.currentStage.set('Seguimiento');
+        Swal.fire({ icon: 'success', title: 'OC Generada para Folio', timer: 1500, showConfirmButton: false });
+    }
 
-  private exportToCSVMulti(orders: PurchaseOrder[], filename: string) {
-    const headers = ['Folio', 'Laboratorio', 'Producto', 'Cantidad', 'Valor_Neto_Unit', 'Total_Bruto_IVA', 'Fecha', 'Etapa', 'Proveedor', 'RUT_Proveedor', 'OC'];
-    const rows: string[] = [];
+    promoteGroupToClosing(group: any) {
+        const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
+        for (const order of allOrdersInGroup) {
+            this.data.updatePurchaseOrder(order.id, { fechaEntrega: new Date().toISOString().split('T')[0] }, 'Cierre');
+        }
+        this.currentStage.set('Cierre');
+        Swal.fire({ icon: 'success', title: 'Folio Cerrado', timer: 1500, showConfirmButton: false });
+    }
 
-    orders.forEach(o => {
-        if (o.itemsArray && o.itemsArray.length > 0) {
-            // Expandimos cada ítem del folio en una fila de Excel [UAH]
-            o.itemsArray.forEach(item => {
+    deleteGroup(group: any) {
+        Swal.fire({
+            title: '¿Eliminar Folio ' + group.idNum + '?',
+            text: 'Se borrarán todos los ítems asociados.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444'
+        }).then((res: any) => {
+            if (res.isConfirmed) {
+                const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
+                for (const order of allOrdersInGroup) {
+                    this.data.deletePurchaseOrder(order.id);
+                }
+            }
+        });
+    }
+
+    exportGroupToCSV(group: any) {
+        const allOrdersInGroup = this.data.purchaseOrders().filter(o => o.idNum === group.idNum);
+        // Use existing export logic but with all items in group
+        this.exportToCSVMulti(allOrdersInGroup, `FOLIO_${group.idNum}`);
+    }
+
+    private exportToCSVMulti(orders: PurchaseOrder[], filename: string) {
+        const headers = ['Folio', 'Laboratorio', 'Producto', 'Cantidad', 'Valor_Neto_Unit', 'Total_Bruto_IVA', 'Fecha', 'Etapa', 'Proveedor', 'RUT_Proveedor', 'OC'];
+        const rows: string[] = [];
+
+        orders.forEach(o => {
+            if (o.itemsArray && o.itemsArray.length > 0) {
+                // Expandimos cada ítem del folio en una fila de Excel [UAH]
+                o.itemsArray.forEach(item => {
+                    rows.push([
+                        o.idNum,
+                        o.lab,
+                        item.description,
+                        item.quantity,
+                        item.unitPrice,
+                        Math.round((item.quantity * item.unitPrice) * 1.19), // Bruto institucional
+                        o.fechaSolicitud,
+                        o.stage,
+                        o.proveedor || 'N/A',
+                        o.rutProveedor || 'N/A',
+                        o.numeroOC || 'N/A'
+                    ].join(';'));
+                });
+            } else {
+                // Respaldamos registros antiguos o simples
                 rows.push([
                     o.idNum,
                     o.lab,
-                    item.description,
-                    item.quantity,
-                    item.unitPrice,
-                    Math.round((item.quantity * item.unitPrice) * 1.19), // Bruto institucional
+                    o.item || 'N/A',
+                    o.cantidad,
+                    o.valorUnitario,
+                    o.valorTotal,
                     o.fechaSolicitud,
                     o.stage,
                     o.proveedor || 'N/A',
                     o.rutProveedor || 'N/A',
                     o.numeroOC || 'N/A'
                 ].join(';'));
-            });
-        } else {
-            // Respaldamos registros antiguos o simples
-            rows.push([
-                o.idNum,
-                o.lab,
-                o.item || 'N/A',
-                o.cantidad,
-                o.valorUnitario,
-                o.valorTotal,
-                o.fechaSolicitud,
-                o.stage,
-                o.proveedor || 'N/A',
-                o.rutProveedor || 'N/A',
-                o.numeroOC || 'N/A'
-            ].join(';'));
-        }
-    });
+            }
+        });
 
-    const csvContent = [headers.join(';'), ...rows].join('\n');
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
-    link.click();
-  }
+        const csvContent = [headers.join(';'), ...rows].join('\n');
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.click();
+    }
 
-  // --- UAH Auditoría & Reportes ---
+    // --- UAH Auditoría & Reportes ---
 
-  exportToCSV(singleOrder?: PurchaseOrder) {
-      const orders = singleOrder ? [singleOrder] : this.filteredOrders();
-      if (orders.length === 0) return;
+    exportToCSV(singleOrder?: PurchaseOrder) {
+        const orders = singleOrder ? [singleOrder] : this.filteredOrders();
+        if (orders.length === 0) return;
 
-      const headers = ['Folio', 'Laboratorio', 'Producto', 'Cantidad', 'Valor_Neto_Unit', 'Total_Bruto_IVA', 'Fecha', 'Etapa', 'Proveedor', 'RUT_Proveedor', 'OC'];
-      const rows: string[] = [];
+        const headers = ['Folio', 'Laboratorio', 'Producto', 'Cantidad', 'Valor_Neto_Unit', 'Total_Bruto_IVA', 'Fecha', 'Etapa', 'Proveedor', 'RUT_Proveedor', 'OC'];
+        const rows: string[] = [];
 
-      orders.forEach(o => {
-          if (o.itemsArray && o.itemsArray.length > 0) {
-              o.itemsArray.forEach(item => {
-                  rows.push([
-                      o.idNum,
-                      o.lab,
-                      item.description,
-                      item.quantity,
-                      item.unitPrice,
-                      Math.round((item.quantity * item.unitPrice) * 1.19),
-                      o.fechaSolicitud,
-                      o.stage,
-                      o.proveedor || 'N/A',
-                      o.rutProveedor || 'N/A',
-                      o.numeroOC || 'N/A'
-                  ].join(';'));
-              });
-          } else {
-              rows.push([
-                  o.idNum,
-                  o.lab,
-                  o.item || 'N/A',
-                  o.cantidad,
-                  o.valorUnitario,
-                  o.valorTotal,
-                  o.fechaSolicitud,
-                  o.stage,
-                  o.proveedor || 'N/A',
-                  o.rutProveedor || 'N/A',
-                  o.numeroOC || 'N/A'
-              ].join(';'));
-          }
-      });
+        orders.forEach(o => {
+            if (o.itemsArray && o.itemsArray.length > 0) {
+                o.itemsArray.forEach(item => {
+                    rows.push([
+                        o.idNum,
+                        o.lab,
+                        item.description,
+                        item.quantity,
+                        item.unitPrice,
+                        Math.round((item.quantity * item.unitPrice) * 1.19),
+                        o.fechaSolicitud,
+                        o.stage,
+                        o.proveedor || 'N/A',
+                        o.rutProveedor || 'N/A',
+                        o.numeroOC || 'N/A'
+                    ].join(';'));
+                });
+            } else {
+                rows.push([
+                    o.idNum,
+                    o.lab,
+                    o.item || 'N/A',
+                    o.cantidad,
+                    o.valorUnitario,
+                    o.valorTotal,
+                    o.fechaSolicitud,
+                    o.stage,
+                    o.proveedor || 'N/A',
+                    o.rutProveedor || 'N/A',
+                    o.numeroOC || 'N/A'
+                ].join(';'));
+            }
+        });
 
-      const csvContent = [headers.join(';'), ...rows].join('\n');
-      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `REPORTE_UAH_${this.currentStage().toUpperCase()}_${new Date().toISOString().split('T')[0]}.csv`);
-      link.click();
-  }
+        const csvContent = [headers.join(';'), ...rows].join('\n');
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `REPORTE_UAH_${this.currentStage().toUpperCase()}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.click();
+    }
 
-  downloadTemplate() {
-      // Cabeceras profesionales UAH
-      const headers = ['Folio', 'Laboratorio', 'Item_Producto', 'Cantidad', 'Valor_Neto_Unitario', 'Observaciones', 'Link_Referencia'];
-      const example = ['8051368', 'INFORMATICA', 'Cargador Lenovo original tipo C 65W', '5', '35990', 'Urgente para Laboratorio 3', 'https://referencia.cl'];
-      
-      const csvContent = [headers.join(';'), example.join(';')].join('\n');
-      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'PLANTILLA_COMPRAS_UAH.csv');
-      link.click();
-      
-      Swal.fire({ 
-        icon: 'info', 
-        title: 'Plantilla UAH Descargada', 
-        text: 'Completa los datos en Excel. IMPORTANTE: El Valor debe ser NETO, el sistema sumará el 19% de IVA automáticamente.',
-        confirmButtonColor: '#003366'
-      });
-  }
+    downloadTemplate() {
+        // Cabeceras profesionales UAH
+        const headers = ['Folio', 'Laboratorio', 'Item_Producto', 'Cantidad', 'Valor_Neto_Unitario', 'Observaciones', 'Link_Referencia'];
+        const example = ['8051368', 'INFORMATICA', 'Cargador Lenovo original tipo C 65W', '5', '35990', 'Urgente para Laboratorio 3', 'https://referencia.cl'];
 
-  triggerImport() {
-      this.fileInput.nativeElement.click();
-  }
+        const csvContent = [headers.join(';'), example.join(';')].join('\n');
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'PLANTILLA_COMPRAS_UAH.csv');
+        link.click();
 
-  async onFileSelected(event: any) {
-      const file = event.target.files[0];
-      if (!file) return;
+        Swal.fire({
+            icon: 'info',
+            title: 'Plantilla UAH Descargada',
+            text: 'Completa los datos en Excel. IMPORTANTE: El Valor debe ser NETO, el sistema sumará el 19% de IVA automáticamente.',
+            confirmButtonColor: '#003366'
+        });
+    }
 
-      const reader = new FileReader();
-      reader.onload = async (e: any) => {
-          const content = e.target.result;
-          const lines = content.split('\n');
-          const rows = lines.slice(1); // Skip header
-          let count = 0;
+    triggerImport() {
+        this.fileInput.nativeElement.click();
+    }
 
-          for (const row of rows) {
-              if (!row.trim()) continue;
-              const cols = row.split(';');
-              
-              if (cols.length >= 3) {
-                  const idNum = cols[0]?.trim();
-                  const lab = (cols[1]?.trim() || 'INFORMATICA') as LabType;
-                  const item = cols[2]?.trim();
-                  const qty = Number(cols[3]) || 1;
-                  const priceNeto = Number(cols[4]) || 0;
-                  
-                  const newOrder = {
-                      idNum: idNum,
-                      lab: lab,
-                      item: item,
-                      cantidad: qty,
-                      valorUnitario: priceNeto,
-                      // CALCULO FISCAL UAH: Neto * Cantidad * 1.19
-                      valorTotal: Math.round(qty * priceNeto * 1.19),
-                      observaciones: cols[5]?.trim() || '',
-                      linkReferencia: cols[6]?.trim() || 'N/A',
-                      stage: 'Solicitud' as PurchaseStage,
-                      fechaSolicitud: new Date().toISOString().split('T')[0],
-                      itemsArray: [{ 
-                        description: item, 
-                        quantity: qty, 
-                        unitPrice: priceNeto 
-                      }]
-                  };
-                  await this.data.addPurchaseOrder(newOrder);
-                  count++;
-              }
-          }
-          
-          Swal.fire({ icon: 'success', title: 'Importación Exitosa', text: `Se cargaron ${count} solicitudes correctamente.` });
-          this.fileInput.nativeElement.value = ''; // Reset input
-      };
-      reader.readAsText(file);
-  }
+    async onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e: any) => {
+            const content = e.target.result;
+            const lines = content.split('\n');
+            const rows = lines.slice(1); // Skip header
+            let count = 0;
+
+            for (const row of rows) {
+                if (!row.trim()) continue;
+                const cols = row.split(';');
+
+                if (cols.length >= 3) {
+                    const idNum = cols[0]?.trim();
+                    const lab = (cols[1]?.trim() || 'INFORMATICA') as LabType;
+                    const item = cols[2]?.trim();
+                    const qty = Number(cols[3]) || 1;
+                    const priceNeto = Number(cols[4]) || 0;
+
+                    const newOrder = {
+                        idNum: idNum,
+                        lab: lab,
+                        item: item,
+                        cantidad: qty,
+                        valorUnitario: priceNeto,
+                        // CALCULO FISCAL UAH: Neto * Cantidad * 1.19
+                        valorTotal: Math.round(qty * priceNeto * 1.19),
+                        observaciones: cols[5]?.trim() || '',
+                        linkReferencia: cols[6]?.trim() || 'N/A',
+                        stage: 'Solicitud' as PurchaseStage,
+                        fechaSolicitud: new Date().toISOString().split('T')[0],
+                        itemsArray: [{
+                            description: item,
+                            quantity: qty,
+                            unitPrice: priceNeto
+                        }]
+                    };
+                    await this.data.addPurchaseOrder(newOrder);
+                    count++;
+                }
+            }
+
+            Swal.fire({ icon: 'success', title: 'Importación Exitosa', text: `Se cargaron ${count} solicitudes correctamente.` });
+            this.fileInput.nativeElement.value = ''; // Reset input
+        };
+        reader.readAsText(file);
+    }
 }
