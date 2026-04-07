@@ -89,11 +89,11 @@ export class WelcomeComponent implements OnInit {
     // Lógica de redirección basada en rol
     const role = user.rol;
     const isAcad = ['Academico', 'Docente', 'Alumno'].includes(role);
-    
+
     if (isAcad) {
       this.router.navigate(['/schedule']);
     } else {
-      this.router.navigate(['/areas']);
+      this.router.navigate(['/dashboard']);
     }
   }
 }
