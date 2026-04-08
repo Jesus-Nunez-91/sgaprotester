@@ -60,7 +60,8 @@ declare var Swal: any;
                   <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Equipamiento</span>
               </div>
               <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Disponible</div>
-              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ data.inventory().length }}</div>
+              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ totalStockUnits() | number }}</div>
+              <div class="text-[9px] font-bold text-[#f06427] mt-1">{{ data.inventory().length }} ITEMS DIFERENTES</div>
           </div>
 
           <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
@@ -505,6 +506,9 @@ export class DashboardComponent implements OnInit {
 
    // Items cuyo stock actual es menor o igual al stock mínimo definido
    criticalStock = computed(() => this.data.inventory().filter(i => i.stockActual <= i.stockMinimo));
+
+   // SUMA TOTAL DE UNIDADES FÍSICAS (Para que cuadre con la realidad del usuario)
+   totalStockUnits = computed(() => this.data.inventory().reduce((acc, i) => acc + (i.stockActual || 0), 0));
 
    labsList = ['FABLAB', 'QUIMICA', 'FISICA', 'INFORMATICA'];
 

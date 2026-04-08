@@ -1,5 +1,4 @@
-
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { DataService, InventoryItem } from '../services/data.service';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -286,7 +285,7 @@ declare const XLSX: any;
                     </tr>
                   </thead>
                  <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @for (item of filteredItems(); track item.id) {
+                    @for (item of paginatedItems(); track item.id) {
                        @let stock = getAvailableStock(item);
                        @let isLowStock = item.stockActual <= item.stockMinimo;
                        
@@ -390,6 +389,34 @@ declare const XLSX: any;
                  </tbody>
               </table>
            </div>
+
+           <!-- Paginación Premium -->
+           @if (totalPages() > 1) {
+              <div class="mt-4 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  Mostrando {{ (currentPage() - 1) * pageSize() + 1 }} - {{ Math.min(currentPage() * pageSize(), filteredItems().length) }} de {{ filteredItems().length }} items
+                </div>
+                <div class="flex items-center gap-2">
+                  <button (click)="setPage(currentPage() - 1)" [disabled]="currentPage() === 1" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-uah-blue hover:text-white transition-all flex items-center justify-center shadow-sm">
+                    <i class="bi bi-chevron-left font-black"></i>
+                  </button>
+                  
+                  <div class="flex gap-1">
+                    @for (p of pageNumbers(); track p) {
+                      <button (click)="setPage(p)" 
+                        [class]="currentPage() === p ? 'bg-uah-blue text-white shadow-lg scale-110' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100'"
+                        class="w-10 h-10 rounded-xl font-black text-xs transition-all border border-transparent">
+                        {{ p }}
+                      </button>
+                    }
+                  </div>
+
+                  <button (click)="setPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-uah-blue hover:text-white transition-all flex items-center justify-center shadow-sm">
+                    <i class="bi bi-chevron-right font-black"></i>
+                  </button>
+                </div>
+              </div>
+           }
         </div>
       </div>
 
@@ -727,12 +754,36 @@ export class InventoryComponent {
   /** Cantidad total de items seleccionados */
   selectionCount = computed(() => this.selection().reduce((acc, curr) => acc + curr.qty, 0));
 
+  // --- LÓGICA DE PAGINACIÓN ---
+  pageSize = signal(10);
+  currentPage = signal(1);
+  paginatedItems = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredItems().slice(start, start + this.pageSize());
+  });
+  totalPages = computed(() => Math.ceil(this.filteredItems().length / this.pageSize()));
+  pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
+  protected Math = Math;
+
   constructor() {
     this.route.params.subscribe(p => {
       this.areaName = p['area'];
       this.labName = p['lab'];
       this.resetForm();
     });
+
+    // Resetear a la página 1 cuando cambian los filtros o la búsqueda
+    effect(() => {
+      this.filteredItems();
+      this.currentPage.set(1);
+    }, { allowSignalWrites: true });
+  }
+
+  setPage(p: number) {
+    if (p >= 1 && p <= this.totalPages()) {
+        this.currentPage.set(p);
+    }
   }
 
   /**
@@ -1093,20 +1144,14 @@ export class InventoryComponent {
       const worksheet = workbook.Sheets[firstSheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+      let rotuloCounter = 1;
       const itemsToUpload = jsonData
-        .map((row: any) => {
+        .map((row: any, rowIndex: number) => {
+          const keys = Object.keys(row);
           const getV = (prefixes: string[]) => {
-            const keys = Object.keys(row);
-            const upperPrefixes = prefixes.map(p => p.toUpperCase());
-            // Prioridad 1: Match exacto
-            const exact = keys.find(k => upperPrefixes.includes(k.toUpperCase()));
-            if (exact) return String(row[exact] || '').trim();
-            // Prioridad 2: Match parcial (soporta truncados como UBICACIÓ -> UBICACIÓN)
-            const partial = keys.find(k => {
-              const uk = k.toUpperCase();
-              return upperPrefixes.some(up => up.includes(uk) || uk.includes(up));
-            });
-            return partial ? String(row[partial] || '').trim() : '';
+            const up = prefixes.map(p => p.toUpperCase());
+            const match = keys.find(k => up.includes(k.toUpperCase().trim()));
+            return match ? String(row[match] || '').trim() : '';
           };
           
           const getNum = (prefixes: string[], def: number) => {
@@ -1118,129 +1163,89 @@ export class InventoryComponent {
 
           const normalize = (s: string) => s.toUpperCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-          // 1. Determinar Categoría y Ruteo Dinámico
-          let cat = this.areaName || 'GENERAL';
+          // 1. Determinar Categoría y Ruteo
+          let cat = this.areaName || 'SGA';
           let subCat = this.labName || 'BODEGA';
           let tipInv = this.inventoryMode() || 'Materiales';
 
           const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA']));
           const sH = normalize(getV(['SUB-LAB_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB']));
           
-          // Detección de Formato: Solo Notebooks si tienen campos específicos de PC
           const marca = getV(['MARCA', 'BRAND']);
           const procesador = getV(['PROCESADOR', 'CPU']);
           const ram = getV(['RAM', 'MEMORIA']);
           const so = getV(['SO', 'SISTEMA', 'OPERATIVO']);
-          const isNotebook = !!(procesador || ram || so || (marca && getV(['ROTULO_ID', 'ID']).includes('NB')));
+          const isNotebook = !!(procesador || ram || so || (marca && getV(['ROTULO_ID']).includes('NB-')));
 
-          let matched = false;
-          // Buscar en la jerarquía oficial
-          for (const [area, labs] of Object.entries(this.data.hierarchy)) {
-            const nArea = normalize(area);
-            if (uH.includes(nArea) || sH.includes(nArea)) {
-              cat = area;
-              const sub = labs.find(l => uH.includes(normalize(l)) || sH.includes(normalize(l)));
-              if (sub) {
-                subCat = sub;
-              } else if (cat === 'FABLAB' && isNotebook) {
-                subCat = 'NOTEBOOK';
+          // Ruteo dinámico solo si el usuario no tiene contexto o el archivo parece de otro laboratorio
+          if (uH && uH !== normalize(cat)) {
+              for (const [areaName, labs] of Object.entries(this.data.hierarchy)) {
+                if (uH.includes(normalize(areaName))) {
+                  cat = areaName;
+                  const sub = labs.find(l => sH.includes(normalize(l)) || uH.includes(normalize(l)));
+                  if (sub) subCat = sub;
+                  break;
+                }
               }
-              matched = true;
-              break;
-            }
           }
 
-          if (!matched) {
-            if (uH.includes('HACKERLAB') || sH.includes('HACKERLAB')) {
-              cat = 'LAB INFORMATICA'; subCat = 'HACKERLAB';
-            } else if (uH.includes('INFORMATICA') || uH.includes('TECNOLOGICO') || sH.includes('DESARROLLO')) {
-              cat = 'LAB INFORMATICA'; subCat = 'DESARROLLO TECNOLOGICO';
-            }
-          }
+          if (cat === 'FABLAB' && isNotebook && subCat === 'FABLAB') subCat = 'NOTEBOOK';
 
-          if (cat === 'FABLAB' && isNotebook && subCat === 'FABLAB') {
-            subCat = 'NOTEBOOK';
-          }
-          
-          console.log(`Ruteo: Cat=${cat}, SubCat=${subCat}, Fila=${uH}|${sH}`);
-
-          // 2. Mapeo de Campos según Formato
+          // 2. Mapeo de Campos
           if (isNotebook) {
             const softwareList: string[] = [];
-            const standardKeys = [
-              'UBICACIÓN', 'UBICACIÓ', 'UBICACION', 'SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO',
-              'MARCA', 'MODELO', 'SN', 'STATUS', 'STADO', 'ESTADO', 'SO', 'RAM', 'ROM', 'PROCESADOR', 'CPU',
-              'STOCK', 'ACTUAL', 'MINIMO', 'FACTURA', 'LLEGADA', 'FECHA', 'CANT'
-            ];
+            const standardKeys = ['UBICACIÓN', 'SUB-LAB_ID', 'ROTULO_ID', 'MARCA', 'MODELO', 'SN', 'STATUS', 'SO', 'RAM', 'ROM', 'PROCESADOR', 'STOCK', 'FACTURA', 'LLEGADA', 'FECHA'];
 
             Object.keys(row).forEach(key => {
-              const val = String(row[key]);
-              if (val.toUpperCase() === 'X' || val === 'true' || row[key] === true) {
-                const upperKey = key.toUpperCase();
-                if (!standardKeys.some(sk => upperKey.includes(sk))) {
-                  softwareList.push(key);
-                }
+              const val = String(row[key]).toUpperCase();
+              if (val === 'X' || val === 'TRUE') {
+                if (!standardKeys.some(sk => key.toUpperCase().includes(sk))) softwareList.push(key);
               }
             });
 
-            // Arreglo de Nombres: Si no hay marca, usamos el modelo/item
-            const rawMarca = marca;
-            const rawModelo = getV(['MODELO', 'MODEL', 'DESCRIPCION', 'ITEM']);
-            
             return {
-              marca: rawMarca || rawModelo || 'Genérico',
-              modelo: rawMarca ? rawModelo : (rawModelo ? 'Notebook / AIO' : ''),
-              ram: ram,
-              rom: getV(['ROM', 'DISCO', 'HDD', 'SSD']),
-              so: getV(['SO', 'SISTEMA', 'OPERATIVO']),
-              sn: getV(['SN', 'S/N', 'SERIAL']),
-              rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO']),
-              procesador: procesador,
-              softwareInstalado: softwareList.join('\n'),
-              stockActual: getNum(['ACTUAL', 'STOCKACTUA', 'CANTIDAD'], 1),
-              stockMinimo: getNum(['MINIMO', 'STOCKMINIR'], 0),
-              status: (v => {
-                const s = v.toUpperCase().replace('_', ' ');
-                if (s.includes('DEFECT') || s.includes('FALLA') || s.includes('MALO')) return 'Defectuoso';
-                if (s.includes('NO DISPONIB') || s.includes('MANTEN') || s.includes('NO_')) return 'No Disponible';
-                return 'Disponible';
-              })(getV(['STATUS', 'STADO', 'ESTADO'])),
-              esFungible: false,
-              numeroFactura: getV(['FACTURA', 'N* FACTURA']),
-              fechaLlegada: getV(['FECHALLEG', 'LLEGADA', 'FECHA']),
-              cantidadLlegada: getNum(['CANTLLEGA', 'LLEGADA'], 0),
-              categoria: cat,
-              subCategoria: subCat,
-              tipoInventario: tipInv || 'Equipos'
+              marca: marca || 'Genérico',
+              modelo: getV(['MODELO', 'MODEL', 'DESCRIPCION', 'ITEM']) || 'Notebook',
+              ram, rom: getV(['ROM', 'DISCO', 'SSD']), so: getV(['SO', 'SISTEMA']),
+              sn: (v => {
+                const s = v.trim();
+                const forbidden = ['SIN OBSERVACIONES', 'S/O', 'N/O', 'N/A', 'NO', 'SIN', 'SIN ', '-', '.', 'SIN OBSERVACIÓN'];
+                return forbidden.includes(s.toUpperCase()) ? '' : s;
+              })(getV(['SN', 'SERIAL', 'S/N'])),
+              rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO']),
+              procesador, softwareInstalado: softwareList.join('\n'),
+              stockActual: getNum(['ACTUAL', 'STOCK', 'CANTIDAD'], 1),
+              stockMinimo: getNum(['MINIMO'], 0),
+              status: getV(['STATUS', 'STADO', 'ESTADO']).toUpperCase().includes('DEFECT') ? 'Defectuoso' : 'Disponible',
+              categoria: cat, subCategoria: subCat, tipoInventario: 'Equipos'
             };
           } else {
-            // Formato Insumo / Materiales: Priorizar ITEM/DESCRIPCION/NOMBRE sobre MARCA
             const itemDesc = getV(['ITEM', 'DESCRIPCION', 'PRODUCTO', 'MODELO', 'NOMBRE']);
-            const marcaExpl = marca;
-
-            const statusV = getV(['STATUS', 'STADO', 'ESTADO']);
-            const mappedStatus = (v: string) => {
-              const s = v.toUpperCase().replace('_', ' ');
-              if (s.includes('DEFECT') || s.includes('FALLA')) return 'Defectuoso';
-              if (s.includes('NO DISPONIB') || s.includes('MANTEN') || s.includes('NO_')) return 'No Disponible';
-              return 'Disponible';
-            };
+            const statusV = getV(['STATUS', 'STADO', 'ESTADO']).toUpperCase();
+            
+            // Generación de Rótulo Correlativo obligatorio e infalible
+            const excelId = getV(['ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO', 'SUB-LAB_ID']);
+            const generatedId = excelId || `MAT-${(this.labName || 'GEN').substring(0,3).toUpperCase()}-${String(rowIndex + 1).padStart(3, '0')}`;
 
             return {
-              marca: (marcaExpl && marcaExpl !== itemDesc) ? marcaExpl : (itemDesc || 'Insumo Genérico'),
-              modelo: (itemDesc && itemDesc !== marcaExpl) ? itemDesc : (marcaExpl || 'N/A'),
-              status: mappedStatus(statusV),
+              marca: (marca && marca !== itemDesc) ? marca : (itemDesc || 'Insumo Genérico'),
+              modelo: (itemDesc && itemDesc !== marca) ? itemDesc : (marca || 'N/A'),
+              status: (statusV.includes('DEFECT') || statusV.includes('FALLA')) ? 'Defectuoso' : 'Disponible',
               esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
               stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
-              stockMinimo: getNum(['MINIMO', 'STOCKMIN'], 0),
+              stockMinimo: getNum(['MINIMO'], 0),
               numeroFactura: getV(['FACTURA', 'N* FACTURA']),
-              fechaLlegada: getV(['FECHA', 'LLEGADA', 'FECHALLEG']),
-              cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD', 'LLEGADA'], 0),
+              fechaLlegada: getV(['FECHA', 'LLEGADA']),
+              cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD'], 0),
               categoria: cat,
               subCategoria: subCat,
-              tipoInventario: tipInv || 'Materiales',
-              sn: getV(['OBS', 'SN', 'SERIAL', 'OBSERVACION']),
-              rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO', 'UBICACIÓN'])
+              tipoInventario: 'Materiales',
+              sn: (v => {
+                const s = v.trim();
+                const forbidden = ['SIN OBSERVACIONES', 'S/O', 'N/O', 'N/A', 'NO', 'SIN', 'SIN ', '-', '.', 'SIN OBSERVACIÓN'];
+                return forbidden.includes(s.toUpperCase()) ? '' : s;
+              })(getV(['SN', 'SERIAL', 'S/N', 'SERIAL NUMBER'])),
+              rotulo_ID: generatedId
             };
           }
         })

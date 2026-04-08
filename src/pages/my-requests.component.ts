@@ -36,9 +36,16 @@ declare var Swal: any;
       <div class="glass-panel rounded-3xl p-8 shadow-xl border border-white/40 dark:border-gray-700">
         
         <!-- Peticiones Pendientes -->
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i class="bi bi-clock-history"></i> PANEL DE CONTROL: PENDIENTES
-        </h3>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <i class="bi bi-clock-history"></i> PANEL DE CONTROL: PENDIENTES
+            </h3>
+            @if (isSuperUser() && filteredActiveRequests().length > 0) {
+              <button (click)="purgeGhosts()" class="text-[10px] font-black text-red-500 hover:text-red-700 uppercase tracking-tighter flex items-center gap-1 bg-red-50 px-3 py-1 rounded-lg border border-red-100 transition-all">
+                 <i class="bi bi-stars"></i> Limpiar Registros Fantasma
+              </button>
+            }
+        </div>
         <div class="space-y-4 mb-10">
            @for (req of filteredActiveRequests(); track req.id) {
               <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border-l-4 border-[#f06427] flex flex-col sm:flex-row justify-between items-center gap-4 transition-all hover:shadow-md">
@@ -302,6 +309,40 @@ export class MyRequestsComponent {
         }
       } catch (e) {
         console.error("Error en purga", e);
+      }
+    }
+  }
+
+  async purgeGhosts() {
+    const result = await Swal.fire({
+      title: '¿Limpiar registros fantasma?',
+      text: "Se eliminarán masivamente todas las solicitudes pendientes que sean 'Carga masiva' o 'Actualizaciones'. Esto despejará tu panel de control.",
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonColor: '#003366',
+      confirmButtonText: 'Sí, limpiar panel',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      const baseUrl = (window.hasOwnProperty('Capacitor')) ? 'http://10.10.0.20:3040' : '';
+      const endpoint = `${baseUrl}/api/procurement-requests/mass/clear-ghosts`;
+      
+      try {
+        const res = await fetch(endpoint, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${this.data.token()}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          this.data.fetchUnifiedRequests();
+          Swal.fire('¡Panel Limpio!', `Se han eliminado ${data.affected} registros correctamente.`, 'success');
+        } else {
+          Swal.fire('Error', 'No se pudo completar la limpieza masiva.', 'error');
+        }
+      } catch (e) {
+        console.error("Error en purgeGhosts", e);
       }
     }
   }

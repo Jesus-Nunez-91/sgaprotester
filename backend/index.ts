@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import "reflect-metadata";
 import { AppDataSource } from './data-source';
-import { Like } from "typeorm";
+import { Like, Not, In } from "typeorm";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import bcrypt from 'bcryptjs';
@@ -615,14 +615,13 @@ app.post('/api/inventory/bulk', authMiddleware, checkPermission(ROLES.ADMIN_STUF
         if (!data.tipoInventario) data.tipoInventario = 'Materiales';
         if (!data.status) data.status = 'Disponible';
         
-        // Evitar duplicados por SN o Identificador en carga masiva
-        if (data.sn || data.rotulo_ID) {
-            const exists = await itemRepo.findOne({
-                where: [
-                  ...(data.sn ? [{ sn: data.sn }] : []),
-                  ...(data.rotulo_ID ? [{ rotulo_ID: data.rotulo_ID }] : [])
-                ]
-            });
+        // Evitar duplicados por SN o Identificador en carga masiva (Solo si tienen valor real)
+        const whereArr = [];
+        if (data.sn && data.sn.trim() !== '') whereArr.push({ sn: data.sn.trim() });
+        if (data.rotulo_ID && data.rotulo_ID.trim() !== '') whereArr.push({ rotulo_ID: data.rotulo_ID.trim() });
+
+        if (whereArr.length > 0) {
+            const exists = await itemRepo.findOne({ where: whereArr });
             if (exists) {
                 // Si existe, actualizamos el stock en lugar de crear uno nuevo (Fundamental para cuadrar dinero/unidades)
                 exists.stockActual = (exists.stockActual || 0) + (data.stockActual || 1);
@@ -630,8 +629,8 @@ app.post('/api/inventory/bulk', authMiddleware, checkPermission(ROLES.ADMIN_STUF
                 created.push(exists);
                 const saved = await itemRepo.save(exists);
                 
-                // Trazabilidad Unificada
-                await logRequest(req, 'MATERIAL', `Update de ítem: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id);
+                // Trazabilidad Unificada (Auto-aprobada por ser administrativa)
+                await logRequest(req, 'MATERIAL', `Actualización Stock: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id, 'N/A', 'Aprobado');
                 
                 created.push(saved);
                 continue;
@@ -641,8 +640,8 @@ app.post('/api/inventory/bulk', authMiddleware, checkPermission(ROLES.ADMIN_STUF
         const newItem = itemRepo.create(data);
         const saved: any = await itemRepo.save(newItem);
         
-        // Trazabilidad Unificada (UAH Auditoría)
-        await logRequest(req, 'MATERIAL', `Carga masiva: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id);
+        // Trazabilidad Unificada (UAH Auditoría - Auto-aprobada por ser carga masiva)
+        await logRequest(req, 'MATERIAL', `Carga masiva: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id, 'N/A', 'Aprobado');
         
         created.push(saved);
       } catch (err: any) {
@@ -671,8 +670,48 @@ app.put('/api/inventory/:id', authMiddleware, checkPermission(ROLES.ADMIN_STUFF)
     const itemRepo = AppDataSource.getRepository(InventoryItem);
     const item = await itemRepo.findOneBy({ id: parseInt(req.params.id) });
     if (!item) return res.status(404).json({ message: 'Item no encontrado' });
+
+    const oldStatus = item.status;
+    const oldStockDef = item.stockDefectuoso || 0;
     Object.assign(item, req.body);
     const updated = await itemRepo.save(item) as any;
+
+    const statusChangedToMaint = ['Defectuoso', 'En Mantención'].includes(updated.status) && !['Defectuoso', 'En Mantención'].includes(oldStatus);
+    const stockDefIncreased = updated.stockDefectuoso > oldStockDef;
+
+    // Si el equipo se marca como Defectuoso/Mantención o aumenta el stock defectuoso, crear automáticamente una tarea de mantención
+    if (statusChangedToMaint || stockDefIncreased) {
+      try {
+        const maintRepo = AppDataSource.getRepository(MaintenanceTask);
+        
+        // Verificar si ya hay una tarea pendiente o en progreso para este item para evitar duplicados
+        const existingTask = await maintRepo.findOne({
+            where: { 
+                itemId: updated.id,
+                status: Not(In(['Finalizado', 'Cancelado'] as any))
+            }
+        });
+
+        if (!existingTask) {
+            const newTask = maintRepo.create({
+                itemId: updated.id,
+                itemName: `${updated.marca} ${updated.modelo}`,
+                type: 'Correctivo',
+                priority: 'Alta',
+                status: 'Pendiente',
+                technician: 'Por asignar',
+                cost: 0,
+                description: `Auto-generado: Equipo reportado como ${updated.status.toUpperCase()} ${stockDefIncreased ? '(Aumento de Stock Defectuoso)' : ''} (SN: ${updated.sn || 'S/N'}).`,
+                dateScheduled: new Date().toISOString().split('T')[0]
+            });
+            await maintRepo.save(newTask);
+            console.log(`[AUTO-MAINT] Creada orden correctiva para item ${updated.id}`);
+        }
+      } catch (maintError) {
+        console.error("Error al crear tarea de mantención automática:", maintError);
+      }
+    }
+
     await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_UPDATE', `Item actualizado: ${updated.marca} ${updated.modelo} - ${updated.status}`);
     res.json(updated);
   } catch (error) {
@@ -732,17 +771,18 @@ app.post('/api/room-reservations', authMiddleware, checkPermission(ROLES.RESERVA
 });
 
 // Función Auxiliar de Trazabilidad Unificada (Caja Negra)
-async function logRequest(req: any, tipo: string, detalle: string, recId: number, horario: string = 'N/A') {
+async function logRequest(req: any, tipo: string, detalle: string, recId: number, horario: string = 'N/A', forceStatus?: string) {
     try {
         const logRepo = AppDataSource.getRepository(ProcurementRequest);
+        const isAdminAction = req.user.rol.includes('Admin') || req.user.rol === 'SuperUser';
         const newLog = logRepo.create({
             usuario: req.user.nombre,
             correo: req.user.correo,
             tipoItem: tipo,
             detalle: detalle,
             horario: horario,
-            recId: recId, // Vincular ID físico para aprobación
-            status: req.user.rol.includes('Admin') ? 'Aprobado' : 'Pendiente',
+            recId: recId,
+            status: forceStatus || (isAdminAction ? 'Aprobado' : 'Pendiente'),
             fecha: new Date().toISOString()
         });
         await logRepo.save(newLog);
@@ -750,6 +790,24 @@ async function logRequest(req: any, tipo: string, detalle: string, recId: number
         console.error("Error en Trazabilidad Log:", e);
     }
 }
+
+// NUEVO: Limpieza Administrativa de Solicitudes (Borra registros de Auditoría/Trazabilidad)
+app.delete('/api/procurement-requests/mass/clear-ghosts', authMiddleware, checkPermission(ROLES.SECURITY_ONLY), async (req: any, res) => {
+  try {
+    const repo = AppDataSource.getRepository(ProcurementRequest);
+    // Borramos todas las cargas masivas o actualizaciones que quedaron 'Pendientes' por error
+    const result = await repo.createQueryBuilder()
+        .delete()
+        .where("status = :status", { status: 'Pendiente' })
+        .andWhere("(detalle LIKE :m1 OR detalle LIKE :m2 OR detalle LIKE :m3)", { m1: '%Carga masiva%', m2: '%Update%', m3: '%Actualización%' })
+        .execute();
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'LOGS_PURGE', `Limpieza masiva de ${result.affected} registros fantasma`);
+    res.json({ message: 'Limpieza completada', affected: result.affected });
+  } catch (error) {
+    res.status(500).json({ message: 'Error en purga masiva' });
+  }
+});
 
 app.get('/api/reservations', authMiddleware, async (req, res) => {
   const reservations = await AppDataSource.getRepository(Reservation).find();

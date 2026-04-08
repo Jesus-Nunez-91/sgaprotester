@@ -427,7 +427,10 @@ export class DataService {
         },
         body: JSON.stringify(item)
       });
-      if (res.ok) await this.fetchInventory();
+      if (res.ok) {
+        await this.fetchInventory();
+        await this.fetchMaintenanceTasks();
+      }
     } catch (e) {
       console.error("Error al actualizar item", e);
     }
