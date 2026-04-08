@@ -90,6 +90,7 @@ export interface ProjectTask {
   progress: number;
   projectId: number;
   assigneeId?: number;
+  assignees?: string;
   status?: 'En espera' | 'En proceso' | 'Pendiente de Aprobacion' | 'Finalizada';
 }
 
@@ -1078,7 +1079,6 @@ export class DataService {
     }
   }
 
-  // --- GESTIÓN DE PROYECTOS API ---
   async fetchProjects() {
     if (!this.token()) return;
     try {
@@ -1091,8 +1091,8 @@ export class DataService {
     if (!this.token()) return;
     const method = project.id ? 'PUT' : 'POST';
     const url = project.id ? `/api/projects/${project.id}` : '/api/projects';
-    // Limpieza institucional: Eliminar objetos de relación para evitar Error 400
-    const { manager, ...cleanProject } = project;
+    // Limpieza institucional: Enviamos 'tasks' como JSON array
+    const { manager, createdAt, updatedAt, ...cleanProject } = project;
     
     try {
       const res = await fetch(url, {
@@ -1102,6 +1102,28 @@ export class DataService {
       });
       if (res.ok) await this.fetchProjects();
     } catch (e) { console.error("Error al guardar proyecto", e); }
+  }
+
+  async addProjectTask(project: any, task: any) {
+    if (!project.tasks) project.tasks = [];
+    task.id = Date.now(); // local simple ID
+    project.tasks.push(task);
+    await this.saveProject(project);
+  }
+
+  async updateProjectTask(project: any, task: any) {
+    if (!project.tasks) return;
+    const idx = project.tasks.findIndex((t: any) => t.id === task.id);
+    if (idx !== -1) {
+       project.tasks[idx] = task;
+       await this.saveProject(project);
+    }
+  }
+
+  async deleteProjectTask(project: any, taskId: number) {
+    if (!project.tasks) return;
+    project.tasks = project.tasks.filter((t: any) => t.id !== taskId);
+    await this.saveProject(project);
   }
 
   async deleteProject(id: number) {
@@ -1114,18 +1136,6 @@ export class DataService {
       if (res.ok) await this.fetchProjects();
     } catch (e) { console.error("Error al eliminar proyecto", e); }
   }
-
-  async deleteProjectTask(taskId: number) {
-    if (!this.token()) return;
-    try {
-      const res = await fetch(this.baseUrl + `/api/project-tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${this.token()}` }
-      });
-      if (res.ok) await this.fetchProjects();
-    } catch (e) { console.error("Error al eliminar fase", e); }
-  }
-
   // --- GESTIÓN DE WIKI API ---
   async fetchWiki() {
     if (!this.token()) return;

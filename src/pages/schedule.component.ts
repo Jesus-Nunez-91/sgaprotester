@@ -30,29 +30,26 @@ declare const Swal: any;
                  <div class="flex gap-2">
                    <button (click)="downloadTemplate()" 
                            title="Descargar Plantilla Excel"
-                           class="bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                     <i class="bi bi-file-earmark-arrow-down"></i>
-                     Plantilla
+                           class="bg-orange-50 hover:bg-orange-100 text-orange-500 hover:text-orange-600 border border-orange-200 p-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center aspect-square">
+                     <i class="bi bi-file-earmark-medical text-lg"></i>
                    </button>
                    <button (click)="exportSchedule()" 
                            title="Descargar Horario Actual"
-                           class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                     <i class="bi bi-file-earmark-spreadsheet"></i>
-                     Exportar
+                           class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 border border-emerald-200 p-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center aspect-square">
+                     <i class="bi bi-file-earmark-spreadsheet text-lg"></i>
                    </button>
                    <button (click)="importInput.click()" 
                            title="Carga Masiva desde Excel"
-                           class="bg-uah-blue hover:bg-blue-800 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                     <i class="bi bi-cloud-arrow-up"></i>
-                     Importar
+                           class="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 border border-blue-200 p-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center aspect-square">
+                     <i class="bi bi-cloud-arrow-up text-lg"></i>
                    </button>
                    <input #importInput type="file" (change)="importSchedule($event)" class="hidden" accept=".xlsx, .xls">
                    
                    <button (click)="toggleEditMode()" 
-                           [class]="isEditMode() ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-600 hover:bg-gray-700'"
-                           class="px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center gap-2">
-                     <i class="bi" [class]="isEditMode() ? 'bi-pencil-fill' : 'bi-pencil'"></i>
-                     {{ isEditMode() ? 'Salir de Edición' : 'Modo Edición' }}
+                           [title]="isEditMode() ? 'Salir de Edición' : 'Modo Edición'"
+                           [class]="isEditMode() ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-300'"
+                           class="border p-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center aspect-square ml-1">
+                     <i class="bi text-lg" [class]="isEditMode() ? 'bi-pencil-fill' : 'bi-pencil'"></i>
                    </button>
                  </div>
                }

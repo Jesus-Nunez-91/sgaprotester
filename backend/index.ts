@@ -1069,44 +1069,39 @@ app.post('/api/projects', authMiddleware, async (req: any, res) => {
 });
 
 app.put('/api/projects/:id', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Labs', 'Admin_Acade'].includes(req.user.rol);
-  if (!canManage) return res.status(403).json({ message: 'Acceso denegado' });
-  try {
+    const id = parseInt(req.params.id);
     const repo = AppDataSource.getRepository(Project);
-    const p = await repo.findOne({ where: { id: parseInt(req.params.id) }, relations: ['tasks'] });
-    if (!p) return res.status(404).json({ message: 'No encontrado' });
-    Object.assign(p, req.body);
-    await repo.save(p);
-    res.json(p);
-  } catch (error: any) {
-    res.status(400).json({ message: 'Error al actualizar proyecto', detail: error.message });
-  }
+    try {
+        const existingProject = await repo.findOne({ where: { id } });
+        if (!existingProject) return res.status(404).json({ error: "Proyecto no encontrado" });
+
+        // Permitimos que 'tasks' se grabe en updateData directamente (como JSONB)
+        const { id: _, createdAt, updatedAt, manager, ...updateData } = req.body;
+        
+        await repo.update(id, updateData);
+        
+        const finalProject = await repo.findOne({ where: { id }, relations: ['manager'] });
+        res.json(finalProject);
+    } catch (error: any) {
+        console.error("Error crítico al actualizar proyecto:", error);
+        res.status(400).json({ error: "Error de consistencia en base de datos", message: error.message });
+    }
 });
 
 app.delete('/api/projects/:id', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Labs', 'Admin_Acade'].includes(req.user.rol);
-  if (!canManage) return res.status(403).json({ message: 'Acceso denegado' });
   try {
+    const id = parseInt(req.params.id);
     const repo = AppDataSource.getRepository(Project);
-    const p = await repo.findOne({ where: { id: parseInt(req.params.id) }, relations: ['tasks'] });
-    if (!p) return res.status(404).json({ message: 'Proyecto no encontrado' });
-    await repo.remove(p);
+    const result = await repo.delete(id);
+    if (result.affected === 0) return res.status(404).json({ message: 'Proyecto no encontrado' });
     res.status(204).send();
   } catch (error: any) {
+    console.error('[DELETE /api/projects] Error:', error);
     res.status(500).json({ error: 'Error al eliminar proyecto', detail: error.message });
   }
 });
 
-app.delete('/api/project-tasks/:id', authMiddleware, async (req: any, res) => {
-  const canManage = ['SuperUser', 'Admin_Labs', 'Admin_Acade'].includes(req.user.rol);
-  if (!canManage) return res.status(403).json({ message: 'Acceso denegado' });
-  try {
-    await AppDataSource.getRepository(ProjectTask).delete(req.params.id);
-    res.status(204).send();
-  } catch (error: any) {
-    res.status(500).json({ error: 'Error al eliminar fase', detail: error.message });
-  }
-});
+
 
 // --- ENDPOINTS DE WIKI/DOCUMENTACIÓN ---
 

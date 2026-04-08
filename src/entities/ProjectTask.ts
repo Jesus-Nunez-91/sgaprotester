@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Project } from './Project';
 import { User } from './User';
 
@@ -29,7 +29,8 @@ export class ProjectTask {
     })
     status: 'En espera' | 'En proceso' | 'Pendiente de Aprobacion' | 'Finalizada';
 
-    @ManyToOne('Project', (project: any) => project.tasks)
+    @ManyToOne('Project', (project: any) => project.tasks, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'projectId' })
     project: Project;
 
     @Column()
