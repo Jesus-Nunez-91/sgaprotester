@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { User } from './User';
-import { ProjectTask } from './ProjectTask';
 
 @Entity()
 export class Project {
@@ -28,14 +27,11 @@ export class Project {
     @ManyToOne(() => User)
     manager: User;
 
-    @Column()
+    @Column({ nullable: true })
     managerId: number;
 
     @Column('jsonb', { default: [] })
-    tasks_legacy: any[];
-
-    @OneToMany(() => ProjectTask, (task) => task.project, { cascade: true })
-    tasks: ProjectTask[];
+    tasks: any[];
 
     @CreateDateColumn()
     createdAt: Date;

@@ -1150,11 +1150,22 @@ app.delete('/api/projects/:id', authMiddleware, async (req: any, res) => {
   try {
     const id = parseInt(req.params.id);
     const repo = AppDataSource.getRepository(Project);
+    
+    // [LIMPIEZA SEGURA] Borrar tareas vinculadas en tabla física si existen (evita Error 500 FK constraint)
+    try {
+        await AppDataSource.query('DELETE FROM "project_task" WHERE "projectId" = $1', [id]);
+    } catch (e) {
+        // Ignorar si la tabla no existe o no tiene esas columnas
+        console.warn(`[CLEANUP] No se encontraron tareas físicas para el proyecto ${id}, procediendo con borrado estándar.`);
+    }
+
     const result = await repo.delete(id);
     if (result.affected === 0) return res.status(404).json({ message: 'Proyecto no encontrado' });
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'PROJECT_DELETE', `Proyecto eliminado ID: ${id}`);
     res.status(204).send();
   } catch (error: any) {
-    console.error('[DELETE /api/projects] Error:', error);
+    console.error('[DATABASE ERROR]: Fallo al eliminar proyecto.', error.message);
     res.status(500).json({ error: 'Error al eliminar proyecto', detail: error.message });
   }
 });
@@ -1821,8 +1832,20 @@ app.get('*', (req, res) => {
 
 
 // --- INICIALIZAR SERVIDOR ---
-const startServer = () => {
+// --- MIDDLEWARE GLOBAL DE LOGS DE ERROR (PEDIDO POR USUARIO) ---
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error(`[FATAL ERROR] ${req.method} ${req.url}:`, err.stack || err.message);
+  res.status(500).json({ 
+    message: 'Error interno del servidor capturado por el log global',
+    error: err.message,
+    path: req.url
+  });
+});
+
+function startServer() {
   httpServer.listen(PORT, () => {
     console.log(`🚀 Servidor listo y ESCUCHANDO en puerto ${PORT}`);
+    console.log(`📡 URL Base: http://localhost:${PORT}`);
+    console.log(`🛡️  Logs de errores globales ACTIVADOS`);
   });
-};
+}
