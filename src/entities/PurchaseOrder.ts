@@ -8,6 +8,9 @@ export class PurchaseOrder {
     @Column()
     lab: 'FABLAB' | 'QUIMICA' | 'FISICA' | 'INFORMATICA';
 
+    @Column({ nullable: true })
+    solicitante: string;
+
     @Column()
     item: string;
 

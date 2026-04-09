@@ -176,7 +176,7 @@ declare const Swal: any;
                                  <div class="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30">
                                      <h4 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><i class="bi bi-palette-fill"></i> Leyenda de Progreso (Colores)</h4>
                                      <div class="flex flex-wrap gap-x-6 gap-y-2 text-[9px] font-bold text-gray-500 uppercase">
-                                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#ef4444] shadow-sm"></span> 0-24% : Crítico / Iniciando</div>
+                                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#ef4444] shadow-sm"></span> 0-24% : Iniciando</div>
                                          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#f97316] shadow-sm"></span> 25-49% : En Despliegue</div>
                                          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#eab308] shadow-sm"></span> 50-74% : Avanzado</div>
                                          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#3b82f6] shadow-sm"></span> 75-99% : Etapa Final</div>
@@ -221,7 +221,7 @@ export class ProjectsComponent {
       return newSet;
     });
   }
-  
+
   isProjectExpanded(projectId: number) {
     return this.expandedProjects().has(projectId);
   }
@@ -244,11 +244,11 @@ export class ProjectsComponent {
   }
 
   getTaskProgressColor(progress: number) {
-      if (progress < 25) return '#ef4444'; // Rojo
-      if (progress < 50) return '#f97316'; // Naranja
-      if (progress < 75) return '#eab308'; // Amarillo
-      if (progress < 100) return '#3b82f6'; // Azul
-      return '#22c55e'; // Verde
+    if (progress < 25) return '#ef4444'; // Rojo
+    if (progress < 50) return '#f97316'; // Naranja
+    if (progress < 75) return '#eab308'; // Amarillo
+    if (progress < 100) return '#3b82f6'; // Azul
+    return '#22c55e'; // Verde
   }
 
   openProjectModal() {
@@ -304,7 +304,7 @@ export class ProjectsComponent {
   }
 
   editProject(project: Project) {
-      Swal.fire({
+    Swal.fire({
       title: 'Editar Proyecto',
       html: `
         <div class="text-left space-y-4 pt-4">
@@ -526,19 +526,19 @@ export class ProjectsComponent {
   exportToPDF(project: Project) {
     const doc = new jsPDF() as any;
     const pageWidth = doc.internal.pageSize.getWidth();
-    
+
     const primaryColor: [number, number, number] = [0, 51, 102];
     const accentColor: [number, number, number] = [255, 120, 0];
 
     // Cabecera Institucional
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.rect(0, 0, pageWidth, 35, 'F');
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.text('UNIVERSIDAD ALBERTO HURTADO', pageWidth / 2, 15, { align: 'center' });
-    
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.text('Departamento de Tecnologías e Ingeniería', pageWidth / 2, 22, { align: 'center' });
@@ -585,25 +585,25 @@ export class ProjectsComponent {
     doc.text(hasTasks ? 'CRONOGRAMA DE ACTIVIDADES Y HITOS' : 'SIN ACTIVIDADES REGISTRADAS', 14, startY);
 
     if (hasTasks) {
-       startY += 5;
-       const headers = this.getGanttHeaders(project);
-       
-       // Construct matrix for jsPDF
-       const head = [['Actividad', ...headers.map(h => `${h.name} ${h.year}`)]];
-       const body = project.tasks.map(t => {
-           const row = [`${t.name}\n${t.progress}%`];
-           headers.forEach(h => {
-               // Para PDF dibujaremos un bloque solido o cruz
-               let inMonth = false;
-               h.days.forEach((d: number) => {
-                   if (this.isTaskInDay(t, h.year, h.monthIndex, d)) inMonth = true;
-               });
-               row.push(inMonth ? '████' : '');
-           });
-           return row;
-       });
+      startY += 5;
+      const headers = this.getGanttHeaders(project);
 
-       autoTable(doc, {
+      // Construct matrix for jsPDF
+      const head = [['Actividad', ...headers.map(h => `${h.name} ${h.year}`)]];
+      const body = project.tasks.map(t => {
+        const row = [`${t.name}\n${t.progress}%`];
+        headers.forEach(h => {
+          // Para PDF dibujaremos un bloque solido o cruz
+          let inMonth = false;
+          h.days.forEach((d: number) => {
+            if (this.isTaskInDay(t, h.year, h.monthIndex, d)) inMonth = true;
+          });
+          row.push(inMonth ? '████' : '');
+        });
+        return row;
+      });
+
+      autoTable(doc, {
         startY: startY + 5,
         head: head,
         body: body,
@@ -613,111 +613,111 @@ export class ProjectsComponent {
         columnStyles: { 0: { fontStyle: 'bold', minCellWidth: 40 } },
         styles: { cellPadding: 2, overflow: 'linebreak' },
         didParseCell: function (data: any) {
-            // Pinta color secundario en los "cuadros" del Gantt
-            if (data.section === 'body' && data.column.index > 0 && data.cell.raw === '████') {
-                data.cell.styles.textColor = accentColor;
-            }
+          // Pinta color secundario en los "cuadros" del Gantt
+          if (data.section === 'body' && data.column.index > 0 && data.cell.raw === '████') {
+            data.cell.styles.textColor = accentColor;
+          }
         }
-       });
+      });
     }
 
     doc.save(`Gantt_Proyecto_${project.id}_SGA.pdf`);
   }
 
   getGanttHeaders(project: Project) {
-      if (!project.startDate || !project.endDate) return [];
-      const start = new Date(project.startDate + 'T12:00:00');
-      const end = new Date(project.endDate + 'T12:00:00');
-      const headers = [];
-      
-      let current = new Date(start.getFullYear(), start.getMonth(), 1); 
-      const endMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0);
-      
-      while (current <= endMonth) {
-          const monthName = current.toLocaleString('es-ES', { month: 'short' });
-          
-          const daysInMonth = [];
-          const daysToIterate = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
-          
-          for(let i = 1; i <= daysToIterate; i++) {
-             const d = new Date(current.getFullYear(), current.getMonth(), i);
-             const dayOfWeek = d.getDay();
-             if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
-                 daysInMonth.push(i);
-             }
-          }
-          
-          headers.push({
-              name: monthName,
-              year: current.getFullYear(),
-              monthIndex: current.getMonth(),
-              days: daysInMonth 
-          });
-          current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+    if (!project.startDate || !project.endDate) return [];
+    const start = new Date(project.startDate + 'T12:00:00');
+    const end = new Date(project.endDate + 'T12:00:00');
+    const headers = [];
+
+    let current = new Date(start.getFullYear(), start.getMonth(), 1);
+    const endMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0);
+
+    while (current <= endMonth) {
+      const monthName = current.toLocaleString('es-ES', { month: 'short' });
+
+      const daysInMonth = [];
+      const daysToIterate = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
+
+      for (let i = 1; i <= daysToIterate; i++) {
+        const d = new Date(current.getFullYear(), current.getMonth(), i);
+        const dayOfWeek = d.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+          daysInMonth.push(i);
+        }
       }
-      return headers;
+
+      headers.push({
+        name: monthName,
+        year: current.getFullYear(),
+        monthIndex: current.getMonth(),
+        days: daysInMonth
+      });
+      current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+    }
+    return headers;
   }
-  
+
   isTaskInDay(task: ProjectTask, year: number, monthIndex: number, day: number) {
-      if (!task.startDate || !task.endDate) return false;
-      
-      const tStartStr = task.startDate + 'T00:00:00';
-      const tEndStr = task.endDate + 'T23:59:59';
-      const tStart = new Date(tStartStr);
-      const tEnd = new Date(tEndStr);
-      
-      const currentDay = new Date(year, monthIndex, day, 12, 0, 0);
-      
-      return (currentDay >= tStart && currentDay <= tEnd);
+    if (!task.startDate || !task.endDate) return false;
+
+    const tStartStr = task.startDate + 'T00:00:00';
+    const tEndStr = task.endDate + 'T23:59:59';
+    const tStart = new Date(tStartStr);
+    const tEnd = new Date(tEndStr);
+
+    const currentDay = new Date(year, monthIndex, day, 12, 0, 0);
+
+    return (currentDay >= tStart && currentDay <= tEnd);
   }
 
   exportToExcel(project: Project) {
-      const headers = this.getGanttHeaders(project);
-      
-      const wsData: any[][] = [];
-      
-      const rowMonths: any[] = ['Nº', 'Actividades', 'Días ->', 'Inicio', 'Fin', '%'];
+    const headers = this.getGanttHeaders(project);
+
+    const wsData: any[][] = [];
+
+    const rowMonths: any[] = ['Nº', 'Actividades', 'Días ->', 'Inicio', 'Fin', '%'];
+    headers.forEach(h => {
+      rowMonths.push(`${h.name} ${h.year}`);
+      for (let i = 1; i < h.days.length; i++) {
+        rowMonths.push('');
+      }
+    });
+    wsData.push(rowMonths);
+
+    const rowDays: any[] = ['', '', '', '', '', ''];
+    headers.forEach(h => {
+      h.days.forEach((d: number) => {
+        rowDays.push(d.toString());
+      });
+    });
+    wsData.push(rowDays);
+
+    project.tasks?.forEach((task, index) => {
+      const rowData: any[] = [
+        index + 1,
+        task.name,
+        '',
+        task.startDate,
+        task.endDate,
+        task.progress + '%'
+      ];
+
       headers.forEach(h => {
-          rowMonths.push(`${h.name} ${h.year}`);
-          for(let i=1; i<h.days.length; i++) {
-              rowMonths.push('');
-          }
+        h.days.forEach((d: any) => {
+          let indicator = this.isTaskInDay(task, h.year, h.monthIndex, d) ? '██████' : '';
+          rowData.push(indicator);
+        });
       });
-      wsData.push(rowMonths);
-      
-      const rowDays: any[] = ['', '', '', '', '', ''];
-      headers.forEach(h => {
-          h.days.forEach((d: number) => {
-              rowDays.push(d.toString());
-          });
-      });
-      wsData.push(rowDays);
-      
-      project.tasks?.forEach((task, index) => {
-          const rowData: any[] = [
-              index + 1,
-              task.name,
-              '',
-              task.startDate,
-              task.endDate,
-              task.progress + '%'
-          ];
-          
-          headers.forEach(h => {
-              h.days.forEach((d: any) => {
-                  let indicator = this.isTaskInDay(task, h.year, h.monthIndex, d) ? '██████' : '';
-                  rowData.push(indicator);
-              });
-          });
-          
-          wsData.push(rowData);
-      });
-      
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Carta Gantt");
-      
-      XLSX.writeFile(wb, `Carta_Gantt_${project.name.replace(/\s+/g, '_')}.xlsx`);
+
+      wsData.push(rowData);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Carta Gantt");
+
+    XLSX.writeFile(wb, `Carta_Gantt_${project.name.replace(/\s+/g, '_')}.xlsx`);
   }
 }

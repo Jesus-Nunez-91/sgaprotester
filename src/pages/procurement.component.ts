@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { DataService, PurchaseOrder, PurchaseStage, LabType } from '../services/data.service';
 
 declare var Swal: any;
+declare var XLSX: any;
 
 @Component({
     selector: 'app-procurement',
@@ -145,7 +146,7 @@ declare var Swal: any;
                       <button (click)="downloadTemplate()" class="h-9 w-9 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg hover:bg-uah-orange hover:text-white transition-all flex items-center justify-center" title="Descargar Plantilla UAH">
                           <i class="bi bi-file-earmark-text"></i>
                       </button>
-                      <input type="file" #fileInput (change)="onFileSelected($event)" class="hidden" accept=".csv">
+                      <input type="file" #fileInput (change)="onFileSelected($event)" class="hidden" accept=".csv, .xlsx, .xls">
                   </div>
               </div>
           </div>
@@ -1097,22 +1098,53 @@ export class ProcurementComponent {
     }
 
     downloadTemplate() {
-        // Cabeceras profesionales UAH
-        const headers = ['Folio', 'Laboratorio', 'Item_Producto', 'Cantidad', 'Valor_Neto_Unitario', 'Observaciones', 'Link_Referencia'];
-        const example = ['8051368', 'INFORMATICA', 'Cargador Lenovo original tipo C 65W', '5', '35990', 'Urgente para Laboratorio 3', 'https://referencia.cl'];
+        let template: any[] = [];
+        const stage = this.currentStage();
 
-        const csvContent = [headers.join(';'), example.join(';')].join('\n');
-        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'PLANTILLA_COMPRAS_UAH.csv');
-        link.click();
+        if (stage === 'Solicitud') {
+            template = [{
+                'Folio': '8051368',
+                'Laboratorio': 'INFORMATICA',
+                'Item_Producto': 'Cargador Lenovo original tipo C 65W',
+                'Cantidad': 5,
+                'Valor_Neto_Unitario': 35990,
+                'Observaciones': 'Urgente para Laboratorio 3',
+                'Link_Referencia': 'https://referencia.cl'
+            }];
+        } else if (stage === 'Adjudicacion') {
+            template = [{
+                'Folio': '8051368',
+                'Proveedor': 'LENOVO CHILE S.A.',
+                'RUT_Proveedor': '12.345.678-9',
+                'Producto_Adjudicado': 'Cargador Lenovo 65W (SKU-123)',
+                'Precio_Adjudicado': 32500,
+                'Cantidad_Adjudicada': 5
+            }];
+        } else if (stage === 'Seguimiento') {
+            template = [{
+                'Folio': '8051368',
+                'Numero_OC': 'OC-2024-001',
+                'Numero_Cotizacion': 'COT-9988',
+                'Fecha_Entrega_Estimada': '2024-06-15'
+            }];
+        } else if (stage === 'Cierre') {
+            template = [{
+                'Folio': '8051368',
+                'Numero_Factura': 'F-15522',
+                'Fecha_Factura': '2024-06-20',
+                'Fecha_Entrega_Real': '2024-06-21'
+            }];
+        }
+
+        const ws = XLSX.utils.json_to_sheet(template);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Plantilla_Compras");
+        XLSX.writeFile(wb, `PLANTILLA_${stage.toUpperCase()}_UAH.xlsx`);
 
         Swal.fire({
             icon: 'info',
-            title: 'Plantilla UAH Descargada',
-            text: 'Completa los datos en Excel. IMPORTANTE: El Valor debe ser NETO, el sistema sumará el 19% de IVA automáticamente.',
+            title: `Plantilla ${stage} Descargada`,
+            text: 'Completa los datos en Excel. ' + (stage === 'Solicitud' ? '' : 'Asegúrate de mantener el Folio correcto para actualizar la orden.'),
             confirmButtonColor: '#003366'
         });
     }
@@ -1125,50 +1157,183 @@ export class ProcurementComponent {
         const file = event.target.files[0];
         if (!file) return;
 
+        const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
         const reader = new FileReader();
+
         reader.onload = async (e: any) => {
-            const content = e.target.result;
-            const lines = content.split('\n');
-            const rows = lines.slice(1); // Skip header
-            let count = 0;
+            const ordersToImport: any[] = [];
+            
+            if (isExcel) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                console.log('JSON extraído de Excel:', jsonData);
 
-            for (const row of rows) {
-                if (!row.trim()) continue;
-                const cols = row.split(';');
-
-                if (cols.length >= 3) {
-                    const idNum = cols[0]?.trim();
-                    const lab = (cols[1]?.trim() || 'INFORMATICA') as LabType;
-                    const item = cols[2]?.trim();
-                    const qty = Number(cols[3]) || 1;
-                    const priceNeto = Number(cols[4]) || 0;
-
-                    const newOrder = {
-                        idNum: idNum,
-                        lab: lab,
-                        item: item,
-                        cantidad: qty,
-                        valorUnitario: priceNeto,
-                        // CALCULO FISCAL UAH: Neto * Cantidad * 1.19
-                        valorTotal: Math.round(qty * priceNeto * 1.19),
-                        observaciones: cols[5]?.trim() || '',
-                        linkReferencia: cols[6]?.trim() || 'N/A',
-                        stage: 'Solicitud' as PurchaseStage,
-                        fechaSolicitud: new Date().toISOString().split('T')[0],
-                        itemsArray: [{
-                            description: item,
-                            quantity: qty,
-                            unitPrice: priceNeto
-                        }]
+                jsonData.forEach((row: any) => {
+                    const keys = Object.keys(row);
+                    const getV = (prefixes: string[]) => {
+                        const match = keys.find(k => prefixes.some(p => k.toUpperCase().trim().includes(p.toUpperCase())));
+                        return match ? String(row[match]).trim() : '';
                     };
-                    await this.data.addPurchaseOrder(newOrder);
-                    count++;
+
+                    const folio = getV(['FOLIO', 'ID_SOLICITUD', 'IDNUM', 'ID']);
+                    const item = getV(['ITEM', 'PRODUCTO', 'NOMBRE', 'ARTÍCULO', 'ITEM_PRODUCTO']);
+                    const qty = parseInt(getV(['CANTIDAD', 'QTY', 'QUANTITY'])) || 0;
+                    const price = parseFloat(getV(['VALOR', 'PRECIO', 'NETO', 'UNITARIO', 'COSTO', 'NETO_UNITARIO']).replace(/[^0-9.]/g, '')) || 0;
+                    const lab = getV(['LABORATORIO', 'ÁREA', 'LAB']);
+                    const obs = getV(['DESCRIPCION', 'OBSERVACIONES', 'DETALLE', 'OBS']);
+                    const link = getV(['LINK', 'URL', 'REFERENCIA', 'LINK_REFERENCIA']);
+
+                    // Campos de Adjudicación
+                    const prov = getV(['PROVEEDOR', 'VENDOR', 'COMPANY']);
+                    const rutP = getV(['RUT', 'RUT_PROVEEDOR', 'TAX_ID']);
+                    const prodAdj = getV(['PRODUCTO_ADJUDICADO', 'ADJUDICADO_NOMBRE']);
+                    const priceAdj = parseFloat(getV(['PRECIO_ADJUDICADO', 'VALOR_ADJUDICADO']).replace(/[^0-9.]/g, '')) || 0;
+                    const qtyAdj = parseInt(getV(['CANTIDAD_ADJUDICADA', 'QTY_ADJUDICADA'])) || 0;
+
+                    // Seguimiento & Cierre
+                    const nOc = getV(['OC', 'NUMERO_OC', 'OC_NUMBER']);
+                    const nCot = getV(['COTIZACION', 'NUMERO_COTIZACION', 'QUOTE']);
+                    const fEntregaEst = getV(['FECHA_ENTREGA_ESTIMADA', 'ENTREGA_ESTIMADA']);
+                    const nFactura = getV(['FACTURA', 'NUMERO_FACTURA', 'INVOICE']);
+                    const fFactura = getV(['FECHA_FACTURA', 'INVOICE_DATE']);
+                    const fEntregaReal = getV(['FECHA_ENTREGA_REAL', 'FECHA_ENTREGA']);
+
+                    if (folio || (item && qty > 0)) {
+                        console.log('Procesando Folio:', folio, 'Item:', item, 'Lab origen:', lab);
+                        ordersToImport.push(this.mapRowToOrder({
+                            folio, item, qty, price, lab, obs, link,
+                            prov, rutP, prodAdj, priceAdj, qtyAdj,
+                            nOc, nCot, fEntregaEst, nFactura, fFactura, fEntregaReal
+                        }));
+                    }
+                });
+            } else {
+                const content = e.target.result;
+                const lines = content.split(/\r?\n/);
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(/[;\t]/);
+                    if (cols.length >= 3) {
+                        const item = cols[0]?.trim();
+                        const qty = parseInt(cols[1]) || 0;
+                        const price = parseFloat(cols[2]?.replace(/[^0-9.]/g, '')) || 0;
+                        if (item && qty > 0) {
+                            ordersToImport.push(this.mapRowToOrder({
+                                folio: cols[0]?.trim(),
+                                item: item,
+                                qty: qty,
+                                price: price,
+                                lab: cols[1]?.trim(),
+                                obs: cols[5]?.trim()
+                            }));
+                        }
+                    }
                 }
             }
 
-            Swal.fire({ icon: 'success', title: 'Importación Exitosa', text: `Se cargaron ${count} solicitudes correctamente.` });
-            this.fileInput.nativeElement.value = ''; // Reset input
+            if (ordersToImport.length > 0) {
+                const success = await this.data.addPurchaseOrdersBulk(ordersToImport);
+                if (success) {
+                    const movedToAdj = ordersToImport.some(o => o.prov && this.currentStage() === 'Solicitud');
+                    this.searchTerm.set(''); // Limpiar búsqueda para mostrar nuevos datos
+                    
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Importación Exitosa', 
+                        text: `Se procesaron ${ordersToImport.length} registros.` + 
+                              (movedToAdj ? ' Algunos ítems con proveedor se movieron automáticamente a Adjudicación.' : ''),
+                        confirmButtonColor: '#003366'
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un problema al procesar la importación masiva.' });
+                }
+            }
+            this.fileInput.nativeElement.value = '';
         };
-        reader.readAsText(file);
+
+        if (isExcel) reader.readAsArrayBuffer(file);
+        else reader.readAsText(file);
+    }
+
+    private resolveBaseLab(input: string): LabType {
+        if (!input) return 'INFORMATICA';
+        const normalized = input.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        
+        // 1. Mapeo directo
+        if (['FABLAB', 'QUIMICA', 'FISICA', 'INFORMATICA'].includes(normalized)) return normalized as LabType;
+
+        // 2. Mapeo por jerarquía (UAH)
+        for (const [parent, children] of Object.entries(this.data.hierarchy)) {
+            if (children.some(c => normalized.includes(c.toUpperCase()))) {
+                // Mapear "LAB CIENCIAS BASICAS" a QUIMICA o FISICA según el texto
+                if (parent === 'LAB CIENCIAS BASICAS') {
+                    if (normalized.includes('QUIMICA')) return 'QUIMICA';
+                    if (normalized.includes('FISICA')) return 'FISICA';
+                    return 'QUIMICA'; // Default para ciencias
+                }
+                if (parent === 'FABLAB') return 'FABLAB';
+                if (parent === 'LAB INFORMATICA') return 'INFORMATICA';
+            }
+        }
+
+        // 3. Fallbacks básicos por palabras clave
+        if (normalized.includes('FAB')) return 'FABLAB';
+        if (normalized.includes('QUI')) return 'QUIMICA';
+        if (normalized.includes('FIS')) return 'FISICA';
+        if (normalized.includes('INF') || normalized.includes('TEC')) return 'INFORMATICA';
+
+        return 'INFORMATICA';
+    }
+
+    private mapRowToOrder(d: any) {
+        // Buscar el ID interno si ya existe en la lista para permitir UPDATE
+        const existingOrder = this.data.purchaseOrders().find(o => o.idNum === d.folio);
+        const resolvedLab = this.resolveBaseLab(d.lab || existingOrder?.lab || '');
+        
+        const mapped: any = {
+            id: existingOrder?.id || undefined, // Clave para que TypeORM haga UPDATE
+            idNum: d.folio || (existingOrder ? existingOrder.idNum : undefined),
+            solicitante: this.data.currentUser()?.nombreCompleto || 'Sistema',
+            item: d.item || existingOrder?.item,
+            cantidad: d.qty || existingOrder?.cantidad,
+            valorUnitario: d.price || existingOrder?.valorUnitario,
+            valorTotal: Math.round((d.qty || existingOrder?.cantidad || 0) * (d.price || existingOrder?.valorUnitario || 0) * 1.19),
+            observaciones: d.obs || existingOrder?.observaciones,
+            lab: resolvedLab,
+            linkReferencia: d.link || existingOrder?.linkReferencia || 'N/A',
+            stage: this.currentStage() as PurchaseStage,
+            fechaSolicitud: existingOrder?.fechaSolicitud || new Date().toISOString().split('T')[0],
+            itemsArray: d.item ? [{
+                description: d.item,
+                quantity: d.qty || 1,
+                unitPrice: d.price || 0
+            }] : existingOrder?.itemsArray || []
+        };
+
+        // Enriquecer con campos adicionales según disponibilidad
+        if (d.prov) mapped.proveedor = d.prov;
+        if (d.rutP) mapped.rutProveedor = d.rutP;
+        if (d.prodAdj) mapped.productoAdjudicado = d.prodAdj;
+        if (d.priceAdj) mapped.precioAdjudicado = d.priceAdj;
+        if (d.qtyAdj) mapped.cantidadAdjudicada = d.qtyAdj;
+        if (d.nOc) mapped.numeroOC = d.nOc;
+        if (d.nCot) mapped.numeroCotizacion = d.nCot;
+        if (d.fEntregaEst) mapped.fechaEntrega = d.fEntregaEst;
+        if (d.nFactura) mapped.numeroFactura = d.nFactura;
+        if (d.fFactura) mapped.fechaFactura = d.fFactura;
+        if (d.fEntregaReal) {
+            mapped.fechaEntrega = d.fEntregaReal; // Sobrescribir con real si existe
+            mapped.stage = 'Cierre' as PurchaseStage;
+        }
+
+        // Si se cargan datos de adjudicación, avanzar el estado si está en solicitud
+        if (d.prov && mapped.stage === 'Solicitud') {
+            mapped.stage = 'Adjudicacion' as PurchaseStage;
+        }
+
+        return mapped;
     }
 }

@@ -588,6 +588,10 @@ app.post('/api/inventory', authMiddleware, checkPermission(ROLES.ADMIN_STUFF), a
     const newItem = itemRepo.create(req.body);
     const savedItem = await itemRepo.save(newItem) as any;
     await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_CREATE', `Item creado: ${savedItem.marca} ${savedItem.modelo} (${savedItem.rotulo_ID || 'Sin rotulo'})`);
+    
+    // [NOTIFICACIÓN] Avisar de nuevo ingreso en inventario
+    await createNotification('all', 'Nuevo Ítem de Inventario', `${req.user.nombre} añadió ${savedItem.marca} ${savedItem.modelo}`, 'info');
+    
     res.status(201).json(savedItem);
   } catch (error: any) {
     console.error("ERROR AL CREAR ITEM INDIVIDUAL:", error.message);
@@ -653,6 +657,11 @@ app.post('/api/inventory/bulk', authMiddleware, checkPermission(ROLES.ADMIN_STUF
 
     await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'INVENTORY_BULK', `Carga masiva: ${created.length} creados, ${errors.length} fallidos`);
     
+    // [NOTIFICACIÓN CONSOLIDADA] Una sola alerta por toda la carga masiva
+    if (created.length > 0) {
+      await createNotification('all', 'Carga Masiva Inventario', `Se procesaron ${created.length} ítems exitosamente por ${req.user.nombre}`, 'success');
+    }
+
     res.status(201).json({
       message: 'Procesamiento masivo completado',
       count: created.length,
@@ -764,6 +773,9 @@ app.post('/api/room-reservations', authMiddleware, checkPermission(ROLES.RESERVA
     const detalleFinal = `Reserva sala ${room?.nombre || 'Indefinida'} (${saved.fechaExacta})`;
     await logRequest(req, 'SALA', detalleFinal, saved.id, block?.nombreBloque || 'S/H');
     
+    // [NOTIFICACIÓN] Avisar a los administradores de la nueva reserva de sala
+    await createNotification('all', 'Nueva Reserva de Sala', `${req.user.nombre} reservó ${room?.nombre || 'Sala'} para el ${saved.fechaExacta}`, 'info');
+
     res.status(201).json(saved);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -790,6 +802,44 @@ async function logRequest(req: any, tipo: string, detalle: string, recId: number
         console.error("Error en Trazabilidad Log:", e);
     }
 }
+
+app.delete('/api/room-reservations/:id', authMiddleware, async (req: any, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const resRepo = AppDataSource.getRepository(RoomReservation);
+        const logRepo = AppDataSource.getRepository(ProcurementRequest);
+
+        // Limpiar registro en Caja Negra si existe para mantener el Dashboard sincronizado
+        await logRepo.delete({ recId: id, tipoItem: 'SALA' });
+        
+        const result = await resRepo.delete(id);
+        if (result.affected === 0) return res.status(404).json({ message: 'Reserva no encontrada' });
+
+        await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'ROOM_RES_DELETE', `Reserva de sala eliminada ID: ${id}`);
+        res.status(204).send();
+    } catch (error: any) {
+        res.status(500).json({ error: 'Error al eliminar reserva de sala', detail: error.message });
+    }
+});
+
+app.delete('/api/reservations/:id', authMiddleware, async (req: any, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const resRepo = AppDataSource.getRepository(Reservation);
+        const logRepo = AppDataSource.getRepository(ProcurementRequest);
+
+        // Limpiar registro en Caja Negra si existe
+        await logRepo.delete({ recId: id, tipoItem: Not('SALA') as any });
+        
+        const result = await resRepo.delete(id);
+        if (result.affected === 0) return res.status(404).json({ message: 'Reserva no encontrada' });
+
+        await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'RESERVATION_DELETE', `Reserva de laboratorio eliminada ID: ${id}`);
+        res.status(204).send();
+    } catch (error: any) {
+        res.status(500).json({ error: 'Error al eliminar reserva', detail: error.message });
+    }
+});
 
 // NUEVO: Limpieza Administrativa de Solicitudes (Borra registros de Auditoría/Trazabilidad)
 app.delete('/api/procurement-requests/mass/clear-ghosts', authMiddleware, checkPermission(ROLES.SECURITY_ONLY), async (req: any, res) => {
@@ -905,6 +955,34 @@ app.post('/api/procurement', authMiddleware, async (req: any, res) => {
   }
 });
 
+app.post('/api/procurement/bulk', authMiddleware, async (req: any, res) => {
+  if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
+    return res.status(403).json({ message: 'Acceso denegado' });
+  }
+  try {
+    const orderRepo = AppDataSource.getRepository(PurchaseOrder);
+    const orders = req.body;
+    if (!Array.isArray(orders)) return res.status(400).json({ message: 'Se esperaba un array' });
+
+    const savedOrders = await orderRepo.save(orderRepo.create(orders));
+    
+    // [NOTIFICACIÓN CONSOLIDADA]
+    await createNotification('all', 'Nueva Importación de Compras', `Se han cargado ${savedOrders.length} nuevas solicitudes por ${req.user.nombre}`, 'info');
+    
+    await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'PROCUREMENT_BULK', `Importación masiva: ${savedOrders.length} registros`);
+    
+    res.status(201).json(savedOrders);
+  } catch (error) {
+    console.error("❌ ERROR CRÍTICO EN IMPORTACIÓN MASIVA:", error);
+    res.status(500).json({ 
+      message: 'Error en importación masiva', 
+      details: error instanceof Error ? error.message : 'Error desconocido',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+});
+
+
 app.put('/api/procurement/:id', authMiddleware, async (req: any, res) => {
   if (!['SuperUser', 'Admin_Labs'].includes(req.user.rol)) {
     return res.status(403).json({ message: 'Acceso denegado: Se requiere rol Admin_Labs o SuperUser' });
@@ -983,6 +1061,34 @@ app.delete('/api/admin-tasks/:id', authMiddleware, async (req: any, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar tarea' });
   }
+});
+
+// --- GESTIÓN DE MANTENCIÓN API ---
+app.post('/api/maintenance/reset-db', authMiddleware, async (req: any, res) => {
+    if (req.user.rol !== 'SuperUser') return res.status(403).json({ message: 'Solo SuperUser puede resetear la BD' });
+    try {
+        // nuclear option: Vaciar tablas críticas manteniendo usuarios
+        const tables = [
+            'inventory_item', 
+            'purchase_order', 
+            'room_reservation', 
+            'reservation', 
+            'procurement_request', 
+            'audit_log', 
+            'notification', 
+            'ticket', 
+            'message'
+        ];
+        
+        for (const table of tables) {
+            await AppDataSource.query(`TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`);
+        }
+        
+        await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'DB_RESET', 'REINICIO TOTAL DE BASE DE DATOS (NUCLEAR OPTION)');
+        res.json({ message: 'Base de datos reiniciada correctamente' });
+    } catch (error: any) {
+        res.status(500).json({ error: 'Error al resetear la base de datos', detail: error.message });
+    }
 });
 
 // --- ENDPOINTS DE MANTENCIÓN ---
@@ -1484,6 +1590,27 @@ app.delete('/api/bitacora/:id', authMiddleware, async (req: any, res) => {
   res.status(204).send();
 });
 
+// --- UTILIDAD DE NOTIFICACIONES (UAH) ---
+async function createNotification(userId: string, title: string, message: string, type: 'info' | 'warning' | 'success' | 'error' = 'info') {
+  try {
+    const repo = AppDataSource.getRepository(Notification);
+    const notif = repo.create({
+      userId,
+      title,
+      message,
+      type,
+      read: false,
+      createdAt: new Date()
+    });
+    await repo.save(notif);
+    
+    // Opcional: Emitir vía socket si es necesario para tiempo real instantáneo aparte del polling
+    io.emit('notification:new', notif); 
+  } catch (error) {
+    console.error("Error al persistir notificación:", error);
+  }
+}
+
 // --- API DE NOTIFICACIONES (PERSISTENCIA TOTAL) ---
 app.get('/api/notifications', authMiddleware, async (req: any, res) => {
   try {
@@ -1533,7 +1660,11 @@ app.patch('/api/notifications/:id/read', authMiddleware, async (req: any, res) =
 app.post('/api/notifications/mark-all-read', authMiddleware, async (req: any, res) => {
   try {
     const repo = AppDataSource.getRepository(Notification);
-    await repo.update({ userId: req.user.id.toString() }, { read: true });
+    await repo.createQueryBuilder()
+      .update(Notification)
+      .set({ read: true })
+      .where("userId = :userId OR userId = 'all'", { userId: req.user.id.toString() })
+      .execute();
     res.json({ message: 'Todas las notificaciones marcadas como leídas' });
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar notificaciones' });

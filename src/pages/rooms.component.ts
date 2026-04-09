@@ -655,8 +655,29 @@ export class RoomsComponent implements OnInit {
   }
 
   async borrarReservaDirectamente(id: number) {
-     const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Reserva?', text: 'Esta acción liberará el bloque permanentemente.', icon: 'warning', showCancelButton: true, confirmButtonText: 'SÍ, BORRAR', confirmButtonColor: '#ef4444' });
-     if (isConfirmed) this.updateStatus(id, 'Cancelada');
+     const { isConfirmed } = await Swal.fire({ 
+        title: '¿Eliminar Reserva?', 
+        text: 'Esta acción eliminará físicamente el registro del sistema y liberará el bloque permanentemente.', 
+        icon: 'warning', 
+        showCancelButton: true, 
+        confirmButtonText: 'SÍ, BORRAR DEFINITIVAMENTE', 
+        confirmButtonColor: '#ef4444' 
+     });
+     
+     if (isConfirmed) {
+         try {
+             const success = await this.data.deleteRoomReservation(id);
+             if (success) {
+                 Swal.fire('Eliminado', 'La reserva ha sido eliminada físicamente.', 'success');
+                 this.loadAllReservations();
+                 this.loadWeekData();
+             } else {
+                 Swal.fire('Error', 'No se pudo eliminar la reserva del servidor.', 'error');
+             }
+         } catch (e) {
+             Swal.fire('Error', 'Fallo crítico al intentar eliminar.', 'error');
+         }
+     }
   }
 
   async updateStatus(resId: number, estado: string) {

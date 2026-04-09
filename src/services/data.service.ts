@@ -186,7 +186,7 @@ export class DataService {
   classSchedules = signal<ClassSchedule[]>([]);
   projects = signal<Project[]>([]);
   wikiDocs = signal<WikiDoc[]>([]);
-  labBudgets = signal<Record<string, number>>({ 'FABLAB': 15000000, 'QUIMICA': 8000000, 'FISICA': 8000000, 'INFORMATICA': 12000000 }); // Defaults que se sobreescriben con DB
+  labBudgets = signal<Record<string, number>>({ 'FABLAB': 0, 'QUIMICA': 0, 'FISICA': 0, 'INFORMATICA': 0 }); // Iniciamos en 0 para limpieza total
   darkMode = signal<boolean>(false);
   adminTasks = signal<any[]>([]);
   bitacora = signal<any[]>([]);
@@ -220,6 +220,26 @@ export class DataService {
     this.fetchSystemSettings();
     this.fetchNotifications(); // NUEVO: Cargar notificaciones persistentes
     effect(() => document.documentElement.classList.toggle('dark', this.darkMode()));
+
+    // --- TIEMPO REAL UAH: AUTO-REFRESCO (5 SEG) ---
+    this.startAutoRefresh();
+  }
+
+  private refreshInterval: any;
+  private startAutoRefresh() {
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
+    
+    this.refreshInterval = setInterval(() => {
+      if (this.token()) {
+        // Refrescar señales críticas
+        this.fetchNotifications();
+        this.fetchUnifiedRequests();
+        this.fetchPurchaseOrders();
+        this.fetchSystemSettings(); // Para presupuestos en tiempo real
+        this.fetchReservations();
+        this.fetchMaintenanceTasks();
+      }
+    }, 5000); 
   }
 
   // --- PERSISTENCIA TOTAL: CONFIGURACIONES (UAH) ---
@@ -449,6 +469,64 @@ export class DataService {
     }
   }
 
+  async deleteRoomReservation(id: number): Promise<boolean> {
+    if (!this.token()) return false;
+    try {
+      const res = await fetch(this.baseUrl + `/api/room-reservations/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        await this.fetchReservations();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Error al eliminar reserva de sala", e);
+      return false;
+    }
+  }
+
+  async deleteLaboratoryReservation(id: number): Promise<boolean> {
+    if (!this.token()) return false;
+    try {
+      const res = await fetch(this.baseUrl + `/api/reservations/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        await this.fetchReservations();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Error al eliminar reserva", e);
+      return false;
+    }
+  }
+
+  async resetDatabase(): Promise<boolean> {
+    if (!this.token()) return false;
+    try {
+      const res = await fetch(this.baseUrl + '/api/maintenance/reset-db', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      if (res.ok) {
+        await this.fetchInventory();
+        await this.fetchPurchaseOrders();
+        await this.fetchReservations();
+        await this.fetchNotifications();
+        await this.fetchUnifiedRequests();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Error al resetear BD", e);
+      return false;
+    }
+  }
+
   async addBulkItems(items: any[]) {
     if (!this.token()) return false;
     try {
@@ -646,6 +724,7 @@ export class DataService {
       if (res.ok) await this.fetchPurchaseOrders();
     } catch (e) { console.error("Error al crear OC", e); }
   }
+
 
   async updatePurchaseOrder(id: number, data: any, stage?: PurchaseStage) {
     if (!this.token()) return;
@@ -1231,5 +1310,30 @@ export class DataService {
       }
     } catch (e) { console.error("Error al eliminar laboratorio", e); }
     return false;
+  }
+
+  async addPurchaseOrdersBulk(orders: any[]): Promise<boolean> {
+    if (!this.token()) return false;
+    try {
+      const res = await fetch(this.baseUrl + '/api/procurement/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token()}`
+        },
+        body: JSON.stringify(orders)
+      });
+      if (res.ok) {
+        await this.fetchPurchaseOrders();
+        return true;
+      } else {
+        const errorData = await res.json();
+        console.error("Error en importación masiva de compras:", errorData);
+        return false;
+      }
+    } catch (e) {
+      console.error("Error de red en importación masiva", e);
+      return false;
+    }
   }
 }

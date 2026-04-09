@@ -331,6 +331,33 @@ export class AppComponent {
             this.updateSEO();
             this.checkPermissions();
         });
+
+        // --- SEGURIDAD UAH: IDLE TIMEOUT (30 MIN) ---
+        this.setupIdleTimeout();
+    }
+
+    /**
+     * Sistema de seguridad que cierra sesión tras 30 minutos de inactividad.
+     */
+    private idleTimer: any;
+    private setupIdleTimeout() {
+        const resetTimer = () => {
+            if (this.idleTimer) clearTimeout(this.idleTimer);
+            // 30 minutos = 30 * 60 * 1000 ms
+            this.idleTimer = setTimeout(() => {
+                if (this.authService.currentUser()) {
+                    console.warn("Sesión cerrada por inactividad (30 min)");
+                    this.authService.logout();
+                }
+            }, 30 * 60 * 1000);
+        };
+
+        // Listeners de actividad global
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
+            document.addEventListener(evt, resetTimer, true);
+        });
+
+        resetTimer();
     }
 
     /**
