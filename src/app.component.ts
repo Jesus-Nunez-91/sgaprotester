@@ -209,9 +209,9 @@ import { FormsModule } from '@angular/forms';
                                     </div>
                                     <div class="max-h-64 overflow-y-auto custom-scrollbar">
                                         @for (n of myNotifications(); track n.id) {
-                                            <div class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4" [class.bg-white/[0.02]]="!n.read">
+                                            <div (click)="markRead(n)" class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4 cursor-pointer" [class.bg-white/[0.02]]="!n.read">
                                                 <div class="mt-1">
-                                                    <i class="bi bi-info-circle-fill text-[#f06427]"></i>
+                                                    <i class="bi bi-info-circle-fill" [class.text-[#f06427]]="!n.read" [class.text-gray-600]="n.read"></i>
                                                 </div>
                                                 <div class="flex-1">
                                                     <h6 class="text-xs font-bold text-white">{{ n.title }}</h6>
@@ -475,6 +475,11 @@ export class AppComponent {
      * Marca todas las notificaciones como leídas.
      */
     markAllRead() { this.authService.markAllAsRead(); }
+    markRead(n: any) {
+        if (!n.read) {
+            this.authService.markAsRead(n.id);
+        }
+    }
 
     /**
      * Alterna el modo oscuro.

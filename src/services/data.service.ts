@@ -41,6 +41,7 @@ export interface InventoryItem {
   numeroFactura?: string;
   fechaLlegada?: string;
   cantidadLlegada: number;
+  observaciones?: string;
 }
 
 export interface Reservation {
@@ -382,6 +383,18 @@ export class DataService {
       });
       await this.fetchNotifications();
     } catch (e) { console.error("Error al marcar como leídas", e); }
+  }
+
+  async markAsRead(id: number) {
+    if (!this.token()) return;
+    try {
+      await fetch(this.baseUrl + `/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${this.token()}` }
+      });
+      // Actualización optimista del estado local
+      this.notifications.update(list => list.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (e) { console.error("Error al marcar notificación como leída", e); }
   }
   toggleDarkMode() { this.darkMode.update(v => !v); }
   updateBudgets(newBudgets: Record<string, number>) {
@@ -1091,8 +1104,7 @@ export class DataService {
           Rol: ${data.rol}
           Email: ${data.email}
           Tipo: ${data.type === 'register' ? 'Nuevo Registro' : 'Restablecimiento de Contraseña'}`,
-          sender: data.nombreCompleto,
-          role: 'Alumno'
+          sender: data.nombreCompleto
         }]
       });
 

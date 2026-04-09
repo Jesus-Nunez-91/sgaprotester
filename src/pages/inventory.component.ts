@@ -287,7 +287,7 @@ declare const XLSX: any;
                  <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     @for (item of paginatedItems(); track item.id) {
                        @let stock = getAvailableStock(item);
-                       @let isLowStock = item.stockActual <= item.stockMinimo;
+                       @let isLowStock = item.stockMinimo > 0 && item.stockActual < item.stockMinimo;
                        
                         <tr [class]="isLowStock ? 'bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-l-4 border-red-400' : 'hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors group border-l-4 border-transparent'"
                             [class.bg-blue-50]="isAdmin() && selectedAdminIds().has(item.id)">
@@ -513,8 +513,14 @@ declare const XLSX: any;
                                 }
                                 @if (detailItem()?.softwareInstalado) {
                                     <div class="col-span-2 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
-                                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Software Instalado</p>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Software / Especificaciones</p>
                                         <p class="text-xs font-medium text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ detailItem()?.softwareInstalado }}</p>
+                                    </div>
+                                }
+                                @if (detailItem()?.observaciones) {
+                                    <div class="col-span-2 bg-amber-50 dark:bg-amber-900/10 p-3 rounded-xl border border-amber-100 dark:border-amber-900/30">
+                                        <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase mb-1">Observaciones / Notas</p>
+                                        <p class="text-xs font-medium text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ detailItem()?.observaciones }}</p>
                                     </div>
                                 }
                             </div>
@@ -1090,45 +1096,41 @@ export class InventoryComponent {
     if (this.inventoryMode() === 'Equipos') {
       template = [
         {
-          UBICACIÓN: 'FABLAB',
-          'SUB-LAB_ID': 'FABLAB',
-          MARCA: 'LENOVO',
-          MODELO: 'THINKPAD L14',
-          SN: 'SN-001X',
-          STATUS: 'Disponible',
-          SO: 'Windows 11 Pro',
-          RAM: '16GB',
-          ROM: '512GB SSD',
-          PROCESADOR: 'Intel Core i7 11th Gen',
-          StockActual: 10,
-          StockMinimo: 2,
-          Factura: 'FAC-001',
-          FechaLlegada: '2024-03-01',
-          CantLlegada: 10,
-          'ADOBE ACROBAT': 'X',
-          'AUTODESK': 'X',
-          'CHROME': 'X'
+          'Marca / Nombre': 'DELL',
+          'Modelo / Detalle': 'LATITUDE 5420',
+          'S/N (Serial Number)': 'ABC123XYZ',
+          'Rótulo / ID Físico': 'NB-LAB-001',
+          'RAM': '16GB',
+          'ROM / Disco': '512GB SSD',
+          'Procesador': 'Intel Core i7 11th Gen',
+          'Stock Actual': 10,
+          'Stock Mínimo': 2,
+          'Factura': 'FAC-001',
+          'Fecha Llegada': '2024-03-01',
+          'Estado Operativo': 'Disponible',
+          'CHROME': 'X',
+          'OFFICE': 'X'
         }
       ];
     } else {
       template = [
         {
-          LABORATORIO: 'DESARROLLO TECNOLOGICO',
-          ITEM: 'ARDUINO UNO R3',
-          CANTIDAD: 25,
-          DESCRIPCION: 'Microcontrolador ATmega328P para prototipado',
-          UBICACIÓN: 'BODEGA',
-          'FIJO/FUNGIBLE': 'FIJO',
-          STATUS: 'Disponible',
-          StockMinimo: 5,
-          Factura: 'FAC-999',
-          FechaLlegada: '2024-03-01',
-          CantLlegada: 25,
-          OBS: 'Sin observaciones'
+          'Marca / Nombre': 'Arduino',
+          'Modelo / Detalle': 'Uno R3',
+          'S/N (Opcional)': '',
+          'Rótulo / ID Físico': 'MAT-BIO-001',
+          'Stock Actual': 25,
+          'Stock Mínimo': 5,
+          '¿Es Consumible? (SI/NO)': 'NO',
+          'Factura': 'FAC-999',
+          'Fecha Llegada': '2024-03-01',
+          'Cantidad Llegada': 25,
+          'Observaciones': 'Microcontrolador para prototipado',
+          'Estado Operativo': 'Disponible'
         }
       ];
     }
-    this.data.downloadExcel(template, `Plantilla_${this.inventoryMode()}`);
+    this.data.downloadExcel(template, `Plantilla_SGA_${this.inventoryMode()}`);
   }
 
   /** Importa datos desde un archivo Excel. */
@@ -1149,8 +1151,12 @@ export class InventoryComponent {
         .map((row: any, rowIndex: number) => {
           const keys = Object.keys(row);
           const getV = (prefixes: string[]) => {
-            const up = prefixes.map(p => p.toUpperCase());
-            const match = keys.find(k => up.includes(k.toUpperCase().trim()));
+            const upPrefixes = prefixes.map(p => normalize(p));
+            // Buscamos una coincidencia por inclusión parcial
+            const match = keys.find(k => {
+              const kNorm = normalize(k);
+              return upPrefixes.some(p => kNorm.includes(p) || p.includes(kNorm));
+            });
             return match ? String(row[match] || '').trim() : '';
           };
           
@@ -1161,28 +1167,45 @@ export class InventoryComponent {
             return isNaN(n) ? def : Math.min(n, 2147483647);
           };
 
-          const normalize = (s: string) => s.toUpperCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          const normalize = (s: string) => {
+             if (!s) return '';
+             return s.toUpperCase()
+                .replace(/[\s_/\\-]/g, '') // Eliminar espacios, guiones, barras
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+          };
 
           // 1. Determinar Categoría y Ruteo
           let cat = this.areaName || 'SGA';
           let subCat = this.labName || 'BODEGA';
           let tipInv = this.inventoryMode() || 'Materiales';
 
-          const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA']));
-          const sH = normalize(getV(['SUB-LAB_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB']));
+          const TipInvMapping: Record<string, string> = {
+            'EQUIPOS': 'Equipos',
+            'MATERIALES': 'Materiales',
+            'HERRAMIENTA': 'Materiales',
+            'HERRAMIENTAS': 'Materiales'
+          };
+
+          const uH = normalize(getV(['UBICACIÓN', 'UBICACION', 'LABORATORIO', 'AREA', 'Lugar']));
+          const sH = normalize(getV(['ROTULOIDFISICO', 'ROTULO_ID', 'ID', 'ROTULO', 'UBICACION', 'LAB', 'Rótulo']));
           
-          const marca = getV(['MARCA', 'BRAND']);
-          const procesador = getV(['PROCESADOR', 'CPU']);
-          const ram = getV(['RAM', 'MEMORIA']);
-          const so = getV(['SO', 'SISTEMA', 'OPERATIVO']);
-          const isNotebook = !!(procesador || ram || so || (marca && getV(['ROTULO_ID']).includes('NB-')));
+          const marca = getV(['MARCA', 'BRAND', 'Fabricante']);
+          const procesador = getV(['PROCESADOR', 'CPU', 'PROCESSOR']);
+          const ram = getV(['RAM', 'MEMORIA', 'RAM_MEMORY']);
+          const so = getV(['SISTEMAOPERATIVO', 'S.O.', 'OS', 'SISTEMA_OPERATIVO']);
+          const statusV = getV(['STATUS', 'STADO', 'ESTADO', 'Situación', 'Estado Operativo']).toUpperCase();
+          
+          // isNotebook solo es verdadero si hay campos técnicos CLAROS o se detecta RUTOLO de notebook
+          const isNotebook = !!(procesador || ram || (so && !so.toUpperCase().includes('DISPONIBLE')) || (marca && String(getV(['ROTULO_ID', 'ID', 'Rótulo'])).toUpperCase().includes('NB-')));
 
           // Ruteo dinámico solo si el usuario no tiene contexto o el archivo parece de otro laboratorio
+          // Ruteo dinámico inteligente
           if (uH && uH !== normalize(cat)) {
               for (const [areaName, labs] of Object.entries(this.data.hierarchy)) {
-                if (uH.includes(normalize(areaName))) {
+                if (uH.includes(normalize(areaName)) || normalize(areaName).includes(uH)) {
                   cat = areaName;
-                  const sub = labs.find(l => sH.includes(normalize(l)) || uH.includes(normalize(l)));
+                  const sub = labs.find(l => sH.includes(normalize(l)) || uH.includes(normalize(l)) || normalize(l).includes(sH));
                   if (sub) subCat = sub;
                   break;
                 }
@@ -1205,46 +1228,52 @@ export class InventoryComponent {
 
             return {
               marca: marca || 'Genérico',
-              modelo: getV(['MODELO', 'MODEL', 'DESCRIPCION', 'ITEM']) || 'Notebook',
-              ram, rom: getV(['ROM', 'DISCO', 'SSD']), so: getV(['SO', 'SISTEMA']),
+              modelo: getV(['MODELO', 'MODEL', 'DETALLE', 'ITEM', 'Producto']) || 'Notebook',
+              ram, rom: getV(['ROM', 'DISCO', 'SSD', 'ROM / Disco']), so: getV(['SO', 'SISTEMA', 'SO / Sistema']),
               sn: (v => {
-                const s = v.trim();
-                const forbidden = ['SIN OBSERVACIONES', 'S/O', 'N/O', 'N/A', 'NO', 'SIN', 'SIN ', '-', '.', 'SIN OBSERVACIÓN'];
+                const s = String(v).trim();
+                const forbidden = ['SIN OBSERVACIONES', 'S/O', 'N/O', 'N/A', 'NO', 'SIN', 'SIN ', '-', '.', 'SIN OBSERVACIÓN', '0'];
                 return forbidden.includes(s.toUpperCase()) ? '' : s;
-              })(getV(['SN', 'SERIAL', 'S/N'])),
-              rotulo_ID: getV(['SUB-LAB_ID', 'ROTULO_ID', 'ROTULO']),
+              })(getV(['SN', 'SERIAL', 'S/N', 'Serial Number'])),
+              rotulo_ID: getV(['ROTULOIDFISICO', 'ROTULO_ID', 'ROTULO', 'Rótulo', 'SUB-LAB_ID', 'ID']),
               procesador, softwareInstalado: softwareList.join('\n'),
-              stockActual: getNum(['ACTUAL', 'STOCK', 'CANTIDAD'], 1),
-              stockMinimo: getNum(['MINIMO'], 0),
-              status: getV(['STATUS', 'STADO', 'ESTADO']).toUpperCase().includes('DEFECT') ? 'Defectuoso' : 'Disponible',
+              observaciones: getV(['OBSERVACION', 'OBSERVACIONES', 'DETALLE', 'NOTAS', 'MODELODETALLE']),
+              stockActual: getNum(['ACTUAL', 'STOCK', 'CANTIDAD', 'Stock Actual'], 1),
+              stockMinimo: getNum(['MINIMO', 'Stock Mínimo', 'Alerta', 'MINIMC'], 0),
+              status: (statusV.includes('DEFECT') || statusV.includes('FALLA') || statusV.includes('MALO')) ? 'Defectuoso' : 'Disponible',
               categoria: cat, subCategoria: subCat, tipoInventario: 'Equipos'
             };
           } else {
-            const itemDesc = getV(['ITEM', 'DESCRIPCION', 'PRODUCTO', 'MODELO', 'NOMBRE']);
-            const statusV = getV(['STATUS', 'STADO', 'ESTADO']).toUpperCase();
+            const rawMarca = getV(['MARCA', 'Nombre', 'Fabricante']);
+            const rawModelo = getV(['MODELO', 'DETALLE', 'ITEM', 'Producto', 'Insumo']);
             
+            // Detección de observaciones y ubicación secundaria
+            const obs = getV(['OBSERVACION', 'OBSERVACIONES', 'DETALLE', 'NOTAS', 'MODELODETALLE']);
+            const snVal = getV(['SN', 'SERIAL', 'S/N', 'SERIAL NUMBER', 'Opcional']);
+
             // Generación de Rótulo Correlativo obligatorio e infalible
-            const excelId = getV(['ROTULO_ID', 'ROTULO', 'ID', 'RÓTULO', 'SUB-LAB_ID']);
+            const excelId = getV(['ROTULOIDFISICO', 'ROTULO_ID', 'ROTULO', 'ID', 'Rótulo', 'SUB-LAB_ID']);
             const generatedId = excelId || `MAT-${(this.labName || 'GEN').substring(0,3).toUpperCase()}-${String(rowIndex + 1).padStart(3, '0')}`;
 
             return {
-              marca: (marca && marca !== itemDesc) ? marca : (itemDesc || 'Insumo Genérico'),
-              modelo: (itemDesc && itemDesc !== marca) ? itemDesc : (marca || 'N/A'),
-              status: (statusV.includes('DEFECT') || statusV.includes('FALLA')) ? 'Defectuoso' : 'Disponible',
-              esFungible: getV(['FUNGIBLE', 'TIPO']).toUpperCase().includes('FUNGIBLE'),
-              stockActual: getNum(['CANTIDAD', 'ACTUAL', 'STOCK'], 0),
-              stockMinimo: getNum(['MINIMO'], 0),
-              numeroFactura: getV(['FACTURA', 'N* FACTURA']),
-              fechaLlegada: getV(['FECHA', 'LLEGADA']),
-              cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD'], 0),
+              marca: rawMarca || 'N/A',
+              modelo: rawModelo || rawMarca || 'Insumo',
+              status: (statusV.includes('DEFECT') || statusV.includes('FALLA') || statusV.includes('MALO')) ? 'Defectuoso' : 'Disponible',
+              esFungible: ['SI', 'YES', 'X', 'TRUE', 'S'].includes(getV(['FUNGIBLE', 'TIPO', 'Consumible', 'CONSUMIBL']).toUpperCase()),
+              stockActual: getNum(['ACTUAL', 'STOCK', 'CANTIDAD', 'Existencia'], 0),
+              stockMinimo: getNum(['MINIMO', 'Alerta', 'Mínimo', 'MINIMC'], 0),
+              numeroFactura: getV(['FACTURA', 'N* FACTURA', 'N° Factura', 'DOC']),
+              fechaLlegada: getV(['FECHA', 'LLEGADA', 'Llegada', 'Ingreso']),
+              cantidadLlegada: getNum(['CANTLLEGA', 'CANTIDAD', 'Llegada'], 0),
+              observaciones: obs,
               categoria: cat,
               subCategoria: subCat,
-              tipoInventario: 'Materiales',
+              tipoInventario: TipInvMapping[tipInv] || 'Materiales',
               sn: (v => {
-                const s = v.trim();
-                const forbidden = ['SIN OBSERVACIONES', 'S/O', 'N/O', 'N/A', 'NO', 'SIN', 'SIN ', '-', '.', 'SIN OBSERVACIÓN'];
+                const s = String(v).trim();
+                const forbidden = ['SIN OBSERVACIONES', 'S/O', 'N/O', 'N/A', 'NO', 'SIN', 'SIN ', '-', '.', 'SIN OBSERVACIÓN', '0', 'NA'];
                 return forbidden.includes(s.toUpperCase()) ? '' : s;
-              })(getV(['SN', 'SERIAL', 'S/N', 'SERIAL NUMBER'])),
+              })(snVal),
               rotulo_ID: generatedId
             };
           }
@@ -1346,6 +1375,32 @@ export class InventoryComponent {
   exportSelectedItems() {
     const ids = Array.from(this.selectedAdminIds());
     const items = this.data.inventory().filter(i => ids.includes(i.id));
-    this.data.downloadExcel(items, `Inventario_Seleccion_${this.labName}_${this.inventoryMode()}`);
+    
+    // Mapeo amigable para la exportación
+    const mapped = items.map(i => {
+      const base: any = {
+        'Marca / Nombre': i.marca,
+        'Modelo / Detalle': i.modelo,
+        'S/N (Serial Number)': i.sn,
+        'Rótulo / ID Físico': i.rotulo_ID,
+        'Stock Actual': i.stockActual,
+        'Stock Mínimo (Alerta)': i.stockMinimo,
+        'Estado Operativo': i.status
+      };
+
+      if (i.tipoInventario === 'Equipos') {
+        base['RAM'] = i.ram;
+        base['ROM / Disco'] = i.rom;
+        base['Procesador'] = i.procesador;
+        base['SO / Sistema'] = i.so;
+      } else {
+        base['¿Es Consumible? (SI/NO)'] = i.esFungible ? 'SI' : 'NO';
+        base['N° Factura'] = i.numeroFactura;
+        base['Fecha Llegada'] = i.fechaLlegada;
+      }
+      return base;
+    });
+
+    this.data.downloadExcel(mapped, `Inventario_SGA_${this.labName}_${this.inventoryMode()}`);
   }
 }

@@ -68,6 +68,9 @@ export class InventoryItem {
     @Column({ default: 0 })
     cantidadLlegada: number;
 
+    @Column({ type: 'text', nullable: true })
+    observaciones: string;
+
     @CreateDateColumn()
     createdAt: Date;
 

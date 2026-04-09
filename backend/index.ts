@@ -619,26 +619,32 @@ app.post('/api/inventory/bulk', authMiddleware, checkPermission(ROLES.ADMIN_STUF
         if (!data.tipoInventario) data.tipoInventario = 'Materiales';
         if (!data.status) data.status = 'Disponible';
         
-        // Evitar duplicados por SN o Identificador en carga masiva (Solo si tienen valor real)
-        const whereArr = [];
-        if (data.sn && data.sn.trim() !== '') whereArr.push({ sn: data.sn.trim() });
-        if (data.rotulo_ID && data.rotulo_ID.trim() !== '') whereArr.push({ rotulo_ID: data.rotulo_ID.trim() });
+        // IDENTIDAD DE ARTÍCULO (Jerarquía UAH)
+        const snClean = data.sn?.trim();
+        const rotuloClean = data.rotulo_ID?.trim();
+        const snPlaceholders = ['MUEBLEMET.', 'MUEBLEMET', 'NA', 'N/A', 'SIN', 'S/N', '0', 'FABLAB', '-', '.', 'SIN SERIAL'];
 
-        if (whereArr.length > 0) {
-            const exists = await itemRepo.findOne({ where: whereArr });
-            if (exists) {
-                // Si existe, actualizamos el stock en lugar de crear uno nuevo (Fundamental para cuadrar dinero/unidades)
-                exists.stockActual = (exists.stockActual || 0) + (data.stockActual || 1);
-                await itemRepo.save(exists);
-                created.push(exists);
-                const saved = await itemRepo.save(exists);
-                
-                // Trazabilidad Unificada (Auto-aprobada por ser administrativa)
-                await logRequest(req, 'MATERIAL', `Actualización Stock: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id, 'N/A', 'Aprobado');
-                
-                created.push(saved);
-                continue;
-            }
+        let exists = null;
+
+        // 1. Prioridad Absoluta: Rótulo / ID Físico
+        if (rotuloClean && rotuloClean !== '') {
+            exists = await itemRepo.findOne({ where: { rotulo_ID: rotuloClean } });
+            if (exists) console.log(`[BULK] Match por Rótulo: ${rotuloClean}`);
+        } 
+        
+        // 2. Prioridad Secundaria: S/N (Solo si no hubo match por Rótulo y el S/N es real)
+        if (!exists && snClean && snClean !== '' && !snPlaceholders.includes(snClean.toUpperCase())) {
+            exists = await itemRepo.findOne({ where: { sn: snClean } });
+            if (exists) console.log(`[BULK] Match por S/N: ${snClean}`);
+        }
+
+        if (exists) {
+            // Unificar stock
+            exists.stockActual = (exists.stockActual || 0) + (data.stockActual || 1);
+            const saved = await itemRepo.save(exists);
+            await logRequest(req, 'MATERIAL', `Actualización Stock: ${saved.marca} ${saved.modelo} (Rot: ${saved.rotulo_ID})`, saved.id, 'N/A', 'Aprobado');
+            created.push(saved);
+            continue;
         }
 
         const newItem = itemRepo.create(data);

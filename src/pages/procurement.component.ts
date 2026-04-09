@@ -1051,50 +1051,45 @@ export class ProcurementComponent {
         const orders = singleOrder ? [singleOrder] : this.filteredOrders();
         if (orders.length === 0) return;
 
-        const headers = ['Folio', 'Laboratorio', 'Producto', 'Cantidad', 'Valor_Neto_Unit', 'Total_Bruto_IVA', 'Fecha', 'Etapa', 'Proveedor', 'RUT_Proveedor', 'OC'];
-        const rows: string[] = [];
+        // Encabezados amigables para exportación masiva / edición UAH
+        const headers = ['Folio', 'Laboratorio', 'Material / Nombre', 'Cantidad', 'Valor Neto Unitario', 'Valor Total (Bruto)', 'Fecha Solicitud', 'Estado Actual', 'Proveedor', 'RUT Proveedor', 'Orden de Compra (OC)'];
+        const rows: any[] = [];
 
         orders.forEach(o => {
             if (o.itemsArray && o.itemsArray.length > 0) {
                 o.itemsArray.forEach(item => {
-                    rows.push([
-                        o.idNum,
-                        o.lab,
-                        item.description,
-                        item.quantity,
-                        item.unitPrice,
-                        Math.round((item.quantity * item.unitPrice) * 1.19),
-                        o.fechaSolicitud,
-                        o.stage,
-                        o.proveedor || 'N/A',
-                        o.rutProveedor || 'N/A',
-                        o.numeroOC || 'N/A'
-                    ].join(';'));
+                    rows.push({
+                        'Folio': o.idNum,
+                        'Laboratorio': o.lab,
+                        'Material / Nombre': item.description,
+                        'Cantidad': item.quantity,
+                        'Valor Neto Unitario': item.unitPrice,
+                        'Valor Total (Bruto)': Math.round((item.quantity * item.unitPrice) * 1.19),
+                        'Fecha Solicitud': o.fechaSolicitud,
+                        'Estado Actual': o.stage,
+                        'Proveedor': o.proveedor || 'N/A',
+                        'RUT Proveedor': o.rutProveedor || 'N/A',
+                        'Orden de Compra (OC)': o.numeroOC || 'N/A'
+                    });
                 });
             } else {
-                rows.push([
-                    o.idNum,
-                    o.lab,
-                    o.item || 'N/A',
-                    o.cantidad,
-                    o.valorUnitario,
-                    o.valorTotal,
-                    o.fechaSolicitud,
-                    o.stage,
-                    o.proveedor || 'N/A',
-                    o.rutProveedor || 'N/A',
-                    o.numeroOC || 'N/A'
-                ].join(';'));
+                rows.push({
+                    'Folio': o.idNum,
+                    'Laboratorio': o.lab,
+                    'Material / Nombre': o.item || 'N/A',
+                    'Cantidad': o.cantidad,
+                    'Valor Neto Unitario': o.valorUnitario,
+                    'Valor Total (Bruto)': o.valorTotal,
+                    'Fecha Solicitud': o.fechaSolicitud,
+                    'Estado Actual': o.stage,
+                    'Proveedor': o.proveedor || 'N/A',
+                    'RUT Proveedor': o.rutProveedor || 'N/A',
+                    'Orden de Compra (OC)': o.numeroOC || 'N/A'
+                });
             }
         });
 
-        const csvContent = [headers.join(';'), ...rows].join('\n');
-        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `REPORTE_UAH_${this.currentStage().toUpperCase()}_${new Date().toISOString().split('T')[0]}.csv`);
-        link.click();
+        this.data.downloadExcel(rows, `REPORTE_UAH_COMPRAS_${this.currentStage().toUpperCase()}`);
     }
 
     downloadTemplate() {
@@ -1103,36 +1098,37 @@ export class ProcurementComponent {
 
         if (stage === 'Solicitud') {
             template = [{
-                'Folio': '8051368',
+                'Folio (Opcional)': '8051368',
                 'Laboratorio': 'INFORMATICA',
-                'Item_Producto': 'Cargador Lenovo original tipo C 65W',
+                'Material / Nombre': 'Cargador Lenovo original tipo C 65W',
+                'Descripción / Detalle': 'Cargador para Thinkpad L14',
                 'Cantidad': 5,
-                'Valor_Neto_Unitario': 35990,
+                'Valor Neto Unitario': 35990,
                 'Observaciones': 'Urgente para Laboratorio 3',
-                'Link_Referencia': 'https://referencia.cl'
+                'Link Referencia': 'https://referencia.cl'
             }];
         } else if (stage === 'Adjudicacion') {
             template = [{
                 'Folio': '8051368',
-                'Proveedor': 'LENOVO CHILE S.A.',
-                'RUT_Proveedor': '12.345.678-9',
-                'Producto_Adjudicado': 'Cargador Lenovo 65W (SKU-123)',
-                'Precio_Adjudicado': 32500,
-                'Cantidad_Adjudicada': 5
+                'Proveedor / Empresa': 'LENOVO CHILE S.A.',
+                'RUT Proveedor': '12.345.678-9',
+                'Producto Adjudicado': 'Cargador Lenovo 65W (SKU-123)',
+                'Precio Adjudicado': 32500,
+                'Cantidad Adjudicada': 5
             }];
         } else if (stage === 'Seguimiento') {
             template = [{
                 'Folio': '8051368',
-                'Numero_OC': 'OC-2024-001',
-                'Numero_Cotizacion': 'COT-9988',
-                'Fecha_Entrega_Estimada': '2024-06-15'
+                'Número OC': 'OC-2024-001',
+                'Número Cotización': 'COT-9988',
+                'Fecha Entrega Estimada': '2024-06-15'
             }];
         } else if (stage === 'Cierre') {
             template = [{
                 'Folio': '8051368',
-                'Numero_Factura': 'F-15522',
-                'Fecha_Factura': '2024-06-20',
-                'Fecha_Entrega_Real': '2024-06-21'
+                'Número Factura': 'F-15522',
+                'Fecha Factura': '2024-06-20',
+                'Fecha Entrega Real': '2024-06-21'
             }];
         }
 
@@ -1177,28 +1173,28 @@ export class ProcurementComponent {
                         return match ? String(row[match]).trim() : '';
                     };
 
-                    const folio = getV(['FOLIO', 'ID_SOLICITUD', 'IDNUM', 'ID']);
-                    const item = getV(['ITEM', 'PRODUCTO', 'NOMBRE', 'ARTÍCULO', 'ITEM_PRODUCTO']);
-                    const qty = parseInt(getV(['CANTIDAD', 'QTY', 'QUANTITY'])) || 0;
-                    const price = parseFloat(getV(['VALOR', 'PRECIO', 'NETO', 'UNITARIO', 'COSTO', 'NETO_UNITARIO']).replace(/[^0-9.]/g, '')) || 0;
-                    const lab = getV(['LABORATORIO', 'ÁREA', 'LAB']);
-                    const obs = getV(['DESCRIPCION', 'OBSERVACIONES', 'DETALLE', 'OBS']);
-                    const link = getV(['LINK', 'URL', 'REFERENCIA', 'LINK_REFERENCIA']);
+                    const folio = getV(['FOLIO', 'ID_SOLICITUD', 'IDNUM', 'ID', 'Folio']);
+                    const item = getV(['ITEM', 'PRODUCTO', 'NOMBRE', 'ARTÍCULO', 'ITEM_PRODUCTO', 'Material / Nombre']);
+                    const qty = parseInt(getV(['CANTIDAD', 'QTY', 'QUANTITY', 'Cantidad'])) || 0;
+                    const price = parseFloat(getV(['VALOR', 'PRECIO', 'NETO', 'UNITARIO', 'COSTO', 'NETO_UNITARIO', 'Valor Neto Unitario']).replace(/[^0-9.]/g, '')) || 0;
+                    const lab = getV(['LABORATORIO', 'ÁREA', 'LAB', 'Laboratorio']);
+                    const obs = getV(['DESCRIPCION', 'OBSERVACIONES', 'DETALLE', 'OBS', 'Observaciones', 'Descripción / Detalle']);
+                    const link = getV(['LINK', 'URL', 'REFERENCIA', 'LINK_REFERENCIA', 'Link Referencia']);
 
                     // Campos de Adjudicación
-                    const prov = getV(['PROVEEDOR', 'VENDOR', 'COMPANY']);
-                    const rutP = getV(['RUT', 'RUT_PROVEEDOR', 'TAX_ID']);
-                    const prodAdj = getV(['PRODUCTO_ADJUDICADO', 'ADJUDICADO_NOMBRE']);
-                    const priceAdj = parseFloat(getV(['PRECIO_ADJUDICADO', 'VALOR_ADJUDICADO']).replace(/[^0-9.]/g, '')) || 0;
-                    const qtyAdj = parseInt(getV(['CANTIDAD_ADJUDICADA', 'QTY_ADJUDICADA'])) || 0;
+                    const prov = getV(['PROVEEDOR', 'VENDOR', 'COMPANY', 'Proveedor / Empresa']);
+                    const rutP = getV(['RUT', 'RUT_PROVEEDOR', 'TAX_ID', 'RUT Proveedor']);
+                    const prodAdj = getV(['PRODUCTO_ADJUDICADO', 'ADJUDICADO_NOMBRE', 'Producto Adjudicado']);
+                    const priceAdj = parseFloat(getV(['PRECIO_ADJUDICADO', 'VALOR_ADJUDICADO', 'Precio Adjudicado']).replace(/[^0-9.]/g, '')) || 0;
+                    const qtyAdj = parseInt(getV(['CANTIDAD_ADJUDICADA', 'QTY_ADJUDICADA', 'Cantidad Adjudicada'])) || 0;
 
                     // Seguimiento & Cierre
-                    const nOc = getV(['OC', 'NUMERO_OC', 'OC_NUMBER']);
-                    const nCot = getV(['COTIZACION', 'NUMERO_COTIZACION', 'QUOTE']);
-                    const fEntregaEst = getV(['FECHA_ENTREGA_ESTIMADA', 'ENTREGA_ESTIMADA']);
-                    const nFactura = getV(['FACTURA', 'NUMERO_FACTURA', 'INVOICE']);
-                    const fFactura = getV(['FECHA_FACTURA', 'INVOICE_DATE']);
-                    const fEntregaReal = getV(['FECHA_ENTREGA_REAL', 'FECHA_ENTREGA']);
+                    const nOc = getV(['OC', 'NUMERO_OC', 'OC_NUMBER', 'Número OC', 'Orden de Compra']);
+                    const nCot = getV(['COTIZACION', 'NUMERO_COTIZACION', 'QUOTE', 'Número Cotización']);
+                    const fEntregaEst = getV(['FECHA_ENTREGA_ESTIMADA', 'ENTREGA_ESTIMADA', 'Fecha Entrega Estimada']);
+                    const nFactura = getV(['FACTURA', 'NUMERO_FACTURA', 'INVOICE', 'Número Factura']);
+                    const fFactura = getV(['FECHA_FACTURA', 'INVOICE_DATE', 'Fecha Factura']);
+                    const fEntregaReal = getV(['FECHA_ENTREGA_REAL', 'FECHA_ENTREGA', 'Fecha Entrega Real']);
 
                     if (folio || (item && qty > 0)) {
                         console.log('Procesando Folio:', folio, 'Item:', item, 'Lab origen:', lab);
