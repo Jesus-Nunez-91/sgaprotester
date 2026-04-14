@@ -41,8 +41,8 @@ import { Router, ActivatedRoute } from '@angular/router';
         
         <!-- FABLAB -->
         <div (click)="selectArea('FABLAB')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-          <div style="width: 160px; height: 160px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee;">
-            <img src="assets/images/icons/fablab.png" alt="FabLab Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.4);">
+          <div style="width: 180px; height: 180px; background: #fcfcfc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid #f0f0f0;">
+            <img src="assets/images/icons/fablab.png" alt="FabLab Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(2.2);">
           </div>
           <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">FABLAB</h2>
           <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Taller de Fabricación e Impresión 3D.</p>
@@ -53,8 +53,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 
         <!-- CIENCIAS BASICAS -->
         <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-          <div style="width: 160px; height: 160px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee;">
-            <img src="assets/images/icons/ciencias.png" alt="Ciencias Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.4);">
+          <div style="width: 180px; height: 180px; background: #fcfcfc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid #f0f0f0;">
+            <img src="assets/images/icons/ciencias.png" alt="Ciencias Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(2.2);">
           </div>
           <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">CIENCIAS BÁSICAS</h2>
           <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Laboratorios de Física y Química.</p>
@@ -65,8 +65,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 
         <!-- INFORMATICA -->
         <div (click)="selectArea('LAB INFORMATICA')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-          <div style="width: 160px; height: 160px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee;">
-            <img src="assets/images/icons/informatica.png" alt="Informatica Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.4);">
+          <div style="width: 180px; height: 180px; background: #fcfcfc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid #f0f0f0;">
+            <img src="assets/images/icons/informatica.png" alt="Informatica Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(2.2);">
           </div>
           <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">INFORMÁTICA</h2>
           <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Hardware, Redes y Desarrollo.</p>
