@@ -175,9 +175,18 @@ declare const Swal: any;
                                     <button (click)="updateStatus(loan.id!, 'confirmed')" class="w-9 h-9 bg-green-500 text-white rounded-xl flex items-center justify-center hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all"><i class="bi bi-check-lg"></i></button>
                                     <button (click)="updateStatus(loan.id!, 'cancelled')" class="w-9 h-9 bg-red-100 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-200 transition-all"><i class="bi bi-x-lg"></i></button>
                                   } @else if (loan.status === 'confirmed') {
-                                    <span class="bg-green-100 text-green-700 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-green-200 flex items-center gap-1"><i class="bi bi-patch-check-fill"></i> Entregado</span>
+                                     <div class="flex items-center gap-2">
+                                       <span class="bg-green-100 text-green-700 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-green-200 flex items-center gap-1"><i class="bi bi-patch-check-fill"></i> Entregado</span>
+                                       <button (click)="updateStatus(loan.id!, 'pending')" class="text-gray-400 hover:text-gray-600 transition-colors" title="Deshacer"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                     </div>
                                   } @else {
-                                    <span class="bg-gray-100 text-gray-400 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-gray-200">Cancelado</span>
+                                     <div class="flex items-center gap-2">
+                                       <span class="bg-gray-100 text-gray-400 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-gray-200">Cancelado</span>
+                                       <button (click)="updateStatus(loan.id!, 'pending')" class="flex items-center gap-1 text-[#ff5e14] hover:text-orange-700 transition-all bg-[#ff5e14]/5 px-2 py-1 rounded-lg border border-[#ff5e14]/20 hover:shadow-sm" title="Reactivar">
+                                          <i class="bi bi-arrow-counterclockwise text-[10px]"></i>
+                                          <span class="text-[8px] font-black uppercase tracking-tighter">Reactivar</span>
+                                       </button>
+                                     </div>
                                   }
                                </div>
                             </div>
