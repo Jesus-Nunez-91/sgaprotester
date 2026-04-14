@@ -50,12 +50,7 @@ import { DataService } from '../services/data.service';
         </div>
       </div>
 
-      <!-- Footer Minimalista -->
-      <div class="absolute bottom-8 left-0 w-full text-center z-10">
-        <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-          Universidad Alberto Hurtado © 2024 • Departamento de Tecnologías e Innovación
-        </p>
-      </div>
+
     </div>
   `,
   styles: [`
