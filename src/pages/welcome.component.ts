@@ -20,15 +20,15 @@ import { DataService } from '../services/data.service';
       </div>
 
       <!-- Contenedor del Video -->
-      <div class="w-full max-w-4xl z-10 animate-fade-in">
-        <div class="relative pt-[56.25%] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border-4 border-[#f06427]/20">
-          <iframe 
-            src="https://player.vimeo.com/video/1126225941?h=122df15b11&autoplay=1&title=0&byline=0&portrait=0" 
-            class="absolute top-0 left-0 w-full h-full"
-            frameborder="0" 
-            allow="autoplay; fullscreen; picture-in-picture" 
-            allowfullscreen>
-          </iframe>
+      <div class="w-full max-w-4xl z-10 animate-fade-in px-4">
+        <div class="relative bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-[#f06427]/20 flex items-center justify-center min-h-[400px]">
+          <img 
+            src="assets/images/welcome-hero.png" 
+            class="w-full h-full object-cover absolute inset-0"
+            alt="Bienvenida SGA Pro"
+          >
+          <!-- Overlay sutil para mejorar legibilidad si fuera necesario -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         </div>
 
         <!-- Información y Botón de Inicio -->
