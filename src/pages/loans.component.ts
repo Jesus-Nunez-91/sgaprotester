@@ -751,7 +751,15 @@ export class LoansComponent implements OnInit {
   // Signals for dashboard
   todaysLoans = computed(() => {
     const today = this.getTodayName();
-    return this.loans().filter(l => l.day === today).sort((a,b) => a.timeBlock.localeCompare(b.timeBlock));
+    return this.loans()
+      .filter(l => l.day === today && (
+        l.equipment.dellLaptops > 0 || 
+        l.equipment.macLaptops > 0 || 
+        l.equipment.dellChargers > 0 || 
+        l.equipment.macChargers > 0 || 
+        l.equipment.extensionCords > 0
+      ))
+      .sort((a,b) => a.timeBlock.localeCompare(b.timeBlock));
   });
 
   activeLoans = computed(() => {
