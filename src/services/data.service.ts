@@ -14,6 +14,7 @@ export interface User {
   correo: string;
   password?: string;
   rol: 'Alumno' | 'Docente' | 'Academico' | 'Admin_Acade' | 'Admin_Labs' | 'SuperUser';
+  permisos?: any;
   carrera?: string;
   anioIngreso?: number;
 }

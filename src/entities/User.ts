@@ -28,6 +28,9 @@ export class User {
     })
     rol: 'Alumno' | 'Docente' | 'Admin_Acade' | 'Admin_Labs' | 'Academico' | 'SuperUser';
 
+    @Column({ type: 'json', nullable: true })
+    permisos: any;
+
     @Column({ nullable: true })
     carrera: string;
 

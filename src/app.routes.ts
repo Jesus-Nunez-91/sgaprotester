@@ -17,6 +17,7 @@ import { BitacoraComponent } from './pages/bitacora.component';
 import { NotFoundComponent } from './pages/not-found.component';
 import { RoomsComponent } from './pages/rooms.component';
 import { WelcomeComponent } from './pages/welcome.component';
+import { LoansComponent } from './pages/loans.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -36,6 +37,7 @@ export const routes: Routes = [
   { path: 'projects', component: ProjectsComponent },
   { path: 'wiki', component: WikiComponent },
   { path: 'bitacora', component: BitacoraComponent },
+  { path: 'loans', component: LoansComponent },
   { path: '404', component: NotFoundComponent },
   { path: '**', redirectTo: '404' }
 ];

@@ -34,6 +34,9 @@ import { RoomReservation } from "../src/entities/RoomReservation";
 import { ProcurementRequest } from "../src/entities/ProcurementRequest";
 import { SystemSetting } from "../src/entities/SystemSetting";
 import { Notification } from "../src/entities/Notification";
+import { EquipmentLoan } from "../src/entities/EquipmentLoan";
+import { SpecialLoan } from "../src/entities/SpecialLoan";
+import { EquipmentInventory } from "../src/entities/EquipmentInventory";
 
 dotenv.config();
 
@@ -87,10 +90,81 @@ AppDataSource.initialize()
               rut: '1-9',
               correo: 'admin@uah.cl',
               password: hashedPassword,
-              rol: 'SuperUser'
+              rol: 'SuperUser', permisos: { 'Welcome': 'Editor', 'Dashboard': 'Editor', 'Laboratorio': 'Editor', 'Horarios Academicos': 'Editor', 'Salas y Labs': 'Editor', 'Gestion de Solicitudes': 'Editor', 'Ayuda & Soporte': 'Editor', 'Wiki': 'Editor', 'Compras': 'Editor', 'Mantencion': 'Editor', 'Bitagora': 'Editor', 'Proyectos': 'Editor', 'Usuarios': 'Editor', 'Auditoria': 'Editor', 'Prestamo Equipos': 'Editor' }
           }));
       }
     } catch(e) { console.warn("⚠️ Error al verificar semilla Admin:", e); }
+
+    
+    
+    // Semilla Prestamo Equipos
+    try {
+      const invRepo = AppDataSource.getRepository(EquipmentInventory);
+      const loanRepo = AppDataSource.getRepository(EquipmentLoan);
+      const specialRepo = AppDataSource.getRepository(SpecialLoan);
+      
+      const invExists = await invRepo.find();
+      if (invExists.length === 0) {
+        console.log("🌱 Inicializando inventario de laboratorios...");
+        await invRepo.save(invRepo.create({
+          dellLaptops: 12, macLaptops: 15, dellChargers: 12, macChargers: 15, extensionCords: 10
+        }));
+      }
+
+      const loansExist = await loanRepo.find();
+      if (loansExist.length === 0) {
+        console.log("🌱 Inicializando malla completa de préstamos...");
+        const initialLoans = [
+          { className: 'F.Prog sec 02', professor: 'Hector', day: 'Lunes', timeBlock: '10:00 - 11:20', colorTheme: 'blue' as 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'F.Prog sec 04', professor: 'Felipe', day: 'Lunes', timeBlock: '13:00 - 14:20', colorTheme: 'pink' as 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Base de Datos sec 02', professor: 'Felipe', day: 'Lunes', timeBlock: '14:30 - 15:50', colorTheme: 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Base de Datos sec 03', professor: 'Guillermo', day: 'Lunes', timeBlock: '16:00 - 17:20', colorTheme: 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Programación Avanzada sec 02', professor: 'FABIO ANTONIO SÁEZ JARA', day: 'Martes', timeBlock: '08:30 - 09:50', colorTheme: 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Programación Avanzada 02', professor: 'FABIO ANTONIO SÁEZ JARA', day: 'Martes', timeBlock: '10:00 - 11:20', colorTheme: 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Ayudantía Redes Sociales sec 01', professor: 'Ayudante', day: 'Martes', timeBlock: '11:30 - 12:50', colorTheme: 'yellow' as 'yellow' as 'yellow', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Arte y creatividad en ingeniería Sec 1', professor: 'STEFANI NATALIA MARDONES CARVAJAL', day: 'Martes', timeBlock: '13:00 - 14:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Probabilidad y Estadística sec 01', professor: 'Christopher', day: 'Martes', timeBlock: '16:00 - 17:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'F.Prog sec 02', professor: 'Hector', day: 'Miércoles', timeBlock: '10:00 - 11:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Ayudantía Redes', professor: 'Ayudante', day: 'Miércoles', timeBlock: '11:30 - 12:50', colorTheme: 'yellow' as 'yellow', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'F.Prog sec 04', professor: 'Felipe', day: 'Miércoles', timeBlock: '13:00 - 14:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Base de Datos sec 02', professor: 'Felipe', day: 'Miércoles', timeBlock: '14:30 - 15:50', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Base de Datos sec 03', professor: 'Guillermo', day: 'Miércoles', timeBlock: '16:00 - 17:20', colorTheme: 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Redes', professor: 'JUAN ANTONIO SARAVIA VILLAR', day: 'Miércoles', timeBlock: '17:30 - 18:50', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Ayudantía Programación Avanzada sec 02', professor: 'Ayudante', day: 'Jueves', timeBlock: '11:30 - 12:50', colorTheme: 'yellow' as 'yellow', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Arte y creatividad en ingeniería Sec 1', professor: 'STEFANI NATALIA MARDONES CARVAJAL', day: 'Jueves', timeBlock: '13:00 - 14:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Arte y creatividad en ingeniería Sec 4', professor: 'Claudia Moreno', day: 'Jueves', timeBlock: '16:00 - 17:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Redes', professor: 'JUAN ANTONIO SARAVIA VILLAR', day: 'Jueves', timeBlock: '17:30 - 18:50', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Arquitectura de software', professor: 'Cristian', day: 'Viernes', timeBlock: '08:30 - 09:50', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Ayudantía Arquitectura de software', professor: 'Ayudante', day: 'Viernes', timeBlock: '10:00 - 11:20', colorTheme: 'yellow' as 'yellow', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Arquitectura de software', professor: 'Cristian', day: 'Viernes', timeBlock: '11:30 - 12:50', colorTheme: 'pink' as 'pink', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Ayudantía redes sociales sec 2', professor: 'Ayudante', day: 'Viernes', timeBlock: '13:00 - 14:20', colorTheme: 'yellow' as 'yellow', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'Ayudantía Base de Datos sec 02', professor: 'Ayudante', day: 'Viernes', timeBlock: '14:30 - 15:50', colorTheme: 'yellow' as 'yellow', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } },
+          { className: 'F.Prog sec 09', professor: 'Sin profesor', day: 'Viernes', timeBlock: '16:00 - 17:20', colorTheme: 'blue' as 'blue', equipment: { dellLaptops: 0, macLaptops: 0, dellChargers: 0, macChargers: 0, extensionCords: 0 } }
+        ];
+        await loanRepo.save(loanRepo.create(initialLoans));
+      }
+
+      const specialsExists = await specialRepo.find();
+      if (specialsExists.length === 0) {
+        console.log("🌱 Inicializando préstamos especiales...");
+        const initialSpecials = [
+          {
+            applicantName: 'Ignacio Muñoz',
+            applicantRut: '20.123.126-4',
+            applicantType: 'Alumno',
+            startDate: '2026-04-09',
+            endDate: '2026-04-16',
+            reason: 'Feria FIDAE',
+            equipment: { dellLaptops: 0, macLaptops: 1, dellChargers: 0, macChargers: 1, extensionCords: 0 },
+            detailedItems: [{ id: 'item-1', type: 'Laptop Mac', brand: 'Apple', model: 'MacBook Pro M2', serialNumber: 'C02F12345678', chargerSerialNumber: 'CHG-987654321', observations: 'Pequeño rasguño en la tapa' }],
+            status: 'active' as 'active' as 'active',
+            documentNumber: '480'
+          }
+        ];
+        await specialRepo.save(specialRepo.create(initialSpecials));
+      }
+    } catch(e) { console.warn("⚠️ Error en semilla de préstamos:", e); }
+
 
     startServer();
   })
@@ -240,7 +314,7 @@ app.post('/api/auth/register', authRateLimit, async (req, res) => {
       rut,
       carrera,
       anioIngreso: Number(anio),
-      rol: rol || 'Alumno',
+      rol: rol || 'Alumno', permisos: { 'Horarios Academicos': 'Solo Vista' },
       password: hashedPassword
     });
 
@@ -315,9 +389,9 @@ app.post('/api/users', authMiddleware, async (req: any, res) => {
   }
   try {
     const userRepo = AppDataSource.getRepository(User);
-    const { password, ...userData } = req.body;
+    const { password, permisos, ...userData } = req.body;
     const hashedPassword = await bcrypt.hash(password || 'uah123', 10);
-    const newUser = userRepo.create({ ...userData, password: hashedPassword });
+    const newUser = userRepo.create({ ...userData, password: hashedPassword, permisos: permisos || { 'Horarios Academicos': 'Solo Vista' } });
     const savedUser: any = await userRepo.save(newUser);
     
     await logAudit(req.user.nombre, req.user.correo, req.user.rol, 'CREATE_USER', `Usuario creado: ${savedUser.nombreCompleto} (${savedUser.rol})`);
@@ -1956,6 +2030,103 @@ app.get('/api/diag/schema', async (req, res) => {
     } catch(e: any) {
         res.status(500).json({ error: 'Fallo al obtener esquema', details: e.message });
     }
+});
+
+
+// --- EQUIPOS Y PRESTAMOS ---
+
+app.get('/api/loans', async (req, res) => {
+  try {
+    const loanRepo = AppDataSource.getRepository(EquipmentLoan);
+    const loans = await loanRepo.find();
+    res.json(loans);
+  } catch (err) { res.status(500).json({ message: 'Error al obtener préstamos' }); }
+});
+
+app.post('/api/loans', async (req, res) => {
+  try {
+    const loanRepo = AppDataSource.getRepository(EquipmentLoan);
+    const loanData = req.body;
+    let loan;
+    if (loanData.id) {
+      loan = await loanRepo.findOneBy({ id: Number(loanData.id) });
+      if (loan) Object.assign(loan, loanData);
+    }
+    if (!loan) loan = loanRepo.create(loanData);
+    const saved = await loanRepo.save(loan);
+    res.json(saved);
+  } catch (err) { res.status(500).json({ message: 'Error al guardar préstamo' }); }
+});
+
+app.delete('/api/loans/:id', async (req, res) => {
+  try {
+    const loanRepo = AppDataSource.getRepository(EquipmentLoan);
+    await loanRepo.delete(req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: 'Error al eliminar' }); }
+});
+
+app.post('/api/loans/:id/status', async (req, res) => {
+  try {
+    const loanRepo = AppDataSource.getRepository(EquipmentLoan);
+    const loan = await loanRepo.findOneBy({ id: Number(req.params.id) });
+    if (!loan) return res.status(404).json({ message: 'No encontrado' });
+    loan.status = req.body.status;
+    await loanRepo.save(loan);
+    res.json(loan);
+  } catch (err) { res.status(500).json({ message: 'Error al actualizar estado' }); }
+});
+
+app.get('/api/special-loans', async (req, res) => {
+  try {
+    const repo = AppDataSource.getRepository(SpecialLoan);
+    const loans = await repo.find();
+    res.json(loans);
+  } catch (err) { res.status(500).json({ message: 'Error' }); }
+});
+
+app.post('/api/special-loans', async (req, res) => {
+  try {
+    const repo = AppDataSource.getRepository(SpecialLoan);
+    const data = req.body;
+    let loan;
+    if (data.id) {
+      loan = await repo.findOneBy({ id: Number(data.id) });
+      if (loan) Object.assign(loan, data);
+    }
+    if (!loan) loan = repo.create(data);
+    const saved = await repo.save(loan);
+    res.json(saved);
+  } catch (err) { res.status(500).json({ message: 'Error' }); }
+});
+
+app.delete('/api/special-loans/:id', async (req, res) => {
+  try {
+    const repo = AppDataSource.getRepository(SpecialLoan);
+    await repo.delete(req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: 'Error' }); }
+});
+
+app.get('/api/equipment-inventory', async (req, res) => {
+  try {
+    const repo = AppDataSource.getRepository(EquipmentInventory);
+    let config = await repo.findOneBy({ configName: 'SGA_DEFAULT' });
+    if (!config) config = await repo.save(repo.create({ configName: 'SGA_DEFAULT' }));
+    res.json(config);
+  } catch (err) { res.status(500).json({ message: 'Error' }); }
+});
+
+app.post('/api/equipment-inventory', async (req, res) => {
+  try {
+    const repo = AppDataSource.getRepository(EquipmentInventory);
+    let config = await repo.findOneBy({ configName: 'SGA_DEFAULT' });
+    if (config) {
+      Object.assign(config, req.body);
+      await repo.save(config);
+    }
+    res.json(config);
+  } catch (err) { res.status(500).json({ message: 'Error' }); }
 });
 
 // --- SERVIR FRONTEND ---

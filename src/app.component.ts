@@ -36,7 +36,7 @@ import { FormsModule } from '@angular/forms';
 
           <!-- Enlaces de Navegación -->
           <nav class="flex-1 overflow-y-auto py-8 flex flex-col gap-1.5 px-4 scrollbar-hide">
-              @if (isSuperUser()) {
+              @if (isSuperUser() || hasPermission('Dashboard', 'ver')) {
                   <a routerLink="/dashboard" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-grid-1x2-fill text-xl group-hover:scale-110 transition-transform"></i>
@@ -44,86 +44,118 @@ import { FormsModule } from '@angular/forms';
                   </a>
               }
 
-               <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                   <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
-                   <span class="hidden lg:inline text-sm">Laboratorios</span>
-               </a>
+              @if (isSuperUser() || hasPermission('Laboratorio', 'ver')) {
+                <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                    <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
+                    <span class="hidden lg:inline text-sm">Laboratorios</span>
+                </a>
+              }
 
-               <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                   <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
-                   <span class="hidden lg:inline text-sm">Horarios Academicos</span>
-               </a>
+              @if (isSuperUser() || hasPermission('Horarios Academicos', 'ver')) {
+                <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                    <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
+                    <span class="hidden lg:inline text-sm">Horarios Academicos</span>
+                </a>
+              }
 
-              <a routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                  <i class="bi bi-door-open-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Salas y Labs</span>
-              </a>
+              @if (isSuperUser() || hasPermission('Prestamo Equipos', 'ver')) {
+                <a routerLink="/loans" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                   class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                    <i class="bi bi-laptop text-xl group-hover:scale-110 transition-transform"></i>
+                    <span class="hidden lg:inline text-sm">Préstamo Equipos</span>
+                </a>
+              }
 
-              <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                  <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">{{ isRoomAdmin() ? 'Gestión de Solicitudes' : 'Mis Solicitudes' }}</span>
-              </a>
+              @if (isSuperUser() || hasPermission('Salas y Labs', 'ver')) {
+                <a routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                   class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                    <i class="bi bi-door-open-fill text-xl group-hover:scale-110 transition-transform"></i>
+                    <span class="hidden lg:inline text-sm">Salas y Labs</span>
+                </a>
+              }
 
-              <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                 class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                  <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
-                  <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
-              </a>
+              @if (isSuperUser() || hasPermission('Gestion de Solicitudes', 'ver')) {
+                <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                   class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                    <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
+                    <span class="hidden lg:inline text-sm">{{ isRoomAdmin() ? 'Gestión de Solicitudes' : 'Mis Solicitudes' }}</span>
+                </a>
+              }
 
-               <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                  class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                   <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
-                   <span class="hidden lg:inline text-sm">Wiki</span>
-               </a>
+              @if (isSuperUser() || hasPermission('Ayuda & Soporte', 'ver')) {
+                <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                   class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                    <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
+                    <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
+                </a>
+              }
 
-              @if (isLabAdmin()) {
+              @if (isSuperUser() || hasPermission('Wiki', 'ver')) {
+                 <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                     <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
+                     <span class="hidden lg:inline text-sm">Wiki</span>
+                 </a>
+              }
+
+              @if (isSuperUser() || isLabAdmin() || hasPermission('Compras', 'ver') || hasPermission('Mantencion', 'ver') || hasPermission('Bitagora', 'ver') || hasPermission('Proyectos', 'ver')) {
                   <div class="my-6 border-t border-white/5"></div>
                   <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
                   
-                  <a routerLink="/procurement" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-cart-check-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Compras</span>
-                  </a>
+                  @if (isSuperUser() || hasPermission('Compras', 'ver')) {
+                    <a routerLink="/procurement" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                        <i class="bi bi-cart-check-fill text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden lg:inline text-sm">Compras</span>
+                    </a>
+                  }
 
-                  <a routerLink="/maintenance" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-tools text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Mantención</span>
-                  </a>
+                  @if (isSuperUser() || hasPermission('Mantencion', 'ver')) {
+                    <a routerLink="/maintenance" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                        <i class="bi bi-tools text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden lg:inline text-sm">Mantención</span>
+                    </a>
+                  }
 
-                  <a routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Bitácora</span>
-                  </a>
+                  @if (isSuperUser() || hasPermission('Bitagora', 'ver')) {
+                    <a routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                        <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden lg:inline text-sm">Bitácora</span>
+                    </a>
+                  }
 
-                  <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Proyectos</span>
-                  </a>
+                  @if (isSuperUser() || hasPermission('Proyectos', 'ver')) {
+                    <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                        <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden lg:inline text-sm">Proyectos</span>
+                    </a>
+                  }
               }
 
-              @if (isSuperUser()) {
+              @if (isSuperUser() || hasPermission('Usuarios', 'ver') || hasPermission('Auditoria', 'ver')) {
                   <div class="my-6 border-t border-white/5"></div>
                   <span class="hidden lg:block px-5 text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-4">Seguridad</span>
                   
-                  <a routerLink="/users" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Usuarios</span>
-                  </a>
+                  @if (isSuperUser() || hasPermission('Usuarios', 'ver')) {
+                    <a routerLink="/users" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
+                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                        <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden lg:inline text-sm">Usuarios</span>
+                    </a>
+                  }
 
-                  <a routerLink="/audit" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
-                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                      <i class="bi bi-shield-lock-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Auditoría</span>
-                  </a>
+                  @if (isSuperUser() || hasPermission('Auditoria', 'ver')) {
+                    <a routerLink="/audit" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
+                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                        <i class="bi bi-shield-lock-fill text-xl group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden lg:inline text-sm">Auditoría</span>
+                    </a>
+                  }
               }
           </nav>
 
@@ -385,26 +417,66 @@ export class AppComponent {
         const url = this.router.url;
         const role = this.authService.currentUser()?.rol;
         
-        // --- PROTECCIÓN DE RUTAS SEGÚN ROL ---
+        // --- PROTECCIÓN DE RUTAS SEGÚN ROL Y PERMISOS GRANULARES ---
         
-        // 1. Zonas exclusivas de SuperUser
-        const superOnly = url.includes('dashboard') || url.includes('audit') || url.includes('users');
-        if (superOnly && role !== 'SuperUser') {
+        // 1. Zonas de Seguridad (Usuarios, Auditoría)
+        const securityZones = url.includes('audit') || url.includes('users');
+        if (securityZones && !this.isSuperUser() && !this.hasPermission('Usuarios', 'ver') && !this.hasPermission('Auditoria', 'ver')) {
             this.router.navigate(['/rooms']);
             return;
         }
 
-        // 2. Zonas de Administración de Laboratorios (EDICIÓN)
-        const labAdminEditZones = url.includes('procurement') || url.includes('maintenance') || url.includes('projects') || url.includes('bitacora');
-        if (labAdminEditZones && !this.isLabAdmin()) {
+        // 2. Dashboard
+        if (url.includes('dashboard') && !this.isSuperUser() && !this.hasPermission('Dashboard', 'ver')) {
             this.router.navigate(['/rooms']);
             return;
         }
 
-        // 3. Zonas de Consulta Universal (Laboratorios, Horarios, Wiki)
-        // Se permite el acceso a todos los roles para áreas cognitivas e informativas.
-        const universalZones = url.includes('areas') || url.includes('inventory') || url.includes('schedule') || url.includes('wiki') || url.includes('rooms') || url.includes('welcome');
-        // No se aplican redirecciones en estas zonas para usuarios autenticados.
+        // 3. Zonas de Administración de Laboratorios
+        const procurementZone = url.includes('procurement') && !this.isLabAdmin() && !this.hasPermission('Compras', 'ver');
+        const maintenanceZone = url.includes('maintenance') && !this.isLabAdmin() && !this.hasPermission('Mantencion', 'ver');
+        const projectsZone = url.includes('projects') && !this.isLabAdmin() && !this.hasPermission('Proyectos', 'ver');
+        const bitacoraZone = url.includes('bitacora') && !this.isLabAdmin() && !this.hasPermission('Bitagora', 'ver');
+
+        if (procurementZone || maintenanceZone || projectsZone || bitacoraZone) {
+            this.router.navigate(['/rooms']);
+            return;
+        }
+
+        // 4. Zonas de Consulta (Laboratorios, Horarios, Wiki, Salas)
+        const labZone = url.includes('inventory') && !this.isLabAdmin() && !this.hasPermission('Laboratorio', 'ver');
+        const scheduleZone = url.includes('schedule') && !this.isAcadeAdmin() && !this.hasPermission('Horarios Academicos', 'ver');
+        const wikiZone = url.includes('wiki') && !this.hasPermission('Wiki', 'ver');
+        const roomZone = url.includes('rooms') && !this.hasPermission('Salas y Labs', 'ver');
+
+        if (labZone || scheduleZone || wikiZone || roomZone) {
+            this.router.navigate(['/welcome']);
+            return;
+        }
+    }
+
+    /**
+     * Verifica si el usuario tiene un permiso específico para un módulo.
+     */
+    hasPermission(module: string, action: 'ver' | 'editar' | 'reservar'): boolean {
+        const user = this.authService.currentUser();
+        if (!user) return false;
+        if (user.rol === 'SuperUser') return true;
+        if (!user.permisos) return false;
+
+        const level = user.permisos[module];
+        if (!level) return false;
+
+        if (action === 'ver') {
+            return level === 'Editor' || level === 'Solo Vista' || level === 'Solo Reserva';
+        }
+        if (action === 'editar') {
+            return level === 'Editor';
+        }
+        if (action === 'reservar') {
+            return level === 'Editor' || level === 'Solo Reserva';
+        }
+        return false;
     }
 
     showNotif = signal(false);

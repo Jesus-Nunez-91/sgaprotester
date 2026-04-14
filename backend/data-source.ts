@@ -21,6 +21,9 @@ import { RoomReservation } from "../src/entities/RoomReservation";
 import { ProcurementRequest } from "../src/entities/ProcurementRequest";
 import { SystemSetting } from "../src/entities/SystemSetting";
 import { Notification } from "../src/entities/Notification";
+import { EquipmentLoan } from "../src/entities/EquipmentLoan";
+import { SpecialLoan } from "../src/entities/SpecialLoan";
+import { EquipmentInventory } from "../src/entities/EquipmentInventory";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -34,7 +37,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME || "sga_db",
     synchronize: true,
     logging: false,
-    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora, Room, RoomBlock, RoomReservation, ProcurementRequest, SystemSetting, Notification],
+    entities: [Ticket, Message, User, Schedule, InventoryItem, Reservation, AdminTask, MaintenanceTask, PurchaseOrder, AuditLog, Project, ProjectTask, WikiDoc, Bitacora, Room, RoomBlock, RoomReservation, ProcurementRequest, SystemSetting, Notification, EquipmentLoan, SpecialLoan, EquipmentInventory],
     migrations: [],
     subscribers: [],
 });

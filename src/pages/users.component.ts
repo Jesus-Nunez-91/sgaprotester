@@ -102,6 +102,53 @@ declare const XLSX: any;
                              <input [(ngModel)]="editUser.password" type="password" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="•••••••">
                          </div>
                       </div>
+
+                      <!-- Matriz de Permisos Granulares -->
+                      <div class="mt-8">
+                         <h4 class="text-[10px] font-black text-uah-blue dark:text-white uppercase tracking-[0.2em] mb-4 border-l-4 border-uah-orange pl-3">Permisos de Acceso</h4>
+                         <div class="bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                            <table class="w-full text-left text-[10px]">
+                               <thead class="bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold uppercase tracking-wider">
+                                  <tr>
+                                     <th class="p-3">Módulo</th>
+                                     <th class="p-3 text-center">Editor</th>
+                                     <th class="p-3 text-center">Vista</th>
+                                     <th class="p-3 text-center">Reserva</th>
+                                  </tr>
+                               </thead>
+                               <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-600 dark:text-gray-400 font-bold">
+                                  @for (m of systemModules; track m) {
+                                     <tr class="hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                                        <td class="p-3">{{ m }}</td>
+                                        <td class="p-3 text-center">
+                                           <input type="radio" [name]="'perm-' + m" [value]="'Editor'" 
+                                                  [checked]="getPermission(m) === 'Editor'"
+                                                  (change)="setPermission(m, 'Editor')"
+                                                  class="w-4 h-4 text-uah-blue focus:ring-uah-blue dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                        </td>
+                                        <td class="p-3 text-center">
+                                           <input type="radio" [name]="'perm-' + m" [value]="'Solo Vista'"
+                                                  [checked]="getPermission(m) === 'Solo Vista'"
+                                                  (change)="setPermission(m, 'Solo Vista')"
+                                                  class="w-4 h-4 text-uah-blue focus:ring-uah-blue dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                        </td>
+                                        <td class="p-3 text-center">
+                                           <input type="radio" [name]="'perm-' + m" [value]="'Solo Reserva'"
+                                                  [checked]="getPermission(m) === 'Solo Reserva'"
+                                                  (change)="setPermission(m, 'Solo Reserva')"
+                                                  class="w-4 h-4 text-uah-blue focus:ring-uah-blue dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                        </td>
+                                     </tr>
+                                  }
+                               </tbody>
+                            </table>
+                            <div class="p-3 bg-uah-orange/5 border-t border-uah-orange/10">
+                               <button (click)="clearPermissions()" class="text-[9px] font-black text-uah-orange hover:underline uppercase tracking-widest flex items-center gap-1">
+                                  <i class="bi bi-trash-fill"></i> Limpiar todos los permisos
+                               </button>
+                            </div>
+                         </div>
+                      </div>
                      
                      <div class="pt-4 flex flex-col gap-3">
                           <button (click)="save()" class="w-full bg-uah-blue hover:bg-blue-800 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-blue-500/20 transition-all flex justify-center items-center gap-2 active:scale-95 uppercase text-xs tracking-widest">
@@ -234,21 +281,41 @@ declare const XLSX: any;
 export class UsersComponent {
    @ViewChild('fileInput') fileInput!: ElementRef;
    data = inject(DataService);
-   editUser: Partial<User> = { rol: 'Alumno' };
+   editUser: Partial<User> = { rol: 'Alumno', permisos: { 'Horarios Academicos': 'Solo Vista' } };
    searchTerm = signal('');
+
+   systemModules = [
+      'Welcome', 'Dashboard', 'Laboratorio', 'Horarios Academicos', 'Salas y Labs',
+      'Gestion de Solicitudes', 'Ayuda & Soporte', 'Wiki', 'Compras', 
+      'Mantencion', 'Bitagora', 'Proyectos', 'Usuarios', 'Auditoria', 'Prestamo Equipos'
+   ];
+
+   getPermission(module: string) {
+      if (!this.editUser.permisos) return null;
+      return this.editUser.permisos[module];
+   }
+
+   setPermission(module: string, level: string) {
+      if (!this.editUser.permisos) this.editUser.permisos = {};
+      this.editUser.permisos[module] = level;
+   }
+
+   clearPermissions() {
+      this.editUser.permisos = {};
+   }
 
    filteredUsers = computed(() => {
       return this.data.fuzzySearch(this.data.users(), this.searchTerm(), ['nombreCompleto', 'correo', 'rut', 'rol']);
    });
 
-   reset() { this.editUser = { rol: 'Alumno' }; }
+   reset() { this.editUser = { rol: 'Alumno', permisos: { 'Horarios Academicos': 'Solo Vista' } }; }
 
    triggerFileInput() {
       this.fileInput.nativeElement.click();
    }
 
    edit(u: User) {
-      this.editUser = { ...u, password: '' }; // Clear password for security/UI
+      this.editUser = { ...u, password: '', permisos: u.permisos || {} }; // Ensure entity permissions are loaded
       window.scrollTo({ top: 0, behavior: 'smooth' });
    }
 
