@@ -54,7 +54,7 @@ import { Router, ActivatedRoute } from '@angular/router';
         <!-- CIENCIAS BASICAS -->
         <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
           <div style="width: 90px; height: 90px; background: #f8f9fa; border-radius: 25px; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
-            <i class="bi bi-flask-fill" style="font-size: 50px; color: #000;"></i>
+            <i class="bi bi-microscope" style="font-size: 50px; color: #000;"></i>
           </div>
           <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">CIENCIAS BÁSICAS</h2>
           <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Laboratorios de Física y Química.</p>
@@ -77,7 +77,7 @@ import { Router, ActivatedRoute } from '@angular/router';
       </div>
 
       <!-- PANEL DE LABORATORIOS ESPECIFICOS -->
-      <section *ngIf="selectedArea()" style="max-width: 1300px; margin: 0 auto 100px; padding: 40px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,255,255,0.05); animate: slide-up 0.5s ease-out;">
+      <section *ngIf="selectedArea()" style="max-width: 1300px; margin: 0 auto 100px; padding: 40px; background: rgba(255, 255, 255, 1); border-radius: 40px; border: 1px solid rgba(255,255,255,0.05); animate: slide-up 0.5s ease-out;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 50px; border-left: 12px solid #f97316; padding-left: 30px;">
           <div>
             <h3 style="font-size: 44px; font-weight: 950; margin: 0; text-transform: uppercase; letter-spacing: -2px;">{{ selectedArea() }}</h3>
@@ -86,10 +86,10 @@ import { Router, ActivatedRoute } from '@angular/router';
           <button (click)="selectedArea.set('')" style="background: #fff; color: #000; border: none; padding: 15px 35px; border-radius: 18px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">VOLVER AL MENU</button>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); gap: 25px; justify-content: center;">
           <article *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="lab-item" style="background: #FFF; color: #000; padding: 40px; border-radius: 35px; cursor: pointer; text-align: center; transition: 0.4s; border: 4px solid transparent;">
             <div style="width: 70px; height: 70px; background: #f0f0f0; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-               <i class="bi bi-box-seam" style="font-size: 30px; color: #888;"></i>
+               <i [class]="'bi ' + getLabIcon(lab)" style="font-size: 30px; color: #000;"></i>
             </div>
             <h4 style="font-size: 22px; font-weight: 900; margin-bottom: 25px;">{{ lab }}</h4>
             <button style="width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 2px;">Panel de Control</button>
@@ -121,6 +121,20 @@ export class AreasComponent {
     this.selectedArea.set(area);
     this.subLabs.set(this.dataService.hierarchy[area] || []);
   }
+
+  getLabIcon(labName: string): string {
+    const icons: Record<string, string> = {
+      'QUIMICA': 'bi-droplet-fill',
+      'FISICA': 'bi-magnet-fill',
+      'BIOMATERIALES': 'bi-flower1',
+      'TEXTIL': 'bi-layers-fill',
+      'FABRICACIÓN DIGITAL': 'bi-printer-fill',
+      'HACKERLAB': 'bi-terminal-fill',
+      'DESARROLLO TECNOLOGICO': 'bi-cpu-fill'
+    };
+    return icons[labName] || 'bi-box-seam';
+  }
+
   goToInventory(lab: string) {
     this.router.navigate(['/inventory', this.selectedArea(), lab]);
   }

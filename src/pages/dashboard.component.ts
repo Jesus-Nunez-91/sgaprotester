@@ -13,9 +13,9 @@ declare var Swal: any;
  * Solo accesible para administradores y superusuarios.
  */
 @Component({
-   selector: 'app-dashboard',
-   imports: [CommonModule, RouterLink],
-   template: `
+    selector: 'app-dashboard',
+    imports: [CommonModule, RouterLink],
+    template: `
       <!-- WELCOME HERO: Institutional Branding -->
       <div class="relative overflow-hidden bg-black p-12 rounded-[2.5rem] shadow-2xl border-b-8 border-[#f06427] group">
         <div class="absolute -right-32 -top-32 w-[600px] h-[600px] bg-[#f06427] rounded-full blur-[180px] opacity-10 group-hover:opacity-20 transition-all duration-1000"></div>
@@ -48,8 +48,7 @@ declare var Swal: any;
 
 
       <!-- MAIN METRICS GRID -->
-
-      <!-- MAIN METRICS GRID -->
+      <br>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <!-- Metric Cards -->
           <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
@@ -97,7 +96,7 @@ declare var Swal: any;
               <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ criticalStock().length }}</div>
           </div>
       </div>
-
+      <br>
       <!-- OPERATIONAL CORE -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
@@ -374,6 +373,7 @@ declare var Swal: any;
       </div>
 
       <!-- BUDGET & BUDGET PERFORMANCE -->
+      <br>
       <div class="bg-white dark:bg-[#0f0f12] rounded-[3rem] p-12 lg:p-16 shadow-2xl border border-gray-100 dark:border-white/5 relative overflow-hidden">
           <div class="absolute right-0 top-0 w-[800px] h-[800px] bg-[#f06427]/5 rounded-full blur-[180px] -translate-y-1/2 translate-x-1/2"></div>
           
@@ -488,354 +488,354 @@ declare var Swal: any;
    `
 })
 export class DashboardComponent implements OnInit {
-   data = inject(DataService);
-   router = inject(Router);
-   today = new Date();
+    data = inject(DataService);
+    router = inject(Router);
+    today = new Date();
 
-   // Solicitudes Unificadas (Caja Negra)
-   unifiedRequests = computed(() => this.data.unifiedRequests());
-   
-   // Solicitudes que aún no han sido aprobadas ni rechazadas (Caja Negra Total)
-   pendingReservations = computed(() => this.unifiedRequests().filter(r => r.status === 'Pendiente'));
+    // Solicitudes Unificadas (Caja Negra)
+    unifiedRequests = computed(() => this.data.unifiedRequests());
 
-   // Préstamos de equipos activos (Histórico compatible)
-   activeReservations = computed(() => this.data.reservations().filter(r => r.aprobada && !r.rechazada));
+    // Solicitudes que aún no han sido aprobadas ni rechazadas (Caja Negra Total)
+    pendingReservations = computed(() => this.unifiedRequests().filter(r => r.status === 'Pendiente'));
 
-   // Usuarios que han hecho check-in pero no check-out
-   activeInLab = computed(() => this.activeReservations().filter(r => r.clockIn && !r.clockOut));
+    // Préstamos de equipos activos (Histórico compatible)
+    activeReservations = computed(() => this.data.reservations().filter(r => r.aprobada && !r.rechazada));
 
-   // Items cuyo stock actual es menor o igual al stock mínimo definido
-   criticalStock = computed(() => this.data.inventory().filter(i => i.stockActual <= i.stockMinimo));
+    // Usuarios que han hecho check-in pero no check-out
+    activeInLab = computed(() => this.activeReservations().filter(r => r.clockIn && !r.clockOut));
 
-   // SUMA TOTAL DE UNIDADES FÍSICAS (Para que cuadre con la realidad del usuario)
-   totalStockUnits = computed(() => this.data.inventory().reduce((acc, i) => acc + (i.stockActual || 0), 0));
+    // Items cuyo stock actual es menor o igual al stock mínimo definido
+    criticalStock = computed(() => this.data.inventory().filter(i => i.stockActual <= i.stockMinimo));
 
-   labsList = ['FABLAB', 'QUIMICA', 'FISICA', 'INFORMATICA'];
+    // SUMA TOTAL DE UNIDADES FÍSICAS (Para que cuadre con la realidad del usuario)
+    totalStockUnits = computed(() => this.data.inventory().reduce((acc, i) => acc + (i.stockActual || 0), 0));
 
-   // Lógica de Tareas Admin
-   pendingAdminTasks = computed(() => this.data.adminTasks().filter(t => t.status === 'pending'));
+    labsList = ['FABLAB', 'QUIMICA', 'FISICA', 'INFORMATICA'];
 
-   // Lógica de Presupuesto Real basado en O.C. Adjudicadas
-   budgetByLab(lab: string) {
-      return this.data.purchaseOrders()
-         .filter(o => o.lab === lab && (o.stage === 'Adjudicacion' || o.stage === 'Cierre' || o.stage === 'Seguimiento'))
-         .reduce((acc, current) => acc + current.valorTotal, 0);
-   }
+    // Lógica de Tareas Admin
+    pendingAdminTasks = computed(() => this.data.adminTasks().filter(t => t.status === 'pending'));
 
-   totalBudget = computed(() => Object.values(this.data.labBudgets()).reduce((a, b) => a + b, 0));
-   totalSpent = computed(() => this.data.purchaseOrders()
-      .filter(o => o.stage !== 'Solicitud')
-      .reduce((acc, curr) => acc + curr.valorTotal, 0));
-   totalRemaining = computed(() => this.totalBudget() - this.totalSpent());
-
-   // Reloj en tiempo real
-   currentTimeDisplay = signal<string>('00:00:00');
-
-   // --- Salas y Labs Live Dashboard ---
-   allRooms = signal<any[]>([]);
-   allRoomReservationsToday = signal<any[]>([]);
-   occupiedRooms = computed(() => this.allRooms().filter(r => this.getRoomActivity(r).status !== 'Sin Actividad'));
-
-   async loadRooms() {
-      try {
-         const r = await fetch('/api/rooms', { headers: { 'Authorization': `Bearer ${this.data.token()}` } });
-         if (r.ok) this.allRooms.set(await r.json());
-      } catch(e) {}
-   }
-
-   async loadRoomReservationsToday() {
-      const today = new Date().toISOString().split('T')[0];
-      try {
-         const r = await fetch(`/api/room-reservations?fecha=${today}`, { headers: { 'Authorization': `Bearer ${this.data.token()}` } });
-         if (r.ok) this.allRoomReservationsToday.set(await r.json());
-      } catch(e) {}
-   }
-
-   getRoomActivity(room: any): { status: string, detail: string } {
-      const now = new Date();
-      const HH = now.getHours().toString().padStart(2, '0');
-      const mm = now.getMinutes().toString().padStart(2, '0');
-      const currentTime = `${HH}:${mm}`;
-      
-      const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-      const currentDay = dayNames[now.getDay()].toUpperCase();
-      const norm = (s: string) => s?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
-      const roomName = norm(room.nombre);
-
-      // 1. Clases
-      const currentClass = this.data.classSchedules().find(s => {
-          if (norm(s.lab) !== roomName || norm(s.day) !== norm(currentDay)) return false;
-          if (s.block.includes('-')) {
-             const [start, end] = s.block.split('-').map(t => t.trim());
-             return currentTime >= start && currentTime <= end;
-          }
-          const blocks: any = { 'BLOQUE 1': ['08:30','09:50'], 'BLOQUE 2': ['10:00','11:20'], 'BLOQUE 3': ['11:30','12:50'], 'BLOQUE 4': ['13:00','14:20'], 'BLOQUE 5': ['14:30','15:50'], 'BLOQUE 6': ['16:00','17:20'], 'BLOQUE 7': ['17:30','18:50'] };
-          const range = blocks[s.block.toUpperCase()];
-          if (range) return currentTime >= range[0] && currentTime <= range[1];
-          return false;
-      });
-      if (currentClass) return { status: 'Ocupado', detail: currentClass.subject };
-
-      // 2. Reservas
-      const reservation = this.allRoomReservationsToday().find(r => {
-          if (r.roomId !== room.id || r.estado !== 'Aprobada') return false;
-          const blocks: any = { 1: ['08:30','09:50'], 2: ['10:00','11:20'], 3: ['11:30','12:50'], 4: ['13:00','14:20'], 5: ['14:30','15:50'], 6: ['16:00','17:20'], 7: ['17:30','18:50'] };
-          const range = blocks[r.roomBlockId % 7 || 7]; 
-          return range && currentTime >= range[0] && currentTime <= range[1];
-      });
-      if (reservation) return { status: 'Ocupado', detail: reservation.motivo };
-
-      return { status: 'Sin Actividad', detail: '' };
-   }
-
-   /** Calcula el progreso del bloque de tiempo actual (basado en bloques de 1.5 horas aprox) */
-   getBlockProgress(): number {
-      const now = new Date();
-      const HH = now.getHours();
-      const mm = now.getMinutes();
-      const currentTime = HH * 60 + mm;
-
-      const blocks = [
-         { s: 8*60+30, e: 9*60+50 },
-         { s: 10*60+0, e: 11*60+20 },
-         { s: 11*60+30, e: 12*60+50 },
-         { s: 13*60+0, e: 14*60+20 },
-         { s: 14*60+30, e: 15*60+50 },
-         { s: 16*60+0, e: 17*60+20 },
-         { s: 17*60+30, e: 18*60+50 }
-      ];
-
-      const currentBlock = blocks.find(b => currentTime >= b.s && currentTime <= b.e);
-      if (!currentBlock) return 0;
-
-      const total = currentBlock.e - currentBlock.s;
-      const elapsed = currentTime - currentBlock.s;
-      return Math.min(100, Math.round((elapsed / total) * 100));
-   }
-
-   async addAdminTask(input: HTMLInputElement) {
-      if (!input.value.trim()) return;
-      await this.data.addAdminTask({
-         description: input.value,
-         status: 'pending',
-         priority: 'Media'
-      });
-      input.value = '';
-   }
-
-   async toggleAdminTask(task: any) {
-      const newStatus = task.status === 'pending' ? 'done' : 'pending';
-      await this.data.updateAdminTask(task.id, { status: newStatus });
-   }
-
-    async deleteAdminTask(id: number) {
-      const result = await Swal.fire({
-         title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Tarea?</h3>',
-         text: 'Esta nota se borrará permanentemente de tu agenda.',
-         icon: 'warning',
-         showCancelButton: true,
-         confirmButtonColor: '#ef4444',
-         cancelButtonColor: '#003366',
-         confirmButtonText: 'Sí, eliminar',
-         cancelButtonText: 'Cancelar'
-      });
-     if (result.isConfirmed) {
-        await this.data.deleteAdminTask(id);
-     }
+    // Lógica de Presupuesto Real basado en O.C. Adjudicadas
+    budgetByLab(lab: string) {
+        return this.data.purchaseOrders()
+            .filter(o => o.lab === lab && (o.stage === 'Adjudicacion' || o.stage === 'Cierre' || o.stage === 'Seguimiento'))
+            .reduce((acc, current) => acc + current.valorTotal, 0);
     }
 
-   async approve(id: number) {
-      await this.data.updateReservationStatus(id, 'approve');
-      Swal.fire({ 
-        icon: 'success', 
-        toast: true, 
-        position: 'top-end', 
-        title: '<span class="text-emerald-600 font-bold uppercase text-xs">Reserva Aprobada</span>', 
-        timer: 2000, 
-        showConfirmButton: false 
-      });
-   }
+    totalBudget = computed(() => Object.values(this.data.labBudgets()).reduce((a, b) => a + b, 0));
+    totalSpent = computed(() => this.data.purchaseOrders()
+        .filter(o => o.stage !== 'Solicitud')
+        .reduce((acc, curr) => acc + curr.valorTotal, 0));
+    totalRemaining = computed(() => this.totalBudget() - this.totalSpent());
 
-   async reject(id: number) {
-      const result = await Swal.fire({
-         title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Rechazar Reserva</h3>',
-         input: 'text',
-         inputPlaceholder: 'Escriba el motivo del rechazo...',
-         showCancelButton: true,
-         confirmButtonColor: '#ef4444',
-         cancelButtonColor: '#003366',
-         cancelButtonText: 'Cancelar',
-         confirmButtonText: 'Confirmar Rechazo'
-      });
-      if (result.isConfirmed) {
-         await this.data.updateReservationStatus(id, 'reject', { motivo: result.value });
-         Swal.fire({ 
-            icon: 'info', 
-            toast: true, 
-            position: 'top-end', 
-            title: '<span class="text-rose-500 font-bold uppercase text-xs">Reserva Rechazada</span>', 
-            timer: 2000, 
-            showConfirmButton: false 
-         });
-      }
-   }
+    // Reloj en tiempo real
+    currentTimeDisplay = signal<string>('00:00:00');
 
-   async checkIn(id: number) {
-      await this.data.checkIn(id);
-      Swal.fire({ 
-        icon: 'success', 
-        toast: true, 
-        position: 'top-end', 
-        title: '<span class="text-uah-blue font-bold uppercase text-xs">Ingreso Registrado</span>', 
-        timer: 2000, 
-        showConfirmButton: false 
-      });
-   }
+    // --- Salas y Labs Live Dashboard ---
+    allRooms = signal<any[]>([]);
+    allRoomReservationsToday = signal<any[]>([]);
+    occupiedRooms = computed(() => this.allRooms().filter(r => this.getRoomActivity(r).status !== 'Sin Actividad'));
 
-   async checkOut(id: number) {
-      await this.data.checkOut(id);
-      Swal.fire({ 
-        icon: 'success', 
-        toast: true, 
-        position: 'top-end', 
-        title: '<span class="text-uah-orange font-bold uppercase text-xs">Salida Registrada</span>', 
-        timer: 2000, 
-        showConfirmButton: false 
-      });
-   }
+    async loadRooms() {
+        try {
+            const r = await fetch('/api/rooms', { headers: { 'Authorization': `Bearer ${this.data.token()}` } });
+            if (r.ok) this.allRooms.set(await r.json());
+        } catch (e) { }
+    }
 
-   /**
-    * Obtiene un item del inventario por su ID.
-    */
-   getItem(id: number) { return this.data.inventory().find(i => i.id === id); }
+    async loadRoomReservationsToday() {
+        const today = new Date().toISOString().split('T')[0];
+        try {
+            const r = await fetch(`/api/room-reservations?fecha=${today}`, { headers: { 'Authorization': `Bearer ${this.data.token()}` } });
+            if (r.ok) this.allRoomReservationsToday.set(await r.json());
+        } catch (e) { }
+    }
+
+    getRoomActivity(room: any): { status: string, detail: string } {
+        const now = new Date();
+        const HH = now.getHours().toString().padStart(2, '0');
+        const mm = now.getMinutes().toString().padStart(2, '0');
+        const currentTime = `${HH}:${mm}`;
+
+        const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const currentDay = dayNames[now.getDay()].toUpperCase();
+        const norm = (s: string) => s?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        const roomName = norm(room.nombre);
+
+        // 1. Clases
+        const currentClass = this.data.classSchedules().find(s => {
+            if (norm(s.lab) !== roomName || norm(s.day) !== norm(currentDay)) return false;
+            if (s.block.includes('-')) {
+                const [start, end] = s.block.split('-').map(t => t.trim());
+                return currentTime >= start && currentTime <= end;
+            }
+            const blocks: any = { 'BLOQUE 1': ['08:30', '09:50'], 'BLOQUE 2': ['10:00', '11:20'], 'BLOQUE 3': ['11:30', '12:50'], 'BLOQUE 4': ['13:00', '14:20'], 'BLOQUE 5': ['14:30', '15:50'], 'BLOQUE 6': ['16:00', '17:20'], 'BLOQUE 7': ['17:30', '18:50'] };
+            const range = blocks[s.block.toUpperCase()];
+            if (range) return currentTime >= range[0] && currentTime <= range[1];
+            return false;
+        });
+        if (currentClass) return { status: 'Ocupado', detail: currentClass.subject };
+
+        // 2. Reservas
+        const reservation = this.allRoomReservationsToday().find(r => {
+            if (r.roomId !== room.id || r.estado !== 'Aprobada') return false;
+            const blocks: any = { 1: ['08:30', '09:50'], 2: ['10:00', '11:20'], 3: ['11:30', '12:50'], 4: ['13:00', '14:20'], 5: ['14:30', '15:50'], 6: ['16:00', '17:20'], 7: ['17:30', '18:50'] };
+            const range = blocks[r.roomBlockId % 7 || 7];
+            return range && currentTime >= range[0] && currentTime <= range[1];
+        });
+        if (reservation) return { status: 'Ocupado', detail: reservation.motivo };
+
+        return { status: 'Sin Actividad', detail: '' };
+    }
+
+    /** Calcula el progreso del bloque de tiempo actual (basado en bloques de 1.5 horas aprox) */
+    getBlockProgress(): number {
+        const now = new Date();
+        const HH = now.getHours();
+        const mm = now.getMinutes();
+        const currentTime = HH * 60 + mm;
+
+        const blocks = [
+            { s: 8 * 60 + 30, e: 9 * 60 + 50 },
+            { s: 10 * 60 + 0, e: 11 * 60 + 20 },
+            { s: 11 * 60 + 30, e: 12 * 60 + 50 },
+            { s: 13 * 60 + 0, e: 14 * 60 + 20 },
+            { s: 14 * 60 + 30, e: 15 * 60 + 50 },
+            { s: 16 * 60 + 0, e: 17 * 60 + 20 },
+            { s: 17 * 60 + 30, e: 18 * 60 + 50 }
+        ];
+
+        const currentBlock = blocks.find(b => currentTime >= b.s && currentTime <= b.e);
+        if (!currentBlock) return 0;
+
+        const total = currentBlock.e - currentBlock.s;
+        const elapsed = currentTime - currentBlock.s;
+        return Math.min(100, Math.round((elapsed / total) * 100));
+    }
+
+    async addAdminTask(input: HTMLInputElement) {
+        if (!input.value.trim()) return;
+        await this.data.addAdminTask({
+            description: input.value,
+            status: 'pending',
+            priority: 'Media'
+        });
+        input.value = '';
+    }
+
+    async toggleAdminTask(task: any) {
+        const newStatus = task.status === 'pending' ? 'done' : 'pending';
+        await this.data.updateAdminTask(task.id, { status: newStatus });
+    }
+
+    async deleteAdminTask(id: number) {
+        const result = await Swal.fire({
+            title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">¿Eliminar Tarea?</h3>',
+            text: 'Esta nota se borrará permanentemente de tu agenda.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#003366',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+        if (result.isConfirmed) {
+            await this.data.deleteAdminTask(id);
+        }
+    }
+
+    async approve(id: number) {
+        await this.data.updateReservationStatus(id, 'approve');
+        Swal.fire({
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+            title: '<span class="text-emerald-600 font-bold uppercase text-xs">Reserva Aprobada</span>',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    async reject(id: number) {
+        const result = await Swal.fire({
+            title: '<h3 class="text-uah-blue font-black uppercase tracking-tighter">Rechazar Reserva</h3>',
+            input: 'text',
+            inputPlaceholder: 'Escriba el motivo del rechazo...',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#003366',
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Confirmar Rechazo'
+        });
+        if (result.isConfirmed) {
+            await this.data.updateReservationStatus(id, 'reject', { motivo: result.value });
+            Swal.fire({
+                icon: 'info',
+                toast: true,
+                position: 'top-end',
+                title: '<span class="text-rose-500 font-bold uppercase text-xs">Reserva Rechazada</span>',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    }
+
+    async checkIn(id: number) {
+        await this.data.checkIn(id);
+        Swal.fire({
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+            title: '<span class="text-uah-blue font-bold uppercase text-xs">Ingreso Registrado</span>',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    async checkOut(id: number) {
+        await this.data.checkOut(id);
+        Swal.fire({
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+            title: '<span class="text-uah-orange font-bold uppercase text-xs">Salida Registrada</span>',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    /**
+     * Obtiene un item del inventario por su ID.
+     */
+    getItem(id: number) { return this.data.inventory().find(i => i.id === id); }
 
     ngOnInit() {
-       // Control de acceso: Solo Admin_Labs o SuperUsers pueden ver el Dashboard
-       const role = this.data.currentUser()?.rol;
-       if (role !== 'Admin_Labs' && role !== 'SuperUser') {
-          this.router.navigate(['/areas']);
-          return;
-       }
+        // Control de acceso: Solo Admin_Labs o SuperUsers pueden ver el Dashboard
+        const role = this.data.currentUser()?.rol;
+        if (role !== 'Admin_Labs' && role !== 'SuperUser') {
+            this.router.navigate(['/areas']);
+            return;
+        }
 
-      // Carga de datos de salas para dashboard live
-      this.loadRooms();
-      this.loadRoomReservationsToday();
-      this.data.fetchUnifiedRequests(); // Sincronizar Caja Negra
-
-     // Auto-actualización de datos cada 1 minuto
-     setInterval(() => {
+        // Carga de datos de salas para dashboard live
         this.loadRooms();
         this.loadRoomReservationsToday();
-     }, 60000);
+        this.data.fetchUnifiedRequests(); // Sincronizar Caja Negra
 
-     // Iniciar Reloj
-     this.updateClock();
-     setInterval(() => this.updateClock(), 1000);
+        // Auto-actualización de datos cada 1 minuto
+        setInterval(() => {
+            this.loadRooms();
+            this.loadRoomReservationsToday();
+        }, 60000);
 
-     // Inicialización de gráficos con un pequeño retraso para asegurar que el DOM esté listo
-     setTimeout(() => this.initCharts(), 500);
-   }
+        // Iniciar Reloj
+        this.updateClock();
+        setInterval(() => this.updateClock(), 1000);
 
-   updateClock() {
-      const now = new Date();
-      const HH = now.getHours().toString().padStart(2, '0');
-      const mm = now.getMinutes().toString().padStart(2, '0');
-      const ss = now.getSeconds().toString().padStart(2, '0');
-      this.currentTimeDisplay.set(`${HH}:${mm}:${ss}`);
-   }
+        // Inicialización de gráficos con un pequeño retraso para asegurar que el DOM esté listo
+        setTimeout(() => this.initCharts(), 500);
+    }
 
-   /**
-    * Inicializa todos los gráficos del dashboard.
-    */
-   initCharts() {
-      this.initInventoryChart();
-      this.initTicketsChart();
-   }
+    updateClock() {
+        const now = new Date();
+        const HH = now.getHours().toString().padStart(2, '0');
+        const mm = now.getMinutes().toString().padStart(2, '0');
+        const ss = now.getSeconds().toString().padStart(2, '0');
+        this.currentTimeDisplay.set(`${HH}:${mm}:${ss}`);
+    }
 
-   /**
-    * Inicializa el gráfico de composición de inventario por laboratorio.
-    */
-   initInventoryChart() {
-      const ctx = document.getElementById('inventoryChart') as HTMLCanvasElement;
-      if (!ctx) return;
+    /**
+     * Inicializa todos los gráficos del dashboard.
+     */
+    initCharts() {
+        this.initInventoryChart();
+        this.initTicketsChart();
+    }
 
-      const labs = ['FABLAB', 'CIENCIAS', 'INFORMATICA'];
-      const dataCounts = labs.map(l => this.data.inventory().filter(i => i.categoria.includes(l)).length);
+    /**
+     * Inicializa el gráfico de composición de inventario por laboratorio.
+     */
+    initInventoryChart() {
+        const ctx = document.getElementById('inventoryChart') as HTMLCanvasElement;
+        if (!ctx) return;
 
-      new Chart(ctx, {
-         type: 'doughnut',
-         data: {
-            labels: labs,
-            datasets: [{
-                data: dataCounts,
-                backgroundColor: ['#003366', '#F37021', '#1e293b'],
-                borderWidth: 0,
-               hoverOffset: 10
-            }]
-         },
-         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-               legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: 'Inter', size: 11 } } }
+        const labs = ['FABLAB', 'CIENCIAS', 'INFORMATICA'];
+        const dataCounts = labs.map(l => this.data.inventory().filter(i => i.categoria.includes(l)).length);
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labs,
+                datasets: [{
+                    data: dataCounts,
+                    backgroundColor: ['#003366', '#F37021', '#1e293b'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: 'Inter', size: 11 } } }
+                }
             }
-         }
-      });
-   }
+        });
+    }
 
-   /**
-    * Inicializa el gráfico de estado de las consultas de soporte.
-    */
-   initTicketsChart() {
-      const ctx = document.getElementById('ticketsChart') as HTMLCanvasElement;
-      if (!ctx) return;
+    /**
+     * Inicializa el gráfico de estado de las consultas de soporte.
+     */
+    initTicketsChart() {
+        const ctx = document.getElementById('ticketsChart') as HTMLCanvasElement;
+        if (!ctx) return;
 
-      const open = this.data.supportTickets().filter(t => t.status === 'Open').length;
-      const closed = this.data.supportTickets().filter(t => t.status === 'Closed').length;
+        const open = this.data.supportTickets().filter(t => t.status === 'Open').length;
+        const closed = this.data.supportTickets().filter(t => t.status === 'Closed').length;
 
-      new Chart(ctx, {
-         type: 'bar',
-         data: {
-            labels: ['Abiertos', 'Cerrados'],
-            datasets: [{
-               label: 'Estado de Consultas',
-                data: [open, closed],
-                backgroundColor: ['#F37021', '#003366'],
-                borderRadius: 8,
-               barThickness: 40
-            }]
-         },
-         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-               y: { beginAtZero: true, border: { dash: [5, 5] }, grid: { color: '#f3f4f6' } },
-               x: { grid: { display: false } }
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Abiertos', 'Cerrados'],
+                datasets: [{
+                    label: 'Estado de Consultas',
+                    data: [open, closed],
+                    backgroundColor: ['#F37021', '#003366'],
+                    borderRadius: 8,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, border: { dash: [5, 5] }, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
             }
-         }
-      });
-   }
+        });
+    }
 
-   /**
-    * Registra la devolución de un item prestado.
-    */
-   returnItem(res: any) {
-      this.data.updateReservationStatus(res.id, 'return', { devuelto: res.cantidad });
-      Swal.fire({ 
-        icon: 'success', 
-        title: '<h3 class="text-uah-blue font-black uppercase">Devolución Exitosa</h3>', 
-        text: 'El inventario institucional ha sido actualizado correctamente.', 
-        timer: 2500, 
-        showConfirmButton: false 
-      });
-   }
+    /**
+     * Registra la devolución de un item prestado.
+     */
+    returnItem(res: any) {
+        this.data.updateReservationStatus(res.id, 'return', { devuelto: res.cantidad });
+        Swal.fire({
+            icon: 'success',
+            title: '<h3 class="text-uah-blue font-black uppercase">Devolución Exitosa</h3>',
+            text: 'El inventario institucional ha sido actualizado correctamente.',
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
 
-   countPurchaseByStage(stage: string): number {
-       // Conteo Institucional (UAH) Centralizado por Folio Único
-       const orders = this.data.purchaseOrders().filter(o => o.stage === (stage as any));
-       const uniqueFolios = new Set(orders.map(o => o.idNum));
-       return uniqueFolios.size;
-   }
+    countPurchaseByStage(stage: string): number {
+        // Conteo Institucional (UAH) Centralizado por Folio Único
+        const orders = this.data.purchaseOrders().filter(o => o.stage === (stage as any));
+        const uniqueFolios = new Set(orders.map(o => o.idNum));
+        return uniqueFolios.size;
+    }
 }
