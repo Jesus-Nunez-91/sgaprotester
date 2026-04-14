@@ -21,14 +21,18 @@ import { DataService } from '../services/data.service';
 
       <!-- Contenedor del Video -->
       <div class="w-full max-w-4xl z-10 animate-fade-in px-4">
-        <div class="relative bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-[#f06427]/20 flex items-center justify-center min-h-[400px]">
-          <img 
-            src="assets/images/welcome-hero.png" 
-            class="w-full h-full object-cover absolute inset-0"
-            alt="Bienvenida SGA Pro"
-          >
-          <!-- Overlay sutil para mejorar legibilidad si fuera necesario -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+        <div class="relative bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-[#f06427]/20 flex items-center justify-center min-h-[400px]">
+          <video 
+            src="assets/videos/welcome-intro.mp4" 
+            class="w-full h-full object-cover absolute inset-0" 
+            autoplay 
+            [muted]="true" 
+            loop 
+            playsinline
+            (loadedmetadata)="$any($event.target).muted = true">
+          </video>
+          <!-- Overlay sutil para mejorar legibilidad -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
         </div>
 
         <!-- Información y Botón de Inicio -->
