@@ -177,6 +177,9 @@ declare const Swal: any;
                                   } @else if (loan.status === 'confirmed') {
                                      <div class="flex items-center gap-2">
                                        <span class="bg-green-100 text-green-700 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-green-200 flex items-center gap-1"><i class="bi bi-patch-check-fill"></i> Entregado</span>
+                                       <button (click)="generateClassroomActaPDF(loan)" class="text-[#003057] hover:text-blue-700 transition-colors p-1" title="Imprimir Acta">
+                                          <i class="bi bi-printer-fill animate-pulse"></i>
+                                       </button>
                                        <button (click)="updateStatus(loan.id!, 'pending')" class="text-gray-400 hover:text-gray-600 transition-colors" title="Deshacer"><i class="bi bi-arrow-counterclockwise"></i></button>
                                      </div>
                                   } @else {
@@ -969,7 +972,30 @@ export class LoansComponent implements OnInit {
   }
 
   updateStatus(id: number, status: string) {
-    this.loansService.updateLoanStatus(id, status).subscribe(() => this.refreshData());
+    this.loansService.updateLoanStatus(id, status).subscribe(() => {
+      this.refreshData();
+      
+      // Si se confirma la entrega, preguntar si desea imprimir acta
+      if (status === 'confirmed') {
+        const loan = this.loans().find(l => l.id === id);
+        if (loan) {
+          Swal.fire({
+            title: '¡Entrega Confirmada!',
+            text: '¿Deseas imprimir el acta de préstamo en este momento?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, imprimir',
+            cancelButtonText: 'No, después',
+            confirmButtonColor: '#003057',
+            cancelButtonColor: '#ff5e14',
+          }).then((result: any) => {
+            if (result.isConfirmed) {
+              this.generateClassroomActaPDF(loan);
+            }
+          });
+        }
+      }
+    });
   }
 
   openInventoryModal() {
@@ -1056,6 +1082,129 @@ export class LoansComponent implements OnInit {
         });
       }
     });
+  }
+
+  async generateClassroomActaPDF(loan: EquipmentLoan) {
+    const doc = new jsPDF('p', 'pt', 'a4') as any;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const today = new Date();
+    
+    // --- Header ---
+    try {
+        const logoData = await this.getBase64ImageFromURL('assets/images/uah-insignia.jpg');
+        doc.addImage(logoData, 'JPEG', 40, 40, 60, 60);
+    } catch (e) { console.warn("No se pudo cargar el logo local", e); }
+
+    doc.setTextColor(0, 51, 102); 
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('UNIVERSIDAD ALBERTO HURTADO', pageWidth - 40, 55, { align: 'right' });
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Facultad de Ingeniería', pageWidth - 40, 70, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Laboratorio de Desarrollo Tecnológico', pageWidth - 40, 82, { align: 'right' });
+
+    doc.setDrawColor(0, 51, 102);
+    doc.setLineWidth(2);
+    doc.line(40, 105, pageWidth - 40, 105);
+
+    // --- Título ---
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(50, 50, 50);
+    doc.text('ACTA DE PRÉSTAMO - MALLA ACADÉMICA', pageWidth / 2, 140, { align: 'center' });
+    
+    // --- 1. Antecedentes ---
+    this.drawSectionHeader(doc, '1. ANTECEDENTES DEL PRÉSTAMO', 170);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const introText = `En Santiago, el día de hoy ${this.formatDateSp(today.toISOString())}, se hace entrega del siguiente equipamiento para la realización de la actividad académica programada.`;
+    const splitIntro = doc.splitTextToSize(introText, pageWidth - 80);
+    doc.text(splitIntro, 40, 195);
+
+    doc.setFillColor(245, 245, 245);
+    doc.rect(40, 215, pageWidth - 80, 25, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Clase: ${loan.className}`, 55, 232);
+    doc.text(`Bloque: ${loan.timeBlock}`, pageWidth / 2 + 10, 232);
+
+    // --- 2. Detalle del Préstamo ---
+    this.drawSectionHeader(doc, '2. DETALLE DE EQUIPAMIENTO ENTREGADO', 265);
+    
+    const tableBody = [];
+    if (loan.equipment.dellLaptops > 0) tableBody.push(['Notebooks DELL', loan.equipment.dellLaptops.toString()]);
+    if (loan.equipment.macLaptops > 0) tableBody.push(['Notebooks Apple MAC', loan.equipment.macLaptops.toString()]);
+    if (loan.equipment.dellChargers > 0) tableBody.push(['Cargadores Dell', loan.equipment.dellChargers.toString()]);
+    if (loan.equipment.macChargers > 0) tableBody.push(['Cargadores Mac', loan.equipment.macChargers.toString()]);
+    if (loan.equipment.extensionCords > 0) tableBody.push(['Alargadores / Extensiones', loan.equipment.extensionCords.toString()]);
+
+    autoTable(doc, {
+      startY: 285,
+      margin: { left: 40, right: 40 },
+      theme: 'grid',
+      head: [['Ítem de Equipamiento', 'Cantidad']],
+      headStyles: { fillColor: [0, 51, 102], textColor: 255, fontSize: 8 },
+      bodyStyles: { fontSize: 9, cellPadding: 6 },
+      body: tableBody
+    });
+
+    // --- 3. Responsable ---
+    const finalY = (doc as any).lastAutoTable.finalY || 400;
+    this.drawSectionHeader(doc, '3. RESPONSABLE ACADÉMICO', finalY + 20);
+    
+    autoTable(doc, {
+        startY: finalY + 40,
+        margin: { left: 40, right: 40 },
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 8 },
+        body: [
+          ['Nombre del Profesor:', loan.professor],
+          ['Laboratorio / Sala:', 'Laboratorios Ingeniería'],
+          ['Fecha:', this.formatDateSp(today.toISOString())]
+        ]
+    });
+
+    // --- 4. Compromiso ---
+    const finalY2 = (doc as any).lastAutoTable.finalY || 550;
+    this.drawSectionHeader(doc, '4. COMPROMISO Y RESPONSABILIDAD', finalY2 + 20);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    const commitments = [
+        "1. El equipo entregado es para uso exclusivo de la clase mencionada.",
+        "2. El profesor a cargo vela por el correcto uso de los equipos por parte de los alumnos.",
+        "3. La devolución debe realizarse al finalizar el bloque horario indicado.",
+        "4. Cualquier anomalía debe ser reportada de inmediato al encargado de laboratorio."
+    ];
+    let currentY = finalY2 + 45;
+    commitments.forEach(c => {
+        doc.text(c, 50, currentY);
+        currentY += 15;
+    });
+
+    // --- Firmas ---
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(1);
+    doc.line(80, 750, 220, 750);
+    doc.line(pageWidth - 220, 750, pageWidth - 80, 750);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(loan.professor, 150, 765, { align: 'center' });
+    doc.text('SGA PRO - LABS', pageWidth - 150, 765, { align: 'center' });
+    
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('FIRMA PROFESOR', 150, 775, { align: 'center' });
+    doc.text('ENCARGADO DE ENTREGA', pageWidth - 150, 775, { align: 'center' });
+
+    // --- Footer ---
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`© ${today.getFullYear()} Universidad Alberto Hurtado - Comprobante de Entrega de Equipamiento`, pageWidth / 2, 810, { align: 'center' });
+
+    doc.save(`Acta_Clase_${loan.className.replace(/\s+/g, '_')}_${this.formatDateSp(today.toISOString()).replace(/\s+/g, '_')}.pdf`);
   }
 
   async generateActaPDF(loan: any) {
