@@ -1,8 +1,6 @@
-
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService, ClassSchedule } from '../services/data.service';
-
 
 declare const Swal: any;
 
@@ -123,7 +121,7 @@ declare const Swal: any;
                               <!-- Time Column -->
                                <div class="flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-xl text-[10px] font-black text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-indigo-900/20 transition-colors uppercase tracking-tight" role="rowheader">
                                   {{ block }}
-                              </div>
+                               </div>
 
                               <!-- Days Columns -->
                               @for (day of days; track day) {
@@ -132,30 +130,37 @@ declare const Swal: any;
                                    <div (click)="editCell(day, block, cellClass)"
                                         role="gridcell"
                                         [attr.aria-label]="day + ', bloque ' + block + ': ' + (cellClass ? cellClass.subject : 'Disponible')"
-                                        [class]="cellClass ? 
-                                           'shadow-sm hover:shadow-md hover:-translate-y-1' : 
-                                           'bg-white/40 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700 opacity-60 hover:opacity-100'"
-                                         [style.backgroundColor]="cellClass?.color ? cellClass.color + '20' : (cellClass ? '#00336620' : '')"
-                                         [style.borderColor]="cellClass?.color ? cellClass.color : (cellClass ? '#003366' : '')"
+                                        class="relative p-5 rounded-2xl border-2 min-h-[110px] flex flex-col transition-all duration-300"
+                                        [class.shadow-sm]="cellClass"
+                                        [class.hover:shadow-md]="cellClass || isEditMode()"
+                                        [class.hover:-translate-y-1]="cellClass"
+                                        [class.bg-white]="!cellClass && !isEditMode()"
+                                        [class.dark:bg-gray-800]="!cellClass && !isEditMode()"
+                                        [style.backgroundColor]="cellClass?.color ? cellClass.color + '20' : ''"
+                                        [style.borderColor]="cellClass?.color ? cellClass.color : 'transparent'"
                                         [class.cursor-pointer]="isEditMode()"
-                                        [class.ring-2]="isEditMode()"
-                                        [class.ring-amber-400]="isEditMode()">
-                                       
-                                       @if (cellClass) {
-                                            <span class="text-[10px] font-black uppercase tracking-widest mb-1" [style.color]="cellClass.color || '#003366'">OCUPADO</span>
-                                          <div class="font-bold text-gray-800 dark:text-white text-xs leading-tight line-clamp-3">
-                                              {{ cellClass.subject }}
-                                          </div>
-                                      } @else {
-                                           <span class="text-[10px] text-gray-300 dark:text-gray-600 font-bold uppercase tracking-widest">Disponible</span>
-                                      }
+                                        [class.ring-4]="isEditMode()"
+                                        [class.ring-amber-400]="isEditMode()"
+                                        [class.shadow-2xl]="isEditMode()"
+                                        [class.z-20]="isEditMode()">
+                                        
+                                        @if (cellClass) {
+                                            <span class="text-[10px] font-black uppercase tracking-widest mb-2" [style.color]="cellClass.color || '#003366'">OCUPADO</span>
+                                            <div class="font-bold text-gray-800 dark:text-white text-[11px] leading-snug line-clamp-4">
+                                                {{ cellClass.subject }}
+                                            </div>
+                                        } @else {
+                                            <span class="text-[10px] text-gray-300 dark:text-gray-600 font-bold uppercase tracking-widest">Disponible</span>
+                                        }
 
-                                      @if (isEditMode()) {
-                                          <div class="absolute inset-0 bg-amber-500/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
-                                              <i class="bi bi-pencil-square text-amber-600 text-xl shadow-sm"></i>
-                                          </div>
-                                      }
-                                  </div>
+                                        @if (isEditMode()) {
+                                            <div class="absolute inset-0 bg-amber-500/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl backdrop-blur-[1px]">
+                                                <div class="bg-white dark:bg-gray-700 p-2 rounded-full shadow-lg border border-amber-200 dark:border-amber-900">
+                                                    <i class="bi bi-pencil-square text-amber-600 text-xl"></i>
+                                                </div>
+                                            </div>
+                                        }
+                                   </div>
                               }
                           </div>
                       }
