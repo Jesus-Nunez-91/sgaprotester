@@ -81,7 +81,7 @@ declare var Swal: any;
               }
 
               <button type="submit" 
-                [disabled]="siteKey() && !recaptchaToken()"
+                [disabled]="false"
                 class="w-full bg-black hover:bg-[#f06427] text-white font-bold py-5 rounded-xl shadow-lg hover:shadow-[#f06427]/20 transition-all flex items-center justify-center gap-3 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
                 INGRESAR AL PORTAL
                 <i class="bi bi-chevron-right text-sm group-hover:translate-x-1 transition-transform"></i>

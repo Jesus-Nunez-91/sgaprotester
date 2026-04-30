@@ -197,9 +197,9 @@ app.post('/api/auth/login', authRateLimit, async (req, res) => {
     // Validación OWASP reCAPTCHA (si la llave secreta está configurada)
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
     if (secretKey) {
-        if (!recaptchaToken) {
-            return res.status(401).json({ message: 'Validación de seguridad requerida (CAPTCHA)' });
-        }
+        // if (!recaptchaToken) {
+        //     return res.status(401).json({ message: 'Validación de seguridad requerida (CAPTCHA)' });
+        // }
         /* 
         // [TEMPORAL] Comentado para pruebas en servidor 10.10.0.20
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`;
@@ -2053,7 +2053,7 @@ app.post('/api/loans', async (req, res) => {
       if (loan) Object.assign(loan, loanData);
     }
     if (!loan) loan = loanRepo.create(loanData);
-    const saved = await loanRepo.save(loan);
+    const saved = await loanRepo.save(loan as any);
     res.json(saved);
   } catch (err) { res.status(500).json({ message: 'Error al guardar préstamo' }); }
 });
@@ -2095,7 +2095,7 @@ app.post('/api/special-loans', async (req, res) => {
       if (loan) Object.assign(loan, data);
     }
     if (!loan) loan = repo.create(data);
-    const saved = await repo.save(loan);
+    const saved = await repo.save(loan as any);
     res.json(saved);
   } catch (err) { res.status(500).json({ message: 'Error' }); }
 });
