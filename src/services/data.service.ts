@@ -208,7 +208,7 @@ export class DataService {
 
   constructor() {
     this.loadFromStorage();
-    this.socket = io(this.baseUrl);
+    this.socket = io(this.baseUrl, { withCredentials: true });
     this.setupSocket();
     this.fetchSchedules();
     this.fetchInventory();

@@ -8,7 +8,9 @@ let io: Server;
 export const initSocket = (httpServer: HttpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: "*",
+      origin: (requestOrigin: any, callback: any) => {
+        callback(null, requestOrigin); // Reflejar el origen para permitir credenciales
+      },
       credentials: true
     }
   });
