@@ -591,33 +591,73 @@ export class ProjectsComponent {
       // Construct matrix for jsPDF
       const head = [['Actividad', ...headers.map(h => `${h.name} ${h.year}`)]];
       const body = project.tasks.map(t => {
-        const row = [`${t.name}\n${t.progress}%`];
+        // En la columna de actividad mostramos nombre, fechas y %
+        const activityInfo = `${t.name}\n${t.startDate} - ${t.endDate}\nAvance: ${t.progress}%`;
+        const row = [activityInfo];
         headers.forEach(h => {
-          // Para PDF dibujaremos un bloque solido o cruz
           let inMonth = false;
           h.days.forEach((d: number) => {
             if (this.isTaskInDay(t, h.year, h.monthIndex, d)) inMonth = true;
           });
-          row.push(inMonth ? '████' : '');
+          // Guardamos el progreso en el texto de la celda para usarlo en didParseCell
+          row.push(inMonth ? `PROG:${t.progress}` : '');
         });
         return row;
       });
 
+      const self = this;
       autoTable(doc, {
         startY: startY + 5,
         head: head,
         body: body,
         theme: 'grid',
         headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
-        bodyStyles: { textColor: [50, 50, 50], fontSize: 8 },
-        columnStyles: { 0: { fontStyle: 'bold', minCellWidth: 40 } },
-        styles: { cellPadding: 2, overflow: 'linebreak' },
+        bodyStyles: { textColor: [50, 50, 50], fontSize: 8, valign: 'middle' },
+        columnStyles: { 0: { fontStyle: 'bold', minCellWidth: 50 } },
+        styles: { cellPadding: 3, overflow: 'linebreak' },
         didParseCell: function (data: any) {
-          // Pinta color secundario en los "cuadros" del Gantt
-          if (data.section === 'body' && data.column.index > 0 && data.cell.raw === '████') {
-            data.cell.styles.textColor = accentColor;
+          if (data.section === 'body' && data.column.index > 0 && String(data.cell.raw).startsWith('PROG:')) {
+            const progress = parseInt(String(data.cell.raw).split(':')[1]);
+            
+            // Mapeo de colores basado en progreso (IDÉNTICO AL UI)
+            let color: [number, number, number] = [34, 197, 94]; // Verde (100%)
+            if (progress < 25) color = [239, 68, 68]; // Rojo
+            else if (progress < 50) color = [249, 115, 22]; // Naranja
+            else if (progress < 75) color = [234, 179, 8]; // Amarillo
+            else if (progress < 100) color = [59, 130, 246]; // Azul
+
+            data.cell.styles.fillColor = color;
+            data.cell.styles.textColor = color; // Ocultar el texto PROG:XX
           }
         }
+      });
+
+      // Añadir Leyenda de Colores al final del PDF
+      const lastTable = (doc as any).lastAutoTable;
+      let finalY = startY + 60;
+      if (lastTable) {
+        finalY = (lastTable.finalY || (lastTable.cursor ? lastTable.cursor.y : startY + 60)) + 10;
+      }
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(100, 100, 100);
+      doc.text('LEYENDA DE PROGRESO:', 14, finalY);
+      
+      const legendItems = [
+        { label: '0-24%: Iniciando', color: [239, 68, 68] },
+        { label: '25-49%: En Despliegue', color: [249, 115, 22] },
+        { label: '50-74%: Avanzado', color: [234, 179, 8] },
+        { label: '75-99%: Etapa Final', color: [59, 130, 246] },
+        { label: '100%: Completado', color: [34, 197, 94] }
+      ];
+
+      let legendX = 14;
+      legendItems.forEach((item, idx) => {
+        doc.setFillColor(item.color[0], item.color[1], item.color[2]);
+        doc.rect(legendX, finalY + 3, 4, 4, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.text(item.label, legendX + 6, finalY + 6);
+        legendX += 38;
       });
     }
 

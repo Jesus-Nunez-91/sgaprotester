@@ -9,8 +9,9 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${DB_PORT_STAGING}:5432"
+    # Seguridad: Evita que la DB sea accesible desde fuera del host
+    # ports:
+    #   - "${DB_PORT_STAGING}:5432"
     volumes:
       - ./data/db_staging:/var/lib/postgresql/data
     networks:
@@ -36,6 +37,18 @@ services:
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
     networks:
       - sgaprotester_net
+    # Seguridad: Solo lectura en el sistema de archivos
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+    # Seguridad: Quitar capacidades innecesarias
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
 
 networks:
   sgaprotester_net:

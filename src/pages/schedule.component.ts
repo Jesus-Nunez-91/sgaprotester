@@ -13,14 +13,14 @@ declare const Swal: any;
       
       <!-- Header Area -->
       <div class="flex flex-col md:flex-row items-center justify-between mb-8 bg-white/60 dark:bg-gray-800/60 p-6 rounded-3xl shadow-lg border border-white/40 dark:border-gray-700 backdrop-blur-xl">
-          <div>
-              <h1 class="text-3xl font-black text-uah-blue dark:text-gray-100 flex items-center gap-3 tracking-tighter uppercase">
-                  <span class="w-12 h-12 rounded-2xl bg-uah-orange flex items-center justify-center text-white shadow-lg text-xl">
+          <div class="text-center md:text-left w-full md:w-auto">
+              <h1 class="text-xl md:text-3xl font-black text-uah-blue dark:text-gray-100 flex items-center justify-center md:justify-start gap-3 tracking-tighter uppercase">
+                  <span class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-uah-orange flex items-center justify-center text-white shadow-lg text-lg">
                       <i class="bi bi-calendar-week-fill" aria-hidden="true"></i>
                   </span>
-                  Horarios Académicos <span class="text-uah-orange">UAH</span>
+                  Horarios <span class="hidden sm:inline">Académicos</span> <span class="text-uah-orange">UAH</span>
               </h1>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 ml-16">Disponibilidad de Recintos e Infraestructura Institucional</p>
+              <p class="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 md:ml-16">Infraestructura Institucional</p>
           </div>
           
           <div class="mt-4 md:mt-0 flex items-center gap-4">
@@ -51,13 +51,13 @@ declare const Swal: any;
                    </button>
                  </div>
                }
-                <div class="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 text-xs font-black text-uah-blue dark:text-blue-300 flex items-center gap-2 uppercase tracking-widest">
-                   <span class="relative flex h-3 w-3">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                       <span class="relative inline-flex rounded-full h-3 w-3 bg-uah-orange"></span>
-                   </span>
-                   Semestre 1 - 2026
-               </div>
+                 <div class="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 text-[10px] md:text-xs font-black text-uah-blue dark:text-blue-300 flex items-center gap-2 uppercase tracking-widest">
+                    <span class="relative flex h-2 w-2 md:h-3 md:w-3">
+                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 md:h-3 md:w-3 bg-uah-orange"></span>
+                    </span>
+                    S1 - 2026
+                </div>
           </div>
       </div>
 
@@ -69,8 +69,8 @@ declare const Swal: any;
                          ? 'bg-uah-blue text-white shadow-lg shadow-blue-500/20 scale-105' 
                          : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-uah-orange'"
                       class="px-6 py-3 rounded-2xl font-bold transition-all duration-300 border border-transparent flex items-center gap-2">
-                  <i [class]="getIcon(lab)"></i>
-                  {{ lab }}
+                   <i [class]="getIcon(lab)"></i>
+                   <span class="text-xs md:text-sm">{{ lab }}</span>
               </button>
           }
           
@@ -102,7 +102,7 @@ declare const Swal: any;
           <div class="absolute bottom-0 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
 
           <div class="overflow-x-auto custom-scrollbar">
-              <div class="min-w-[1000px] p-6">
+              <div class="min-w-[1000px] p-4 md:p-6">
                   <!-- Days Header -->
                   <div class="grid grid-cols-6 gap-4 mb-4" role="row">
                        <div class="text-center font-black text-gray-400 uppercase text-[10px] tracking-widest self-end pb-2">BLOQUE HORARIO</div>

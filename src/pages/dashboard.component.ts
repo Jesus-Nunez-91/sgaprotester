@@ -17,7 +17,7 @@ declare var Swal: any;
     imports: [CommonModule, RouterLink],
     template: `
       <!-- WELCOME HERO: Institutional Branding -->
-      <div class="relative overflow-hidden bg-black p-12 rounded-[2.5rem] shadow-2xl border-b-8 border-[#f06427] group">
+      <div class="relative overflow-hidden bg-black p-6 md:p-12 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border-b-8 border-[#f06427] group">
         <div class="absolute -right-32 -top-32 w-[600px] h-[600px] bg-[#f06427] rounded-full blur-[180px] opacity-10 group-hover:opacity-20 transition-all duration-1000"></div>
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
           <div class="space-y-4">
@@ -26,20 +26,20 @@ declare var Swal: any;
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Sistema Operativo</span>
              </div>
-            <h1 class="text-4xl lg:text-6xl font-black text-white tracking-tighter leading-none" style="font-family: 'Playfair Display', serif;">
+            <h1 class="text-3xl md:text-4xl lg:text-6xl font-black text-white tracking-tighter leading-none" style="font-family: 'Playfair Display', serif;">
               Hola, <span class="text-[#f06427]">{{ data.currentUser()?.nombreCompleto?.split(' ')[0] }}</span> 
             </h1>
-            <p class="text-gray-400 font-medium text-lg max-w-2xl leading-relaxed">Gestión Integral de Laboratorios, Infraestructura e Inventario. <span class="text-white">Panel de Control General</span>.</p>
+            <p class="text-gray-400 font-medium text-sm md:text-lg max-w-2xl leading-relaxed">Gestión Integral de Laboratorios. <span class="text-white">Panel de Control</span>.</p>
           </div>
           
-          <div class="flex flex-col sm:flex-row gap-6">
-              <div class="bg-white/5 backdrop-blur-md px-10 py-6 rounded-3xl border border-white/10 flex items-center gap-6 group/item hover:bg-white/10 transition-all">
-                 <div class="w-14 h-14 rounded-2xl bg-[#f06427] flex items-center justify-center text-white shadow-xl shadow-[#f06427]/20 group-hover/item:scale-110 transition-transform">
-                    <i class="bi bi-cpu-fill text-3xl"></i>
+          <div class="flex flex-col sm:flex-row gap-4 md:gap-6">
+              <div class="bg-white/5 backdrop-blur-md px-6 md:px-10 py-4 md:py-6 rounded-3xl border border-white/10 flex items-center gap-4 md:gap-6 group/item hover:bg-white/10 transition-all">
+                 <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[#f06427] flex items-center justify-center text-white shadow-xl shadow-[#f06427]/20 group-hover/item:scale-110 transition-transform">
+                    <i class="bi bi-cpu-fill text-2xl md:text-3xl"></i>
                  </div>
                  <div class="text-left">
-                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 opacity-70">En Laboratorio</div>
-                    <div class="text-3xl font-black text-white tracking-tight">{{ activeInLab().length }} <span class="text-sm font-bold opacity-30 uppercase">Usuarios</span></div>
+                    <div class="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 opacity-70">En Laboratorio</div>
+                    <div class="text-xl md:text-3xl font-black text-white tracking-tight">{{ activeInLab().length }} <span class="text-[10px] font-bold opacity-30 uppercase">Usuarios</span></div>
                  </div>
               </div>
           </div>
@@ -49,18 +49,18 @@ declare var Swal: any;
 
       <!-- MAIN METRICS GRID -->
       <br>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           <!-- Metric Cards -->
-          <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
-              <div class="flex justify-between items-center mb-8">
-                  <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 group-hover:text-[#f06427] flex items-center justify-center text-2xl transition-colors">
+          <div class="bg-white dark:bg-[#0f0f12] p-6 md:p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
+              <div class="flex justify-between items-center mb-6 md:mb-8">
+                  <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 group-hover:text-[#f06427] flex items-center justify-center text-xl md:text-2xl transition-colors">
                       <i class="bi bi-collection-fill"></i>
                   </div>
-                  <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Equipamiento</span>
+                  <span class="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest">Equipamiento</span>
               </div>
-              <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Disponible</div>
-              <div class="text-5xl font-black text-black dark:text-white tracking-tighter">{{ totalStockUnits() | number }}</div>
-              <div class="text-[9px] font-bold text-[#f06427] mt-1">{{ data.inventory().length }} ITEMS DIFERENTES</div>
+              <div class="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock Disponible</div>
+              <div class="text-3xl md:text-5xl font-black text-black dark:text-white tracking-tighter">{{ totalStockUnits() | number }}</div>
+              <div class="text-[8px] md:text-[9px] font-bold text-[#f06427] mt-1 uppercase tracking-tighter">{{ data.inventory().length }} items</div>
           </div>
 
           <div class="bg-white dark:bg-[#0f0f12] p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-white/5 group hover:border-[#f06427]/40 transition-all">
@@ -101,19 +101,18 @@ declare var Swal: any;
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           <div class="lg:col-span-8 space-y-10">
-              <!-- Pending Requests: Table Redesign -->
-              <div class="bg-white dark:bg-[#0f0f12] rounded-[2rem] shadow-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
-                  <div class="p-8 bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 flex justify-between items-center">
-                      <div class="flex items-center gap-4">
-                         <div class="w-10 h-10 rounded-xl bg-[#f06427] text-white flex items-center justify-center">
-                            <i class="bi bi-clipboard-pulse text-xl"></i>
+              <!-- Pending Requests: Table Redesi               <div class="bg-white dark:bg-[#0f0f12] rounded-[2rem] shadow-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
+                  <div class="p-6 md:p-8 bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5 flex justify-between items-center">
+                      <div class="flex items-center gap-3 md:gap-4">
+                         <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f06427] text-white flex items-center justify-center">
+                            <i class="bi bi-clipboard-pulse text-lg md:text-xl"></i>
                          </div>
-                         <h4 class="text-sm font-black text-black dark:text-white uppercase tracking-widest">Solicitudes de Equipamiento</h4>
+                         <h4 class="text-[10px] md:text-sm font-black text-black dark:text-white uppercase tracking-widest">Solicitudes</h4>
                       </div>
                       <div class="flex items-center gap-4">
-                         <span class="text-[10px] font-black bg-black text-white px-4 py-2 rounded-xl uppercase tracking-widest">{{ pendingReservations().length }} ACTIVAS</span>
+                         <span class="text-[8px] md:text-[10px] font-black bg-black text-white px-3 md:px-4 py-2 rounded-xl uppercase tracking-widest">{{ pendingReservations().length }}</span>
                       </div>
-                  </div>
+                  </div> </div>
                   <div class="overflow-x-auto min-h-[350px]">
                       <table class="w-full text-left">
                           <thead>

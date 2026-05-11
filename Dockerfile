@@ -18,19 +18,27 @@ RUN npm run build
 RUN npm run build-server
 
 # ETAPA 2: Ejecución
-FROM node:20-slim
+FROM node:20-alpine
 WORKDIR /app
 
-# Copiar dependencias de producción (opcional, pero por simplicidad copiaremos todo lo necesario)
-COPY --from=build /app/package*.json ./
+# Crear un usuario específico para la app (seguridad)
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copiar dependencias de producción
+COPY --from=build --chown=appuser:appgroup /app/package*.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 
 # Copiar los archivos compilados
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/dist-server ./dist-server
+COPY --from=build --chown=appuser:appgroup /app/dist ./dist
+COPY --from=build --chown=appuser:appgroup /app/dist-server ./dist-server
+
+# Dar permisos al usuario no-root
+RUN chown -R appuser:appgroup /app
+
+# Cambiar al usuario sin privilegios
+USER appuser
 
 # El backend sirve el frontend desde ./dist/sga-fin/browser
-# Asegurarse de que el puerto sea el 3040
 EXPOSE 3040
 
 ENV PORT=3040

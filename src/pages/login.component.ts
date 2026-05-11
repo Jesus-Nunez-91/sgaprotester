@@ -15,7 +15,7 @@ declare var Swal: any;
   standalone: true,
   imports: [FormsModule, CommonModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gray-950 p-6 relative overflow-hidden">
+    <div class="min-h-screen flex items-center justify-center bg-gray-950 p-4 md:p-6 relative overflow-hidden">
       <!-- Elementos decorativos de fondo -->
       <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
         <div class="absolute -top-24 -left-24 w-96 h-96 bg-[#f06427] rounded-full blur-[120px]"></div>
@@ -32,9 +32,9 @@ declare var Swal: any;
               alt="Ingeniería UAH">
           </div>
 
-          <div class="p-10">
+          <div class="p-6 md:p-10">
             <div class="mb-8">
-              <h2 class="text-2xl font-black text-black tracking-tight" style="font-family: 'Playfair Display', serif;">Gestión de Laboratorios</h2>
+              <h2 class="text-xl md:text-2xl font-black text-black tracking-tight" style="font-family: 'Playfair Display', serif;">Gestión de Laboratorios</h2>
               <p class="text-gray-500 text-sm font-medium mt-1">Acceso al Sistema SGA FIN</p>
             </div>
 
@@ -73,17 +73,17 @@ declare var Swal: any;
                 </button>
               </div>
 
-              <!-- Verificación OWASP (reCAPTCHA) -->
+              <!-- Verificación OWASP (reCAPTCHA) - OCULTO POR PETICIÓN -->
               @if (siteKey()) {
-                <div class="flex justify-center my-4">
+                <div class="flex justify-center my-4 hidden">
                   <div id="recaptcha-container"></div>
                 </div>
               }
 
               <button type="submit" 
-                class="w-full bg-black hover:bg-[#f06427] text-white font-bold py-5 rounded-xl shadow-lg hover:shadow-[#f06427]/20 transition-all flex items-center justify-center gap-3 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full bg-black hover:bg-[#f06427] text-white font-bold py-4 md:py-5 rounded-xl shadow-lg hover:shadow-[#f06427]/20 transition-all flex items-center justify-center gap-3 group mt-4 disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm">
                 INGRESAR AL PORTAL
-                <i class="bi bi-chevron-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                <i class="bi bi-chevron-right text-xs md:text-sm group-hover:translate-x-1 transition-transform"></i>
               </button>
             </form>
 

@@ -18,143 +18,154 @@ import { FormsModule } from '@angular/forms';
 @if (authService.currentUser() && !isWelcomePage()) {
   <div class="flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950 transition-colors duration-500 relative">
       
+      <!-- BACKDROP PARA MÓVIL -->
+      @if (showMobileMenu()) {
+          <div (click)="toggleMobileMenu()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden animate-fadeIn"></div>
+      }
+
       <!-- BARRA LATERAL IZQUIERDA (Institucional Black) -->
-      <aside class="w-20 lg:w-72 bg-black flex flex-col justify-between z-50 transition-all duration-300 shadow-2xl relative border-r border-[#f06427]/30">
+      <aside [class.translate-x-0]="showMobileMenu()" [class.-translate-x-full]="!showMobileMenu()" 
+             class="fixed inset-y-0 left-0 w-[280px] bg-black flex flex-col justify-between z-[60] transition-transform duration-300 shadow-2xl border-r border-[#f06427]/30 
+                    lg:relative lg:translate-x-0 lg:w-20 xl:w-72">
           <!-- Área del Logo / Banner Pequeño -->
-          <div class="h-32 flex items-center justify-center lg:px-6 border-b border-[#f06427]/20 bg-black">
-              <a routerLink="/areas" class="flex items-center gap-4 group cursor-pointer">
+          <div class="h-32 flex items-center justify-between px-6 border-b border-[#f06427]/20 bg-black">
+              <a routerLink="/areas" (click)="closeMobileMenu()" class="flex items-center gap-4 group cursor-pointer">
                     <div class="relative">
-                        <img src="assets/images/uah-insignia.jpg" class="h-16 w-16 shadow-2xl relative z-10 object-contain rounded-full border-2 border-[#f06427] hover:scale-110 transition-transform duration-300" alt="Logo UAH">
+                        <img src="assets/images/uah-insignia.jpg" class="h-14 w-14 lg:h-12 lg:w-12 xl:h-16 xl:w-16 shadow-2xl relative z-10 object-contain rounded-full border-2 border-[#f06427] hover:scale-110 transition-transform duration-300" alt="Logo UAH">
                         <div class="absolute inset-0 rounded-full bg-[#f06427] animate-ping opacity-20 group-hover:opacity-40"></div>
                     </div>
-                  <div class="hidden lg:flex flex-col text-left">
-                      <span class="text-white font-black text-2xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
-                      <span class="text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
+                  <div class="flex lg:hidden xl:flex flex-col text-left">
+                      <span class="text-white font-black text-xl xl:text-2xl leading-none tracking-tighter">SGA <span class="text-[#f06427]">FIN</span></span>
+                      <span class="text-[8px] xl:text-[9px] text-[#f06427] font-black tracking-widest uppercase mt-1">Ingeniería UAH</span>
                   </div>
               </a>
+              <!-- BOTÓN CERRAR MÓVIL -->
+              <button (click)="toggleMobileMenu()" class="lg:hidden text-white/50 hover:text-white">
+                  <i class="bi bi-x-lg text-2xl"></i>
+              </button>
           </div>
 
           <!-- Enlaces de Navegación -->
           <nav class="flex-1 overflow-y-auto py-8 flex flex-col gap-1.5 px-4 scrollbar-hide">
               @if (isSuperUser() || hasPermission('Dashboard', 'ver')) {
-                  <a routerLink="/dashboard" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                  <a (click)="closeMobileMenu()" routerLink="/dashboard" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                      class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                       <i class="bi bi-grid-1x2-fill text-xl group-hover:scale-110 transition-transform"></i>
-                      <span class="hidden lg:inline text-sm">Dashboard</span>
+                      <span class="lg:hidden xl:inline text-sm">Dashboard</span>
                   </a>
               }
 
               @if (isSuperUser() || hasPermission('Laboratorio', 'ver')) {
-                <a routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 <a (click)="closeMobileMenu()" routerLink="/areas" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                     <i class="bi bi-laptop-fill text-xl group-hover:scale-110 transition-transform"></i>
-                    <span class="hidden lg:inline text-sm">Laboratorios</span>
+                    <span class="lg:hidden xl:inline text-sm">Laboratorios</span>
                 </a>
               }
 
               @if (isSuperUser() || hasPermission('Horarios Academicos', 'ver')) {
-                <a routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 <a (click)="closeMobileMenu()" routerLink="/schedule" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                     <i class="bi bi-calendar3 text-xl group-hover:scale-110 transition-transform"></i>
-                    <span class="hidden lg:inline text-sm">Horarios Academicos</span>
+                    <span class="lg:hidden xl:inline text-sm">Horarios Academicos</span>
                 </a>
               }
 
               @if (isSuperUser() || hasPermission('Prestamo Equipos', 'ver')) {
-                <a routerLink="/loans" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 <a (click)="closeMobileMenu()" routerLink="/loans" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                     <i class="bi bi-laptop text-xl group-hover:scale-110 transition-transform"></i>
-                    <span class="hidden lg:inline text-sm">Préstamo Equipos</span>
+                    <span class="lg:hidden xl:inline text-sm">Préstamo Equipos</span>
                 </a>
               }
 
               @if (isSuperUser() || hasPermission('Salas y Labs', 'ver')) {
-                <a routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 <a (click)="closeMobileMenu()" routerLink="/rooms" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                     <i class="bi bi-door-open-fill text-xl group-hover:scale-110 transition-transform"></i>
-                    <span class="hidden lg:inline text-sm">Salas y Labs</span>
+                    <span class="lg:hidden xl:inline text-sm">Salas y Labs</span>
                 </a>
               }
 
               @if (isSuperUser() || hasPermission('Gestion de Solicitudes', 'ver')) {
-                <a routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 <a (click)="closeMobileMenu()" routerLink="/requests" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                     <i class="bi bi-file-earmark-check-fill text-xl group-hover:scale-110 transition-transform"></i>
-                    <span class="hidden lg:inline text-sm">{{ isRoomAdmin() ? 'Gestión de Solicitudes' : 'Mis Solicitudes' }}</span>
+                    <span class="lg:hidden xl:inline text-sm">{{ isRoomAdmin() ? 'Gestión de Solicitudes' : 'Mis Solicitudes' }}</span>
                 </a>
               }
 
               @if (isSuperUser() || hasPermission('Ayuda & Soporte', 'ver')) {
-                <a routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                 <a (click)="closeMobileMenu()" routerLink="/support" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
                     <i class="bi bi-chat-left-text-fill text-xl group-hover:scale-110 transition-transform"></i>
-                    <span class="hidden lg:inline text-sm">Ayuda & Soporte</span>
+                    <span class="lg:hidden xl:inline text-sm">Ayuda & Soporte</span>
                 </a>
               }
 
               @if (isSuperUser() || hasPermission('Wiki', 'ver')) {
-                 <a routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                    class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                     <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
-                     <span class="hidden lg:inline text-sm">Wiki</span>
-                 </a>
+                  <a (click)="closeMobileMenu()" routerLink="/wiki" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                     class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                      <i class="bi bi-journal-bookmark-fill text-xl group-hover:scale-110 transition-transform"></i>
+                      <span class="lg:hidden xl:inline text-sm">Wiki</span>
+                  </a>
               }
 
               @if (isSuperUser() || isLabAdmin() || hasPermission('Compras', 'ver') || hasPermission('Mantencion', 'ver') || hasPermission('Bitagora', 'ver') || hasPermission('Proyectos', 'ver')) {
                   <div class="my-6 border-t border-white/5"></div>
-                  <span class="hidden lg:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
+                  <span class="lg:hidden xl:block px-5 text-[10px] font-black text-[#f06427] uppercase tracking-[0.2em] mb-4">Administración</span>
                   
                   @if (isSuperUser() || hasPermission('Compras', 'ver')) {
-                    <a routerLink="/procurement" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                        <i class="bi bi-cart-check-fill text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden lg:inline text-sm">Compras</span>
-                    </a>
+                     <a (click)="closeMobileMenu()" routerLink="/procurement" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                        class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                         <i class="bi bi-cart-check-fill text-xl group-hover:scale-110 transition-transform"></i>
+                         <span class="lg:hidden xl:inline text-sm">Compras</span>
+                     </a>
                   }
 
                   @if (isSuperUser() || hasPermission('Mantencion', 'ver')) {
-                    <a routerLink="/maintenance" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                        <i class="bi bi-tools text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden lg:inline text-sm">Mantención</span>
-                    </a>
+                     <a (click)="closeMobileMenu()" routerLink="/maintenance" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                        class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                         <i class="bi bi-tools text-xl group-hover:scale-110 transition-transform"></i>
+                         <span class="lg:hidden xl:inline text-sm">Mantención</span>
+                     </a>
                   }
 
                   @if (isSuperUser() || hasPermission('Bitagora', 'ver')) {
-                    <a routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                        <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden lg:inline text-sm">Bitácora</span>
-                    </a>
+                     <a (click)="closeMobileMenu()" routerLink="/bitacora" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                        class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                         <i class="bi bi-journal-text text-xl group-hover:scale-110 transition-transform"></i>
+                         <span class="lg:hidden xl:inline text-sm">Bitácora</span>
+                     </a>
                   }
 
                   @if (isSuperUser() || hasPermission('Proyectos', 'ver')) {
-                    <a routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
-                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                        <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden lg:inline text-sm">Proyectos</span>
-                    </a>
+                     <a (click)="closeMobileMenu()" routerLink="/projects" routerLinkActive="bg-[#f06427] text-white shadow-lg shadow-[#f06427]/20" 
+                        class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                         <i class="bi bi-kanban-fill text-xl group-hover:scale-110 transition-transform"></i>
+                         <span class="lg:hidden xl:inline text-sm">Proyectos</span>
+                     </a>
                   }
               }
 
               @if (isSuperUser() || hasPermission('Usuarios', 'ver') || hasPermission('Auditoria', 'ver')) {
                   <div class="my-6 border-t border-white/5"></div>
-                  <span class="hidden lg:block px-5 text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-4">Seguridad</span>
+                  <span class="lg:hidden xl:block px-5 text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-4">Seguridad</span>
                   
                   @if (isSuperUser() || hasPermission('Usuarios', 'ver')) {
-                    <a routerLink="/users" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
-                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                        <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden lg:inline text-sm">Usuarios</span>
-                    </a>
+                     <a (click)="closeMobileMenu()" routerLink="/users" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
+                        class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                         <i class="bi bi-people-fill text-xl group-hover:scale-110 transition-transform"></i>
+                         <span class="lg:hidden xl:inline text-sm">Usuarios</span>
+                     </a>
                   }
 
                   @if (isSuperUser() || hasPermission('Auditoria', 'ver')) {
-                    <a routerLink="/audit" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
-                       class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
-                        <i class="bi bi-shield-lock-fill text-xl group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden lg:inline text-sm">Auditoría</span>
-                    </a>
+                     <a (click)="closeMobileMenu()" routerLink="/audit" routerLinkActive="bg-red-500 text-white shadow-lg shadow-red-500/20" 
+                        class="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group font-bold tracking-tight">
+                         <i class="bi bi-shield-lock-fill text-xl group-hover:scale-110 transition-transform"></i>
+                         <span class="lg:hidden xl:inline text-sm">Auditoría</span>
+                     </a>
                   }
               }
           </nav>
@@ -162,16 +173,16 @@ import { FormsModule } from '@angular/forms';
            <!-- Perfil Mini -->
            <div class="p-6 border-t border-white/5 bg-white/5">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-[#f06427] flex items-center justify-center text-white font-black shadow-lg">
+                    <div class="w-10 h-10 rounded-xl bg-[#f06427] flex items-center justify-center text-white font-black shadow-lg flex-shrink-0">
                         {{ authService.currentUser()?.nombreCompleto ? authService.currentUser()?.nombreCompleto?.charAt(0) : 'U' }}
                     </div>
-                    <div class="hidden lg:block overflow-hidden">
+                    <div class="lg:hidden xl:block overflow-hidden">
                         <h4 class="text-xs font-bold text-white truncate uppercase tracking-tight">{{ authService.currentUser()?.nombreCompleto }}</h4>
                         <p class="text-[9px] text-[#f06427] font-black uppercase tracking-widest">{{ authService.currentUser()?.rol }}</p>
                     </div>
                 </div>
-                <button (click)="authService.logout()" class="w-full flex items-center justify-center gap-2 text-[10px] font-black text-white bg-white/10 hover:bg-[#f06427] py-3 rounded-xl transition-all border border-white/5 uppercase tracking-widest">
-                    <i class="bi bi-power"></i> <span class="hidden lg:inline">Cerrar Sesión</span>
+                 <button (click)="authService.logout()" class="w-full flex items-center justify-center gap-2 text-[10px] font-black text-white bg-white/10 hover:bg-[#f06427] py-3 rounded-xl transition-all border border-white/5 uppercase tracking-widest">
+                    <i class="bi bi-power"></i> <span class="lg:hidden xl:inline">Cerrar Sesión</span>
                 </button>
            </div>
       </aside>
@@ -196,80 +207,83 @@ import { FormsModule } from '@angular/forms';
                   </div>
               </div>
 
-              <!-- Banda Principal (Limpia y Minimalista) -->
-              <div class="flex items-center justify-between px-6 lg:px-10 h-24 relative">
-                  <div class="flex items-center gap-6">
-                       <!-- Marca eliminada por redundancia: la identidad reside en el Sidebar -->
+               <!-- Banda Principal -->
+              <div class="flex items-center justify-between px-4 md:px-6 lg:px-10 h-20 md:h-24 relative">
+                  <div class="flex items-center gap-4 md:gap-6">
+                       <!-- Botón Hamburguesa para Móvil -->
+                       <button (click)="toggleMobileMenu()" class="lg:hidden h-10 w-10 flex items-center justify-center text-white bg-white/5 rounded-xl border border-white/10">
+                          <i class="bi" [class.bi-list]="!showMobileMenu()" [class.bi-x-lg]="showMobileMenu()"></i>
+                       </button>
                   </div>
 
-                  <!-- ÁREA DE IDENTITY & NOTIFICATIONS (Expandida y Visible) -->
-                  <div class="flex items-center gap-10">
-                      <div class="hidden md:flex flex-col items-end">
-                          <div class="flex items-center gap-4 mb-1">
-                              @if (authService.currentUser()?.rol === 'SuperUser') {
-                                  <span class="bg-red-600/90 text-[10px] text-white px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400/50 animate-pulse">
-                                    CONTROL TOTAL • SUPERUSER
-                                  </span>
-                              }
-                              <span class="text-lg font-black tracking-tighter text-white uppercase opacity-95">
-                                Bienvenido, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto }}</span>
-                              </span>
-                          </div>
-                          <span class="text-[10px] text-white/50 font-black uppercase tracking-[0.4em]">{{ today | date:'EEEE, d MMMM y' }}</span>
-                      </div>
+                  <!-- ÁREA DE IDENTITY & NOTIFICATIONS -->
+                  <div class="flex items-center gap-4 md:gap-10">
+                       <div class="hidden sm:flex flex-col items-end">
+                           <div class="flex items-center gap-4 mb-1">
+                               @if (authService.currentUser()?.rol === 'SuperUser') {
+                                   <span class="bg-red-600/90 text-[10px] text-white px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400/50 animate-pulse">
+                                     ADMIN
+                                   </span>
+                               }
+                               <span class="text-sm md:text-lg font-black tracking-tighter text-white uppercase opacity-95">
+                                 Hola, <span class="text-[#f06427]">{{ authService.currentUser()?.nombreCompleto?.split(' ')[0] }}</span>
+                               </span>
+                           </div>
+                           <span class="text-[8px] md:text-[10px] text-white/50 font-black uppercase tracking-[0.2em] md:tracking-[0.4em]">{{ today | date:'EEEE, d MMMM y' }}</span>
+                       </div>
                       
-                      <div class="flex items-center gap-3">
-                          <!-- ÚNICA CAMPANA UNIFICADA -->
-                          <div class="relative">
-                            <button (click)="toggleNotif()" class="relative h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group border border-white/10 shadow-inner">
-                                <i class="bi bi-bell-fill text-xl group-hover:animate-swing"></i>
-                                @let totalAlerts = unreadCount();
-                                @if (totalAlerts > 0) {
-                                    <span class="absolute -top-1 -right-1 h-6 w-6 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce shadow-lg">
-                                        {{ totalAlerts }}
-                                    </span>
-                                }
-                            </button>
+                       <div class="flex items-center gap-3">
+                           <!-- ÚNICA CAMPANA UNIFICADA -->
+                           <div class="relative">
+                             <button (click)="toggleNotif()" class="relative h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all group border border-white/10 shadow-inner">
+                                 <i class="bi bi-bell-fill text-xl group-hover:animate-swing"></i>
+                                 @let totalAlerts = unreadCount();
+                                 @if (totalAlerts > 0) {
+                                     <span class="absolute -top-1 -right-1 h-6 w-6 bg-[#f06427] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-black animate-bounce shadow-lg">
+                                         {{ totalAlerts }}
+                                     </span>
+                                 }
+                             </button>
 
-                            @if (showNotif()) {
-                                <div class="absolute right-0 top-14 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fadeIn origin-top-right">
-                                   <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-                                        <h5 class="text-[10px] font-black text-white uppercase tracking-widest">Notificaciones</h5>
-                                        @if (unreadCount() > 0) {
-                                            <button (click)="markAllRead()" class="text-[9px] text-[#f06427] hover:underline uppercase font-bold">Marcar todo</button>
-                                        }
-                                    </div>
-                                    <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                                        @for (n of myNotifications(); track n.id) {
-                                            <div (click)="markRead(n)" class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4 cursor-pointer" [class.bg-white/[0.02]]="!n.read">
-                                                <div class="mt-1">
-                                                    <i class="bi bi-info-circle-fill" [class.text-[#f06427]]="!n.read" [class.text-gray-600]="n.read"></i>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h6 class="text-xs font-bold text-white">{{ n.title }}</h6>
-                                                    <p class="text-[10px] text-gray-500 leading-tight mt-1">{{ n.message }}</p>
-                                                </div>
-                                            </div>
-                                        }
-                                        @if (myNotifications().length === 0) {
-                                            <div class="p-8 text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">Sin notificaciones</div>
-                                        }
-                                    </div>
-                                </div>
-                            }
-                          </div>
+                             @if (showNotif()) {
+                                 <div class="absolute right-0 top-14 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fadeIn origin-top-right">
+                                    <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                         <h5 class="text-[10px] font-black text-white uppercase tracking-widest">Notificaciones</h5>
+                                         @if (unreadCount() > 0) {
+                                             <button (click)="markAllRead()" class="text-[9px] text-[#f06427] hover:underline uppercase font-bold">Marcar todo</button>
+                                         }
+                                     </div>
+                                     <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                         @for (n of myNotifications(); track n.id) {
+                                             <div (click)="markRead(n)" class="p-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors flex gap-4 cursor-pointer" [class.bg-white/[0.02]]="!n.read">
+                                                 <div class="mt-1">
+                                                     <i class="bi bi-info-circle-fill" [class.text-[#f06427]]="!n.read" [class.text-gray-600]="n.read"></i>
+                                                 </div>
+                                                 <div class="flex-1">
+                                                     <h6 class="text-xs font-bold text-white">{{ n.title }}</h6>
+                                                     <p class="text-[10px] text-gray-500 leading-tight mt-1">{{ n.message }}</p>
+                                                 </div>
+                                             </div>
+                                         }
+                                         @if (myNotifications().length === 0) {
+                                             <div class="p-8 text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">Sin notificaciones</div>
+                                         }
+                                     </div>
+                                 </div>
+                             }
+                           </div>
 
-                          <button (click)="toggleDark()" class="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all shadow-inner">
-                              <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
-                          </button>
-                      </div>
+                           <button (click)="toggleDark()" class="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#f06427] hover:bg-white/10 transition-all shadow-inner">
+                               <i [class]="authService.darkMode() ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+                           </button>
+                       </div>
                   </div>
               </div>
           </header>
 
           <!-- Contenedor de Contenido y Footer (Scrollable) -->
           <div class="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar bg-gray-50 dark:bg-[#050505]">
-              <div class="p-6 lg:p-10 min-h-[calc(100vh-18rem)]">
+              <div class="p-4 md:p-6 lg:p-10 min-h-[calc(100vh-18rem)]">
                 <router-outlet></router-outlet>
               </div>
 
@@ -330,9 +344,7 @@ import { FormsModule } from '@angular/forms';
                   </div>
               </footer>
           </div>
-
       </main>
-
   </div>
 } @else {
   <router-outlet></router-outlet>
@@ -344,7 +356,6 @@ export class AppComponent {
     router = inject(Router);
     titleService = inject(Title);
     metaService = inject(Meta);
-
   
   today = new Date();
   currentUrl = signal('');
@@ -480,6 +491,10 @@ export class AppComponent {
     }
 
     showNotif = signal(false);
+    showMobileMenu = signal(false);
+
+    toggleMobileMenu() { this.showMobileMenu.update(v => !v); }
+    closeMobileMenu() { this.showMobileMenu.set(false); }
 
     /**
      * Determina si el usuario actual tiene privilegios administrativos técnicos (Laboratorios).

@@ -8,102 +8,103 @@ import { Router, ActivatedRoute } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div style="background-color: #000; min-height: 100vh; font-family: 'Inter', sans-serif; color: white; overflow-x: hidden;">
+    <div class="bg-black min-h-screen font-sans text-white overflow-x-hidden">
       
       <!-- HERO SECTION: 100% INMERSIVA -->
-      <div style="position: relative; width: 100%; height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow: hidden; padding-top: 60px;">
+      <div class="relative w-full h-[50vh] md:h-[70vh] flex flex-col items-center justify-start overflow-hidden pt-10 md:pt-[60px]">
         
         <!-- Imagen de Fondo con Tratamiento de Contraste -->
-        <div style="position: absolute; inset: 0; z-index: 0;">
+        <div class="absolute inset-0 z-0">
           <img 
             src="assets/images/hero-areas.png" 
             alt="Fondo interactivo de los Laboratorios de Ingeniería UAH"
-            style="width: 100%; height: 100%; object-fit: cover; object-position: center; filter: brightness(0.6);"
+            class="w-full h-full object-cover object-center filter brightness-[0.6]"
           >
           <!-- Degradado inferior para suavizar la transicion a las tarjetas -->
-          <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 50%, #000 100%);"></div>
+          <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black"></div>
         </div>
-
-        <!-- Marca "RESERVA" (Posicionada arriba para no tapar el letrero de la imagen) -->
-        <div style="position: relative; z-index: 10; text-align: center; animate: fade-in 1s ease-out;">
-          <div style="padding: 20px 60px; border-radius: 30px; background: rgba(0,0,0,0.3); backdrop-blur: 10px; border: 1px solid rgba(255,255,255,0.1);">
-            <h1 style="font-size: clamp(40px, 8vw, 100px); font-weight: 950; font-style: italic; color: #FFF; margin: 0; letter-spacing: -4px; text-shadow: 0 10px 30px rgba(0,0,0,0.5); line-height: 0.9;">
-              LABORATORIOS <span style="color: #f97316;">UAH</span>
+ 
+        <!-- Marca "RESERVA" -->
+        <div class="relative z-10 text-center animate-fade-in px-4">
+          <div class="p-6 md:p-10 rounded-[2rem] bg-black/30 backdrop-blur-md border border-white/10">
+            <h1 class="text-4xl md:text-6xl lg:text-[100px] font-black italic text-white m-0 tracking-tighter leading-none shadow-2xl">
+              LABORATORIOS <span class="text-[#f06427]">UAH</span>
             </h1>
-            <div style="height: 6px; width: 100px; background: #f97316; margin: 15px auto; border-radius: 10px; box-shadow: 0 0 20px rgba(249,115,22,0.8);"></div>
-            <p style="font-size: clamp(10px, 2vw, 16px); font-weight: 900; letter-spacing: 8px; color: #FFF; text-transform: uppercase;">SGA FIN - Sistema de Gestión Académica</p>
+            <div class="h-1.5 w-16 md:w-[100px] bg-[#f06427] mx-auto my-4 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.8)]"></div>
+            <p class="text-[8px] md:text-sm lg:text-base font-black tracking-[0.3em] md:tracking-[0.5em] text-white uppercase">SGA FIN - Ingeniería</p>
           </div>
         </div>
       </div>
-
+ 
       <!-- SECCION DE ACCESO RAPIDO -->
-      <div style="max-width: 1300px; margin: -120px auto 100px; padding: 0 30px; position: relative; z-index: 30; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px;">
+      <div class="max-w-[1300px] mx-auto -mt-20 md:-mt-32 mb-24 px-6 relative z-30 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
         
         <!-- FABLAB -->
-        <div (click)="selectArea('FABLAB')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-          <div style="width: 180px; height: 180px; background: #fcfcfc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid #f0f0f0;">
-            <img src="assets/images/icons/fablab.png" alt="FabLab Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(2.6);">
+        <div (click)="selectArea('FABLAB')" class="area-card group bg-white rounded-[2.5rem] p-8 md:p-10 text-center cursor-pointer transition-all duration-500 border-b-[15px] border-black shadow-2xl hover:-translate-y-4 hover:border-[#f06427]">
+          <div class="w-32 h-32 md:w-44 md:h-44 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-8 overflow-hidden shadow-xl border border-gray-100">
+            <img src="assets/images/icons/fablab.png" alt="FabLab Icon" class="w-full h-full object-contain scale-[2.6]">
           </div>
-          <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">FABLAB</h2>
-          <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Taller de Fabricación e Impresión 3D.</p>
-          <div class="card-action" style="margin-top: 30px; color: #f97316; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">
-            Entrar al área <i class="bi bi-arrow-right"></i>
+          <h2 class="text-black text-2xl md:text-3xl font-black mb-4 tracking-tighter uppercase">FABLAB</h2>
+          <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Taller de Fabricación e Impresión 3D.</p>
+          <div class="mt-8 text-[#f06427] font-black uppercase text-[10px] md:text-xs tracking-widest group-hover:text-black transition-colors">
+            Entrar al área <i class="bi bi-arrow-right ml-2"></i>
           </div>
         </div>
-
+ 
         <!-- CIENCIAS BASICAS -->
-        <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-          <div style="width: 180px; height: 180px; background: #fcfcfc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid #f0f0f0;">
-            <img src="assets/images/icons/ciencias.png" alt="Ciencias Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(2.2);">
+        <div (click)="selectArea('LAB CIENCIAS BASICAS')" class="area-card group bg-white rounded-[2.5rem] p-8 md:p-10 text-center cursor-pointer transition-all duration-500 border-b-[15px] border-black shadow-2xl hover:-translate-y-4 hover:border-[#f06427]">
+          <div class="w-32 h-32 md:w-44 md:h-44 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-8 overflow-hidden shadow-xl border border-gray-100">
+            <img src="assets/images/icons/ciencias.png" alt="Ciencias Icon" class="w-full h-full object-contain scale-[2.2]">
           </div>
-          <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">CIENCIAS BÁSICAS</h2>
-          <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Laboratorios de Física y Química.</p>
-          <div class="card-action" style="margin-top: 30px; color: #f97316; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">
-            Entrar al área <i class="bi bi-arrow-right"></i>
+          <h2 class="text-black text-2xl md:text-3xl font-black mb-4 tracking-tighter uppercase">CIENCIAS BÁSICAS</h2>
+          <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Laboratorios de Física y Química.</p>
+          <div class="mt-8 text-[#f06427] font-black uppercase text-[10px] md:text-xs tracking-widest group-hover:text-black transition-colors">
+            Entrar al área <i class="bi bi-arrow-right ml-2"></i>
           </div>
         </div>
-
+ 
         <!-- INFORMATICA -->
-        <div (click)="selectArea('LAB INFORMATICA')" class="area-card" style="background: #FFF; border-radius: 40px; padding: 50px 40px; text-align: center; cursor: pointer; transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1); border-bottom: 15px solid #000; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
-          <div style="width: 180px; height: 180px; background: #fcfcfc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid #f0f0f0;">
-            <img src="assets/images/icons/informatica.png" alt="Informatica Icon" style="width: 100%; height: 100%; object-fit: contain; transform: scale(2.2);">
+        <div (click)="selectArea('LAB INFORMATICA')" class="area-card group bg-white rounded-[2.5rem] p-8 md:p-10 text-center cursor-pointer transition-all duration-500 border-b-[15px] border-black shadow-2xl hover:-translate-y-4 hover:border-[#f06427]">
+          <div class="w-32 h-32 md:w-44 md:h-44 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-8 overflow-hidden shadow-xl border border-gray-100">
+            <img src="assets/images/icons/informatica.png" alt="Informatica Icon" class="w-full h-full object-contain scale-[2.2]">
           </div>
-          <h2 style="color: #000; font-size: 32px; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">INFORMÁTICA</h2>
-          <p style="color: #555; font-size: 16px; line-height: 1.6; font-weight: 500;">Hardware, Redes y Desarrollo.</p>
-          <div class="card-action" style="margin-top: 30px; color: #f97316; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">
-            Entrar al área <i class="bi bi-arrow-right"></i>
+          <h2 class="text-black text-2xl md:text-3xl font-black mb-4 tracking-tighter uppercase">INFORMÁTICA</h2>
+          <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Hardware, Redes y Desarrollo.</p>
+          <div class="mt-8 text-[#f06427] font-black uppercase text-[10px] md:text-xs tracking-widest group-hover:text-black transition-colors">
+            Entrar al área <i class="bi bi-arrow-right ml-2"></i>
           </div>
         </div>
       </div>
-
+ 
       <!-- PANEL DE LABORATORIOS ESPECIFICOS -->
-      <section *ngIf="selectedArea()" style="max-width: 1300px; margin: 0 auto 100px; padding: 40px; background: rgba(255, 255, 255, 1); border-radius: 40px; border: 1px solid rgba(255,255,255,0.05); animate: slide-up 0.5s ease-out;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 50px; border-left: 12px solid #f97316; padding-left: 30px;">
+      <section *ngIf="selectedArea()" class="max-w-[1300px] mx-auto mb-24 p-6 md:p-12 bg-white rounded-[2.5rem] md:rounded-[3rem] animate-slide-up">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12 border-l-[10px] border-[#f06427] pl-6">
           <div>
-            <h3 style="font-size: 44px; font-weight: 950; margin: 0; text-transform: uppercase; letter-spacing: -2px;">{{ selectedArea() }}</h3>
-            <p style="color: #f97316; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 12px;">Infraestructura Disponible para Investigación</p>
+            <h3 class="text-2xl md:text-4xl font-black text-black uppercase tracking-tighter leading-none">{{ selectedArea() }}</h3>
+            <p class="text-[#f06427] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs mt-2">Infraestructura Disponible</p>
           </div>
-          <button (click)="selectedArea.set('')" style="background: #fff; color: #000; border: none; padding: 15px 35px; border-radius: 18px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">VOLVER AL MENU</button>
+          <button (click)="selectedArea.set('')" class="w-full md:w-auto bg-gray-100 hover:bg-black hover:text-white text-black px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
+            VOLVER AL MENU
+          </button>
         </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); gap: 25px; justify-content: center;">
-          <article *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="lab-item" style="background: #FFF; color: #000; padding: 40px; border-radius: 35px; cursor: pointer; text-align: center; transition: 0.4s; border: 4px solid transparent;">
-            <div style="width: 70px; height: 70px; background: #f0f0f0; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-               <i [class]="'bi ' + getLabIcon(lab)" style="font-size: 30px; color: #000;"></i>
+ 
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <article *ngFor="let lab of subLabs()" (click)="goToInventory(lab)" class="group/lab bg-gray-50 hover:bg-white p-8 rounded-[2rem] cursor-pointer text-center transition-all border-4 border-transparent hover:border-[#f06427] hover:shadow-2xl">
+            <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover/lab:scale-110 transition-transform">
+               <i [class]="'bi ' + getLabIcon(lab)" class="text-3xl text-black"></i>
             </div>
-            <h4 style="font-size: 22px; font-weight: 900; margin-bottom: 25px;">{{ lab }}</h4>
-            <button style="width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 2px;">Panel de Control</button>
+            <h4 class="text-lg font-black text-black mb-6 uppercase tracking-tight leading-tight">{{ lab }}</h4>
+            <button class="w-full py-4 bg-black text-white rounded-xl font-black uppercase text-[9px] tracking-widest group-hover/lab:bg-[#f06427] transition-colors">Panel Control</button>
           </article>
         </div>
       </section>
     </div>
-
+ 
     <style>
-      .area-card:hover { transform: translateY(-15px); border-bottom-color: #f97316 !important; }
-      .area-card:hover .card-action { color: #000 !important; }
-      .lab-item:hover { border-color: #f97316 !important; transform: scale(1.05); }
-      @keyframes fade-in { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-      @keyframes slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in { animation: fadeIn 1s ease-out forwards; }
+      .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
     </style>
   `
 })

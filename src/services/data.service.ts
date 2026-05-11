@@ -248,8 +248,7 @@ export class DataService {
   async fetchSystemSettings() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/settings', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/settings', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         const settings: any[] = await res.json();
@@ -269,8 +268,7 @@ export class DataService {
   async updateLabBudget(lab: string, amount: number) {
     if (!this.token()) return;
     try {
-      await fetch(this.baseUrl + '/api/settings', {
-        method: 'POST',
+      await fetch(this.baseUrl + '/api/settings', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -347,8 +345,7 @@ export class DataService {
   async fetchNotifications() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/notifications', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/notifications', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.notifications.set(await res.json());
     } catch (e) { console.error("Error al cargar notificaciones", e); }
@@ -357,8 +354,7 @@ export class DataService {
   async createNotification(notif: { title: string, message: string, userId?: string, type?: string }) {
     if (!this.token()) return;
     try {
-      await fetch(this.baseUrl + '/api/notifications', {
-        method: 'POST',
+      await fetch(this.baseUrl + '/api/notifications', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -378,8 +374,7 @@ export class DataService {
   async markAllAsRead() {
     if (!this.token()) return;
     try {
-      await fetch(this.baseUrl + '/api/notifications/mark-all-read', {
-        method: 'POST',
+      await fetch(this.baseUrl + '/api/notifications/mark-all-read', { credentials: 'include', method: 'POST',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       await this.fetchNotifications();
@@ -406,8 +401,7 @@ export class DataService {
   async addItem(item: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/inventory', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/inventory', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -522,8 +516,7 @@ export class DataService {
   async resetDatabase(): Promise<boolean> {
     if (!this.token()) return false;
     try {
-      const res = await fetch(this.baseUrl + '/api/maintenance/reset-db', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/maintenance/reset-db', { credentials: 'include', method: 'POST',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -544,8 +537,7 @@ export class DataService {
   async addBulkItems(items: any[]) {
     if (!this.token()) return false;
     try {
-      const res = await fetch(this.baseUrl + '/api/inventory/bulk', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/inventory/bulk', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -574,8 +566,7 @@ export class DataService {
   async clearAllInventory() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/inventory/mass/clear', {
-        method: 'DELETE',
+      const res = await fetch(this.baseUrl + '/api/inventory/mass/clear', { credentials: 'include', method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) await this.fetchInventory();
@@ -600,8 +591,7 @@ export class DataService {
       rechazada: false
     };
     try {
-      const res = await fetch(this.baseUrl + '/api/reservations', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/reservations', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -649,8 +639,7 @@ export class DataService {
   async fetchAuditLogs() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/audit', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/audit', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -665,8 +654,7 @@ export class DataService {
   async fetchMaintenanceTasks() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/maintenance', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/maintenance', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.maintenanceTasks.set(await res.json());
     } catch (e) { console.error("Error al cargar mantenciones", e); }
@@ -675,8 +663,7 @@ export class DataService {
   async addMaintenanceTask(task: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/maintenance', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/maintenance', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -717,8 +704,7 @@ export class DataService {
   async fetchPurchaseOrders() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/procurement', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/procurement', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.purchaseOrders.set(await res.json());
     } catch (e) { console.error("Error al cargar órdenes de compra", e); }
@@ -727,8 +713,7 @@ export class DataService {
   async addPurchaseOrder(order: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/procurement', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/procurement', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -771,8 +756,7 @@ export class DataService {
   async fetchAdminTasks() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/admin-tasks', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/admin-tasks', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) this.adminTasks.set(await res.json());
     } catch (e) { console.error("Error al cargar tareas admin", e); }
@@ -781,8 +765,7 @@ export class DataService {
   async addAdminTask(task: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/admin-tasks', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/admin-tasks', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -853,8 +836,7 @@ export class DataService {
   async fetchUsers() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/users', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/users', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -868,8 +850,7 @@ export class DataService {
   async addUser(user: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/users', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/users', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -923,8 +904,7 @@ export class DataService {
     if (!this.token()) return;
     this.isLoading.set(true);
     try {
-      const res = await fetch(this.baseUrl + '/api/schedules', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/schedules', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -940,8 +920,7 @@ export class DataService {
   async updateSchedule(schedule: Partial<ClassSchedule>) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/schedules', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/schedules', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -959,8 +938,7 @@ export class DataService {
   async addBulkSchedules(schedules: any[]) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/schedules/bulk', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/schedules/bulk', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -979,8 +957,7 @@ export class DataService {
   async fetchUnifiedRequests() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/procurement-requests', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/procurement-requests', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         this.unifiedRequests.set(await res.json());
@@ -1008,8 +985,7 @@ export class DataService {
   async addBulkUsers(users: any[]) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/users/bulk', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/users/bulk', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
@@ -1042,17 +1018,16 @@ export class DataService {
 
   async login(correo: string, pass: string, recaptchaToken?: string): Promise<boolean> {
     try {
-      const res = await fetch(this.baseUrl + '/api/auth/login', {
+      const res = await fetch(this.baseUrl + '/api/auth/login', { credentials: 'include',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, password: pass, recaptchaToken })
       });
 
       if (res.ok) {
-        const { token, user } = await res.json();
-        this.token.set(token);
+        const { user } = await res.json();
+        this.token.set('cookie-based');
         this.currentUser.set(user);
-        localStorage.setItem('sga_token', token);
         sessionStorage.setItem('uah_user', JSON.stringify(user));
 
         if (user.rol === 'Admin_Labs' || user.rol === 'Admin_Acade' || user.rol === 'SuperUser') {
@@ -1144,8 +1119,7 @@ export class DataService {
   async fetchInventory() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/inventory', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/inventory', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -1162,8 +1136,7 @@ export class DataService {
   async fetchReservations() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/reservations', {
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await fetch(this.baseUrl + '/api/reservations', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -1177,7 +1150,7 @@ export class DataService {
   async fetchProjects() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/projects', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      const res = await fetch(this.baseUrl + '/api/projects', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` } });
       if (res.ok) this.projects.set(await res.json());
     } catch (e) { console.error("Error al cargar proyectos", e); }
   }
@@ -1190,8 +1163,7 @@ export class DataService {
     const { manager, createdAt, updatedAt, ...cleanProject } = project;
     
     try {
-      const res = await fetch(url, {
-        method,
+      const res = await fetch(url, { credentials: 'include', method,
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
         body: JSON.stringify(cleanProject)
       });
@@ -1235,7 +1207,7 @@ export class DataService {
   async fetchWiki() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/wiki', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      const res = await fetch(this.baseUrl + '/api/wiki', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` } });
       if (res.ok) this.wikiDocs.set(await res.json());
     } catch (e) { console.error("Error al cargar wiki", e); }
   }
@@ -1243,8 +1215,7 @@ export class DataService {
   async saveWiki(doc: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/wiki', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/wiki', { credentials: 'include', method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
         body: JSON.stringify(doc)
       });
@@ -1255,8 +1226,7 @@ export class DataService {
   async deleteWiki(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + `/api/wiki/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(this.baseUrl + `/api/wiki/${id}`, { credentials: 'include', method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) await this.fetchWiki();
@@ -1266,8 +1236,7 @@ export class DataService {
   async updateWiki(id: number, doc: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + `/api/wiki/${id}`, {
-        method: 'PUT',
+      const res = await fetch(this.baseUrl + `/api/wiki/${id}`, { credentials: 'include', method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
         body: JSON.stringify(doc)
       });
@@ -1279,7 +1248,7 @@ export class DataService {
   async fetchBitacora() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/bitacora', { headers: { 'Authorization': `Bearer ${this.token()}` } });
+      const res = await fetch(this.baseUrl + '/api/bitacora', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` } });
       if (res.ok) this.bitacora.set(await res.json());
     } catch (e) { console.error("Error al cargar bitácora", e); }
   }
@@ -1289,8 +1258,7 @@ export class DataService {
     const method = entry.id ? 'PUT' : 'POST';
     const url = entry.id ? `/api/bitacora/${entry.id}` : '/api/bitacora';
     try {
-      const res = await fetch(url, {
-        method,
+      const res = await fetch(url, { credentials: 'include', method,
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token()}` },
         body: JSON.stringify(entry)
       });
@@ -1301,8 +1269,7 @@ export class DataService {
   async deleteBitacora(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + `/api/bitacora/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(this.baseUrl + `/api/bitacora/${id}`, { credentials: 'include', method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) await this.fetchBitacora();
@@ -1313,8 +1280,7 @@ export class DataService {
   async deleteLabSchedules(lab: string): Promise<boolean> {
     if (!this.token()) return false;
     try {
-      const res = await fetch(this.baseUrl + `/api/schedules/lab/${lab}`, {
-        method: 'DELETE',
+      const res = await fetch(this.baseUrl + `/api/schedules/lab/${lab}`, { credentials: 'include', method: 'DELETE',
         headers: { 'Authorization': `Bearer ${this.token()}` }
       });
       if (res.ok) {
@@ -1328,8 +1294,7 @@ export class DataService {
   async addPurchaseOrdersBulk(orders: any[]): Promise<boolean> {
     if (!this.token()) return false;
     try {
-      const res = await fetch(this.baseUrl + '/api/procurement/bulk', {
-        method: 'POST',
+      const res = await fetch(this.baseUrl + '/api/procurement/bulk', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.token()}`
