@@ -72,7 +72,7 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginOpenerPolicy: false // Desactivado para red interna (Staging)
 }));
-app.use(cors({ origin: "*" })); // Habilitar CORS para aplicaciones móviles y web
+app.use(cors({ origin: true, credentials: true })); // Habilitar CORS con credenciales para cookies HttpOnly
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
 

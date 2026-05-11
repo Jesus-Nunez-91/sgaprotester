@@ -38,13 +38,13 @@ export const login = async (req: Request, res: Response) => {
     
     const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict' as const,
+        secure: false, // Desactivado para compatibilidad con red interna UAH (sin SSL)
+        sameSite: 'lax' as const,
         maxAge: 8 * 60 * 60 * 1000 // 8 hours
     };
     
     res.cookie('token', token, cookieOptions);
-    res.json({ message: 'Login exitoso', user: userWithoutPassword });
+    res.json({ message: 'Login exitoso', user: userWithoutPassword, token });
   } catch (error) {
     res.status(500).json({ message: 'Error en el servidor' });
   }

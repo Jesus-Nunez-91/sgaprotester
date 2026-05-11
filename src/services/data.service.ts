@@ -227,6 +227,28 @@ export class DataService {
     this.startAutoRefresh();
   }
 
+  private getAuthHeaders(contentType: string = 'application/json') {
+    const headers: any = {};
+    if (contentType) headers['Content-Type'] = contentType;
+    if (this.token()) headers['Authorization'] = `Bearer ${this.token()}`;
+    return headers;
+  }
+
+  private async apiFetch(path: string, options: RequestInit = {}) {
+    const url = path.startsWith('http') ? path : this.baseUrl + path;
+    const defaultOptions: RequestInit = {
+      credentials: 'include',
+      headers: this.getAuthHeaders(options.body ? 'application/json' : '')
+    };
+
+    // Combinar headers si se pasan extras
+    if (options.headers) {
+      defaultOptions.headers = { ...defaultOptions.headers, ...options.headers };
+    }
+
+    return fetch(url, { ...defaultOptions, ...options });
+  }
+
   private refreshInterval: any;
   private startAutoRefresh() {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
@@ -248,8 +270,7 @@ export class DataService {
   async fetchSystemSettings() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/settings', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
-      });
+      const res = await this.apiFetch('/api/settings');
       if (res.ok) {
         const settings: any[] = await res.json();
         const budgets = { ...this.labBudgets() };
@@ -830,8 +851,7 @@ export class DataService {
   async fetchUsers() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/users', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
-      });
+      const res = await this.apiFetch('/api/users');
       if (res.ok) {
         const data = await res.json();
         this.users.set(data);
@@ -844,11 +864,8 @@ export class DataService {
   async addUser(user: any) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/users', { credentials: 'include', method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token()}`
-        },
+      const res = await this.apiFetch('/api/users', {
+        method: 'POST',
         body: JSON.stringify(user)
       });
       if (res.ok) {
@@ -898,8 +915,7 @@ export class DataService {
     if (!this.token()) return;
     this.isLoading.set(true);
     try {
-      const res = await fetch(this.baseUrl + '/api/schedules', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
-      });
+      const res = await this.apiFetch('/api/schedules');
       if (res.ok) {
         const data = await res.json();
         this.classSchedules.set(data);
@@ -914,11 +930,8 @@ export class DataService {
   async updateSchedule(schedule: Partial<ClassSchedule>) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/schedules', { credentials: 'include', method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token()}`
-        },
+      const res = await this.apiFetch('/api/schedules', {
+        method: 'POST',
         body: JSON.stringify(schedule)
       });
       if (res.ok) {
@@ -932,11 +945,8 @@ export class DataService {
   async addBulkSchedules(schedules: any[]) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/schedules/bulk', { credentials: 'include', method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token()}`
-        },
+      const res = await this.apiFetch('/api/schedules/bulk', {
+        method: 'POST',
         body: JSON.stringify(schedules)
       });
       if (res.ok) await this.fetchSchedules();
@@ -964,9 +974,8 @@ export class DataService {
   async deleteSchedule(id: number) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + `/api/schedules/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${this.token()}` }
+      const res = await this.apiFetch(`/api/schedules/${id}`, {
+        method: 'DELETE'
       });
       if (res.ok) {
         await this.fetchSchedules();
@@ -979,11 +988,8 @@ export class DataService {
   async addBulkUsers(users: any[]) {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/users/bulk', { credentials: 'include', method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token()}`
-        },
+      const res = await this.apiFetch('/api/users/bulk', {
+        method: 'POST',
         body: JSON.stringify(users)
       });
       if (res.ok) {
@@ -1004,25 +1010,23 @@ export class DataService {
     if (token && session) {
       this.token.set(token);
       this.currentUser.set(JSON.parse(session));
-      this.fetchAuditLogs();
-      this.fetchSystemSettings();
       this.fetchNotifications();
     }
   }
 
   async login(correo: string, pass: string, recaptchaToken?: string): Promise<boolean> {
     try {
-      const res = await fetch(this.baseUrl + '/api/auth/login', { credentials: 'include',
+      const res = await this.apiFetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, password: pass, recaptchaToken })
       });
 
       if (res.ok) {
-        const { user } = await res.json();
-        this.token.set('cookie-based');
+        const { user, token } = await res.json();
+        this.token.set(token || 'cookie-based');
         this.currentUser.set(user);
         sessionStorage.setItem('uah_user', JSON.stringify(user));
+        this.save();
 
         if (user.rol === 'Admin_Labs' || user.rol === 'Admin_Acade' || user.rol === 'SuperUser') {
           this.fetchUsers();
@@ -1113,8 +1117,7 @@ export class DataService {
   async fetchInventory() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/inventory', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
-      });
+      const res = await this.apiFetch('/api/inventory');
       if (res.ok) {
         const data = await res.json();
         this.inventory.set(data);
@@ -1129,8 +1132,7 @@ export class DataService {
   async fetchReservations() {
     if (!this.token()) return;
     try {
-      const res = await fetch(this.baseUrl + '/api/reservations', { credentials: 'include', headers: { 'Authorization': `Bearer ${this.token()}` }
-      });
+      const res = await this.apiFetch('/api/reservations');
       if (res.ok) {
         const data = await res.json();
         this.reservations.set(data);
@@ -1287,11 +1289,8 @@ export class DataService {
   async addPurchaseOrdersBulk(orders: any[]): Promise<boolean> {
     if (!this.token()) return false;
     try {
-      const res = await fetch(this.baseUrl + '/api/procurement/bulk', { credentials: 'include', method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token()}`
-        },
+      const res = await this.apiFetch('/api/procurement/bulk', {
+        method: 'POST',
         body: JSON.stringify(orders)
       });
       if (res.ok) {
