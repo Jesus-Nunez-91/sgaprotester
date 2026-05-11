@@ -285,12 +285,10 @@ export class DataService {
 
   private setupSocket() {
     this.socket.on('init', ({ tickets }) => {
-      console.log("Tickets iniciales cargados via socket:", tickets?.length);
       this.supportTickets.set(tickets || []);
     });
 
     this.socket.on('ticket:created', (t) => {
-      console.log("Evento ticket:created recibido:", t);
       this.supportTickets.update(v => [t, ...v]);
       const user = this.currentUser();
       const isMe = t.userId === user?.id;
@@ -306,13 +304,11 @@ export class DataService {
     });
 
     this.socket.on('message:received', (msg) => {
-      console.log("Evento message:received recibido:", msg);
       // Actualizar tickets (usando == para evitar problemas de string vs number en IDs)
       this.supportTickets.update(v => v.map(t => t.id == msg.ticketId ? { ...t, messages: [...t.messages, msg], status: msg.newStatus || t.status } : t));
 
       const user = this.currentUser();
       if (user && msg.sender !== user.nombreCompleto) {
-        console.log("Generando notificación para el usuario...");
         const isAdmin = user.rol === 'Admin_Labs' || user.rol === 'Admin_Acade' || user.rol === 'SuperUser' || user.rol === 'Academico';
         this.notifications.update(n => [{
           id: Date.now(),
@@ -327,7 +323,6 @@ export class DataService {
     });
 
     this.socket.on('ticket:deleted', ({ ticketId }) => {
-      console.log("Ticket eliminado remotamente:", ticketId);
       this.supportTickets.update(v => v.filter(t => t.id != ticketId));
     });
 
@@ -335,7 +330,6 @@ export class DataService {
     effect(() => {
       const user = this.currentUser();
       if (user) {
-        console.log("Enviando evento 'join' para sala:", user.id, user.rol, user.nombreCompleto);
         this.socket.emit('join', { userId: user.id, role: user.rol, name: user.nombreCompleto });
       }
     });
@@ -1123,7 +1117,6 @@ export class DataService {
       });
       if (res.ok) {
         const data = await res.json();
-        console.log("Inventario cargado desde API:", data.length, "items");
         this.inventory.set(data);
       } else {
         console.error("Fallo al obtener inventario de la API", res.status);

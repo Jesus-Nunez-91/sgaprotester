@@ -713,9 +713,6 @@ export class InventoryComponent {
   /** Items filtrados por área, laboratorio, modo, estado y término de búsqueda */
   filteredItems = computed(() => {
     const all = this.data.inventory();
-    console.log('--- DIAGNÓSTICO INVENTARIO ---');
-    console.log('Total items in DB:', all.length);
-    console.log('Area:', this.areaName, 'Lab:', this.labName, 'Mode:', this.inventoryMode());
     
     const contextItems = all.filter(i => {
       const isCorrectArea = i.categoria?.toUpperCase() === this.areaName?.toUpperCase();
@@ -732,10 +729,6 @@ export class InventoryComponent {
       const isSubcatMatch = i.subCategoria?.toUpperCase() === this.labName?.toUpperCase();
       return isCorrectArea && isCorrectType && isSubcatMatch;
     });
-    console.log('Items matching context:', contextItems.length);
-    if (contextItems.length === 0 && all.length > 0) {
-        console.log('Sample item types in DB:', [...new Set(all.map(x => x.tipoInventario))]);
-    }
     let filtered = this.statusFilter() === 'Todos' ? contextItems : contextItems.filter(i => i.status === this.statusFilter());
 
     // Visibilidad: Alumnos/Docentes solo ven lo "Disponible"
