@@ -41,7 +41,10 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-      - /var/run
+      - /var/run:mode=1777
+      - /app/logs:mode=1777
+    volumes:
+      - ./backend/ssl:/app/dist-server/backend/ssl:ro
     # Seguridad: Quitar capacidades innecesarias
     cap_drop:
       - ALL

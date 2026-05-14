@@ -9,3 +9,4 @@ data/
 tmp_*.ts
 debug_*.ts
 backup_sga_db.sql
+backend/ssl/

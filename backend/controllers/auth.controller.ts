@@ -38,7 +38,7 @@ export const login = async (req: Request, res: Response) => {
     
     const cookieOptions = {
         httpOnly: true,
-        secure: false, // Desactivado para compatibilidad con red interna UAH (sin SSL)
+        secure: true, // Habilitado: ya contamos con HTTPS (SSL)
         sameSite: 'lax' as const,
         maxAge: 8 * 60 * 60 * 1000 // 8 hours
     };

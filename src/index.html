@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO y Meta Tags: Descripción del sistema para buscadores -->
+  <meta name="description"
+    content="SGA FIN - Sistema de Gestión de Activos de la Facultad de Ingeniería UAH. Gestiona inventario, reservas, horarios y proyectos académicos.">
+  <meta name="keywords"
+    content="SGA FIN, UAH, Gestión de Activos, Ingeniería UAH, Universidad Alberto Hurtado, Inventario, Reservas Lab">
+  <link rel="canonical" href="https://sga.uah.cl/" />
+  
+  <title>SGA FIN - Ingeniería UAH</title>
+
+  <!-- Google Analytics: Seguimiento de visitas (ID pendiente de coordinación con TICS) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+
+  <!-- Google reCAPTCHA: Protección contra bots y ataques de fuerza bruta -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer crossorigin="anonymous"></script>
+
+  <!-- Bootstrap Icons: Librería de iconos vectoriales -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" 
+    integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
+  
+  <!-- Google Fonts: Tipografías modernas (Playfair, Montserrat, Inter) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Librerías Externas con SRI (Subresource Integrity) para asegurar que no han sido modificadas por terceros -->
+  
+  <!-- SweetAlert2: Modales y alertas premium -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" 
+    integrity="sha384-QjoPbdj/93O7LUz0wqTxepA3tIabUD3jzfZX+x5QLvqFtHBzSw4eYFLSVthB+EDT" crossorigin="anonymous"></script>
+  
+  <!-- SheetJS (XLSX): Procesamiento de archivos Excel en el navegador -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" 
+    integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  
+  <!-- Chart.js: Gráficos y visualización de datos de inventario y auditoría -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" 
+    integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+
+  <!-- Hack para compatibilidad con librerías que esperan un entorno Node (NODE_ENV) -->
+  <script>
+    window.process = { env: { NODE_ENV: 'production' } };
+  </script>
+</head>
+
+<body class="text-gray-800 dark:text-gray-200 antialiased overflow-hidden">
+  <!-- Punto de entrada de la aplicación Angular -->
+  <app-root></app-root>
+</body>
+
+</html>

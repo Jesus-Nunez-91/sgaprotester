@@ -1,7 +1,10 @@
 import express from 'express';
-import { createServer } from 'http';
+import { createServer as createHttpServer } from 'http';
+import { createServer as createHttpsServer } from 'https';
+import fs from 'fs';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import logger from './utils/logger';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import "reflect-metadata";
@@ -13,7 +16,7 @@ import helmet from "helmet";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
-import cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import auditRoutes from './routes/audit.routes';
@@ -57,7 +60,15 @@ import { EquipmentInventory } from "../src/entities/EquipmentInventory";
 dotenv.config();
 
 const app = express();
-const httpServer = createServer(app);
+
+// Redirección Global HTTP a HTTPS
+app.use((req, res, next) => {
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    return next();
+  }
+  const httpsUrl = `https://${req.hostname}${req.url}`;
+  next(); 
+});
 
 // Rate limiting for auth routes
 const authRateLimit = rateLimit({
@@ -68,15 +79,70 @@ const authRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
+// --- CONFIGURACIÓN DE SEGURIDAD (HELMET) ---
+// Helmet ayuda a proteger la aplicación configurando varias cabeceras HTTP.
 app.use(helmet({ 
-  contentSecurityPolicy: false,
-  crossOriginOpenerPolicy: false // Desactivado para red interna (Staging)
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      // Permitimos scripts del mismo servidor, inline (Angular) y CDNs autorizados
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com/recaptcha/", "https://www.gstatic.com/recaptcha/", "https://www.googletagmanager.com/", "https://cdn.jsdelivr.net/", "https://cdn.sheetjs.com/"],
+      // Estilos desde el servidor y fuentes de Google/CDNs
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com/", "https://cdn.jsdelivr.net/"],
+      imgSrc: ["'self'", "data:", "https://www.google-analytics.com/"],
+      // Conexiones de datos (API, Google Analytics, Source Maps)
+      connectSrc: ["'self'", "https://www.google-analytics.com/", "https://cdn.jsdelivr.net/"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com/", "https://cdn.jsdelivr.net/"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'", "https://www.google.com/recaptcha/"],
+      frameAncestors: ["'self'"], // Previene Clickjacking (solo se puede embeber en sí mismo)
+    },
+  },
+  crossOriginOpenerPolicy: false,
+  xFrameOptions: { action: "sameorigin" },
 }));
-app.use(cors({ origin: true, credentials: true })); // Habilitar CORS con credenciales para cookies HttpOnly
+
+// --- POLÍTICA DE CORS (CROSS-ORIGIN RESOURCE SHARING) ---
+// Define quién puede hacer peticiones a nuestra API con credenciales (cookies)
+const allowedOrigins = [
+  'http://localhost:4200', 
+  'http://localhost:3000', 
+  'https://localhost:3040', 
+  'https://10.10.0.20:3040', 
+  'http://10.10.0.20:3040',
+  'https://sga.uah.cl'
+];
+
+app.use(cors({ 
+  origin: (origin, callback) => {
+    // Si el origen está en la lista blanca o es una petición local (sin origen), permitimos
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // Bloqueo y registro de intento de acceso no autorizado
+      logger.error(`CORS Bloqueado para origen: ${origin}`);
+      callback(new Error('No permitido por CORS (Política de Seguridad)'));
+    }
+  }, 
+  credentials: true 
+}));
+
+// Cabeceras de Cache y Seguridad Adicionales
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+  }
+  
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
+  next();
+});
+
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
-
-const io = initSocket(httpServer);
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -84,9 +150,6 @@ if (!JWT_SECRET) {
   console.error("FATAL ERROR: JWT_SECRET no está configurado en .env");
   process.exit(1);
 }
-
-// Función para normalizar texto (quitar tildes y caracteres especiales)
-// normalizeStr movido a utils/helpers.ts
 
 // Inicializar DB y Lanzar Servidor
 AppDataSource.initialize()
@@ -99,8 +162,6 @@ AppDataSource.initialize()
     console.error("❌ Error FATAL inicializando base de datos:", err);
     process.exit(1);
   });
-
-// logAudit movido a utils/logger.ts
 
 // Rutas API Desacopladas (MVC)
 app.use('/api/auth', authRoutes);
@@ -128,22 +189,44 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-
-// --- INICIALIZAR SERVIDOR ---
-// --- MIDDLEWARE GLOBAL DE LOGS DE ERROR (PEDIDO POR USUARIO) ---
+// --- MIDDLEWARE GLOBAL DE LOGS DE ERROR (SEGURO) ---
 app.use((err: any, req: any, res: any, next: any) => {
-  console.error(`[FATAL ERROR] ${req.method} ${req.url}:`, err.stack || err.message);
+  logger.error(`[ERROR 500] ${req.method} ${req.url}: ${err.message}`, {
+    stack: err.stack,
+    body: req.body,
+    query: req.query,
+    user: req.user?.id
+  });
+
   res.status(500).json({ 
-    message: 'Error interno del servidor capturado por el log global',
-    error: err.message,
-    path: req.url
+    message: 'Ha ocurrido un error interno en el servidor.',
+    path: req.url,
+    timestamp: new Date().toISOString()
   });
 });
 
 function startServer() {
-  httpServer.listen(PORT, () => {
-    console.log(`🚀 Servidor listo y ESCUCHANDO en puerto ${PORT}`);
-    console.log(`📡 URL Base: http://localhost:${PORT}`);
-    console.log(`🛡️  Logs de errores globales ACTIVADOS`);
+  let httpServerInstance;
+  const sslPath = path.join(__dirname, 'ssl');
+  const hasCert = fs.existsSync(path.join(sslPath, 'cert.pem')) && fs.existsSync(path.join(sslPath, 'key.pem'));
+
+  if (hasCert) {
+    const options = {
+      key: fs.readFileSync(path.join(sslPath, 'key.pem')),
+      cert: fs.readFileSync(path.join(sslPath, 'cert.pem')),
+    };
+    httpServerInstance = createHttpsServer(options, app);
+    console.log(`🛡️  Servidor HTTPS habilitado.`);
+  } else {
+    httpServerInstance = createHttpServer(app);
+    console.log(`⚠️  Servidor corriendo en HTTP (Certificados no encontrados en backend/ssl/)`);
+  }
+
+  const io = initSocket(httpServerInstance);
+
+  httpServerInstance.listen(PORT, () => {
+    console.log(`🚀 Servidor listo y ESCUCHANDO en puerto ${PORT} (${hasCert ? 'HTTPS' : 'HTTP'})`);
+    console.log(`📡 URL Base: ${hasCert ? 'https' : 'http'}://10.10.0.20:${PORT}`);
+    console.log(`🛡️  Logs de errores seguros (Winston) ACTIVADOS`);
   });
 }
