@@ -60,7 +60,7 @@ declare const XLSX: any;
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Correo Institucional</label>
                         <div class="relative">
                             <i class="bi bi-envelope absolute left-4 top-3.5 text-gray-400 group-focus-within:text-uah-orange transition-colors"></i>
-                            <input [(ngModel)]="editUser.correo" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="nombre@uah.cl">
+                            <input [(ngModel)]="editUser.correo" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-uah-orange focus:ring-4 focus:ring-uah-orange/10 dark:text-white transition-all text-sm font-bold outline-none" placeholder="nombre@uahurtado.cl">
                         </div>
                      </div>
 

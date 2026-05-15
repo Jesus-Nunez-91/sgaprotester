@@ -6,7 +6,7 @@ Este documento complementa el Anexo 1 (Secciones 1.1, 1.2 y 1.3) detallando la m
 
 | ID | Módulo | Descripción | Resultado Esperado |
 |----|--------|-------------|-------------------|
-| F01 | Auth | Login con correo @uah.cl | Acceso concedido según ROL. |
+| F01 | Auth | Login con @uahurtado.cl o admin@uah.cl | Acceso concedido según ROL. |
 | F02 | Inv | Carga masiva Excel | Procesamiento sin errores de >100 filas. |
 | F03 | Res | Reserva de equipo | Descuento de stock y registro en bitácora. |
 | F04 | Proy | Crear Fase | Visualización en carta Gantt y PDF. |

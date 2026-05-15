@@ -1056,7 +1056,7 @@ export class DataService {
    */
   async submitAccessRequest(data: any): Promise<boolean> {
     if (!validateInstitucionalEmail(data.email)) {
-      Swal.fire({ icon: 'error', title: 'Dominio Inválido', text: 'Solo se permiten correos @uah.cl, @uahurtado.cl o @alumnos.uahurtado.cl' });
+      Swal.fire({ icon: 'error', title: 'Dominio Inválido', text: 'Solo se permiten correos @uahurtado.cl, @alumnos.uahurtado.cl o el administrador institucional.' });
       return false;
     }
 

@@ -11,7 +11,7 @@ export const runSeed = async () => {
   // Semilla Administrador (SuperUser)
   try {
     const userRepo = AppDataSource.getRepository(User);
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@uah.cl';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
     const adminExists = await userRepo.findOneBy({ correo: ADMIN_EMAIL });
     if (!adminExists) {
         console.log(`🌱 Creando administrador root (${ADMIN_EMAIL})...`);
@@ -91,8 +91,8 @@ export const runSeed = async () => {
       console.log("🌱 Inicializando préstamos especiales...");
       const initialSpecials = [
         {
-          applicantName: 'Ignacio Muñoz',
-          applicantRut: '20.123.126-4',
+          applicantName: 'Usuario Ejemplo',
+          applicantRut: '12.345.678-k',
           applicantType: 'Alumno',
           startDate: '2026-04-09',
           endDate: '2026-04-16',
